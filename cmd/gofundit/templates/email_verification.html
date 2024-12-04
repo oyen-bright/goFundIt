@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Email Verification - GoFund It</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 0;
+            color: #333;
+        }
+
+        .email-container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        .email-header {
+            color: #444;
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .email-body {
+            font-size: 16px;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+
+        .code {
+            display: inline-block;
+            margin: 20px 0;
+            font-size: 24px;
+            font-weight: bold;
+            color: #ffffff;
+            background-color: #007bff;
+            padding: 10px 20px;
+            border-radius: 8px;
+            letter-spacing: 2px;
+        }
+
+        .email-footer {
+            font-size: 12px;
+            color: #777;
+            margin-top: 30px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="email-container">
+        <div class="email-header">Verify Your Email</div>
+        <div class="email-body">
+            <p>Hello,</p>
+            <p>Thank you for signing up with <strong>GoFund It</strong>. To complete your registration, please use the
+                verification code below:</p>
+            <div class="code">{{ .verificationCode}}</div>
+            <p>If you didn’t sign up for this account, please ignore this email.</p>
+        </div>
+        <div class="email-footer">
+            &copy; 2024 GoFund It. All rights reserved.
+        </div>
+    </div>
+</body>
+
+</html>
