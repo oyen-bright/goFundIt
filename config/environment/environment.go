@@ -1,4 +1,4 @@
-package config
+package environment
 
 type Environment int
 
@@ -12,7 +12,7 @@ func (e Environment) String() string {
 	return [...]string{"dev", "stg", "prod"}[e]
 }
 
-func (e *Environment) init(environment string) {
+func (e *Environment) New(environment string) {
 	switch environment {
 	case "":
 		*e = Development
@@ -23,4 +23,16 @@ func (e *Environment) init(environment string) {
 	default:
 		*e = Production
 	}
+}
+
+func (e Environment) IsDevelopment() bool {
+	return e == Development
+}
+
+func (e Environment) IsStaging() bool {
+	return e == Staging
+}
+
+func (e Environment) IsProduction() bool {
+	return e == Production
 }
