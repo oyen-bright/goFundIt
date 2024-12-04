@@ -1,3 +1,7 @@
 {
-  "cSpell.words": ["godotenv"]
+  "cSpell.words": [
+    "godotenv",
+    "gomail",
+    "sendgrid"
+  ]
 }
