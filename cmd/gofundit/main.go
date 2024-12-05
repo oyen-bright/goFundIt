@@ -3,21 +3,41 @@ package main
 import (
 	"log"
 
-	"github.com/oyen-bright/goFundIt/config"
+	appConfig "github.com/oyen-bright/goFundIt/config"
+	encryptor "github.com/oyen-bright/goFundIt/internal/encryption"
 	"github.com/oyen-bright/goFundIt/pkg/email"
 )
 
 func main() {
 
-	cfg, err := config.LoadConfig()
+	cfg, err := appConfig.LoadConfig()
 	if err != nil {
 		panic(err)
 
 	}
-	log.Println(cfg)
+
+	encryptedData, err := encryptor.Encrypt(cfg.EncryptionKey, encryptor.Data{
+		Email: "test@email.com",
+		Data:  "1",
+	})
+	if err != nil {
+		panic(err)
+	}
+	log.Println(encryptedData)
+
+	decripredData, err := encryptor.Decrypt(cfg.EncryptionKey, encryptor.Data{
+		Email: "test@email.com",
+		Data:  encryptedData,
+	})
+
+	log.Println(decripredData)
+
+	if err != nil {
+		panic(err)
+	}
 
 	emailer := email.New(*cfg)
-	emailTemplate := email.Verification([]string{"bright@krotrust.com"}, "Aha", "34922343")
+	emailTemplate := email.Verification([]string{"bright@krotrust.com"}, "Aha", encryptedData)
 	err = emailer.SendEmailTemplate(*emailTemplate)
 
 	if err != nil {

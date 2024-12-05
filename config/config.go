@@ -4,6 +4,7 @@ import (
 	"errors"
 	"flag"
 	"strconv"
+	"strings"
 
 	"github.com/joho/godotenv"
 	"github.com/oyen-bright/goFundIt/config/environment"
@@ -20,6 +21,7 @@ type AppConfig struct {
 	EmailPassword  string
 	EmailName      string
 	SendGridAPIKey string
+	EncryptionKey  []string
 }
 
 // LoadConfig loads the configuration for the application based on the environment.
@@ -72,6 +74,7 @@ func LoadConfig() (*AppConfig, error) {
 		EmailPassword:  envData["EMAIL_PASSWORD"],
 		EmailName:      envData["EMAIL_NAME"],
 		SendGridAPIKey: envData["SENDGRID_API_KEY"],
+		EncryptionKey:  strings.Split(envData["ENCRYPTION_KEYS"], ","),
 	}, nil
 }
 
@@ -89,7 +92,7 @@ func LoadConfig() (*AppConfig, error) {
 // Required Environment Variables:
 //   - PORT: The port number on which the application should run.
 func loadEnv(envPath string) (map[string]string, error) {
-	requiredEnvs := []string{"PORT", "EMAIL_PROVIDER", "EMAIL_HOST", "EMAIL_PORT", "EMAIL_USERNAME", "EMAIL_PASSWORD"}
+	requiredEnvs := []string{"PORT", "EMAIL_PROVIDER", "EMAIL_HOST", "EMAIL_PORT", "EMAIL_USERNAME", "EMAIL_PASSWORD", "ENCRYPTION_KEYS"}
 
 	err := godotenv.Load(envPath)
 	if err != nil {
