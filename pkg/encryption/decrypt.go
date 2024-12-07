@@ -1,4 +1,4 @@
-package encryptor
+package encryption
 
 import (
 	"crypto/aes"
@@ -6,34 +6,6 @@ import (
 	"encoding/base64"
 	"errors"
 )
-
-func Decrypt(keys []string, data Data) (string, error) {
-	var plaintext *string
-
-	// Reverse the slice
-	// Loop through the keys to find a match to decrypt the data
-	for index, key := range keys {
-		encryptionKey, err := data.generateEncryptionKey(key)
-		if err != nil {
-			return "", err
-		}
-
-		data, err := decryptData(data.Data, encryptionKey)
-
-		if err == nil {
-			plaintext = &data
-			break
-		}
-
-		if index < len(keys)-1 {
-			continue
-		}
-		return "", err
-
-	}
-	return *plaintext, nil
-
-}
 
 func decryptData(data string, key string) (string, error) {
 

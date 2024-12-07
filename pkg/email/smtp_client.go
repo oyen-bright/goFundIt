@@ -1,11 +1,12 @@
 package email
 
 import (
+	"github.com/oyen-bright/goFundIt/pkg/email/models"
 	"gopkg.in/gomail.v2"
 )
 
 type smtpEmailer struct {
-	config Config
+	config EmailConfig
 }
 
 func (s *smtpEmailer) send(m *gomail.Message) error {
@@ -22,12 +23,12 @@ func (s *smtpEmailer) prepareMessage(from string, to []string, subject, body str
 	return m
 }
 
-func (s *smtpEmailer) SendEmail(email Email) error {
+func (s *smtpEmailer) SendEmail(email models.Email) error {
 	m := s.prepareMessage(s.config.From, email.To, email.Subject, email.Body)
 	return s.send(m)
 }
 
-func (s *smtpEmailer) SendEmailTemplate(eTemplate EmailTemplate) error {
+func (s *smtpEmailer) SendEmailTemplate(eTemplate models.EmailTemplate) error {
 	_, body, err := eTemplate.PrepareBody()
 	if err != nil {
 		return err

@@ -1,4 +1,4 @@
-package encryptor
+package model
 
 import (
 	"crypto/sha256"
@@ -11,11 +11,14 @@ import (
 type Data struct {
 	Data  string
 	Email string
+	Id    string
 }
 
-func (e Data) generateEncryptionKey(secretKey string) (string, error) {
+func (e Data) GenerateEncryptionKey(secretKey string) (string, error) {
 	// Validate the secret key
+
 	if secretKey == "" {
+
 		return "", errors.New("invalid secret key")
 	}
 
