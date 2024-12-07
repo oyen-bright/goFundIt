@@ -3,34 +3,53 @@ package config
 import (
 	"errors"
 	"flag"
+	"fmt"
 	"strconv"
 	"strings"
 
+	"os"
+	"path/filepath"
+
 	"github.com/joho/godotenv"
 	"github.com/oyen-bright/goFundIt/config/environment"
-	providers "github.com/oyen-bright/goFundIt/config/provider"
+	"github.com/oyen-bright/goFundIt/config/providers"
 )
 
 type AppConfig struct {
-	Environment    environment.Environment
-	EmailProvider  providers.EmailProvider
-	Port           int
-	EmailHost      string
-	EmailPort      int
-	EmailUsername  string
-	EmailPassword  string
-	EmailName      string
-	SendGridAPIKey string
-	EncryptionKey  []string
+	Environment      environment.Environment
+	EmailProvider    providers.EmailProvider
+	Port             int
+	EmailHost        string
+	EmailPort        int
+	EmailUsername    string
+	EmailPassword    string
+	EmailName        string
+	SendGridAPIKey   string
+	EncryptionKey    []string
+	PostgresDB       string
+	PostgresUser     string
+	PostgresPassword string
+	PostgresHost     string
+	PostgresPort     int
+}
+
+var BaseDir string
+
+func init() {
+	wd, err := os.Getwd()
+	if err != nil {
+		panic(fmt.Sprintf("failed to get working directory: %v", err))
+	}
+	BaseDir = filepath.Join(wd, "../../")
 }
 
 // LoadConfig loads the configuration for the application based on the environment.
-// - It parses the environment flag.
-// - Initializes the environment.
-// - Loads the corresponding .env file.
-// - If no flag for env is provided, it defaults to "" which is Development.
-// - To set env flag, run the application with -env=stg or -env=prod.
-// - Returns a Config struct with the environment and default port.
+//   - It parses the environment flag.
+//   - Initializes the environment.
+//   - Loads the corresponding .env file.
+//   - If no flag for env is provided, it defaults to "" which is Development.
+//   - To set env flag, run the application with -env=stg or -env=prod.
+//   - Returns a Config struct with the environment and default port.
 //
 // Returns:
 //   - *Config: A pointer to the Config struct containing the environment and port.
@@ -47,7 +66,7 @@ func LoadConfig() (*AppConfig, error) {
 	env = *envFlag
 	environment.New(env)
 
-	envPath := ".env." + environment.String()
+	envPath := filepath.Join(BaseDir, "config", "env", ".env."+environment.String())
 	envData, err := loadEnv(envPath)
 	if err != nil {
 		return nil, err
@@ -62,19 +81,31 @@ func LoadConfig() (*AppConfig, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	postgresPort, err := strconv.Atoi(envData["POSTGRES_PORT"])
+
+	if err != nil {
+		return nil, err
+	}
+
 	emailProvider.Email(envData["EMAIL_PROVIDER"])
 
 	return &AppConfig{
-		Environment:    environment,
-		Port:           port,
-		EmailProvider:  emailProvider,
-		EmailHost:      envData["EMAIL_HOST"],
-		EmailPort:      emailPort,
-		EmailUsername:  envData["EMAIL_USERNAME"],
-		EmailPassword:  envData["EMAIL_PASSWORD"],
-		EmailName:      envData["EMAIL_NAME"],
-		SendGridAPIKey: envData["SENDGRID_API_KEY"],
-		EncryptionKey:  strings.Split(envData["ENCRYPTION_KEYS"], ","),
+		Environment:      environment,
+		Port:             port,
+		EmailProvider:    emailProvider,
+		EmailHost:        envData["EMAIL_HOST"],
+		EmailPort:        emailPort,
+		EmailUsername:    envData["EMAIL_USERNAME"],
+		EmailPassword:    envData["EMAIL_PASSWORD"],
+		EmailName:        envData["EMAIL_NAME"],
+		SendGridAPIKey:   envData["SENDGRID_API_KEY"],
+		EncryptionKey:    strings.Split(envData["ENCRYPTION_KEYS"], ","),
+		PostgresDB:       envData["POSTGRES_DB"],
+		PostgresUser:     envData["POSTGRES_USER"],
+		PostgresPassword: envData["POSTGRES_PASSWORD"],
+		PostgresHost:     envData["POSTGRES_HOST"],
+		PostgresPort:     postgresPort,
 	}, nil
 }
 
@@ -92,7 +123,11 @@ func LoadConfig() (*AppConfig, error) {
 // Required Environment Variables:
 //   - PORT: The port number on which the application should run.
 func loadEnv(envPath string) (map[string]string, error) {
-	requiredEnvs := []string{"PORT", "EMAIL_PROVIDER", "EMAIL_HOST", "EMAIL_PORT", "EMAIL_USERNAME", "EMAIL_PASSWORD", "ENCRYPTION_KEYS"}
+	requiredEnvs := []string{
+		"PORT", "EMAIL_PROVIDER", "EMAIL_HOST", "EMAIL_PORT", "EMAIL_USERNAME",
+		"EMAIL_PASSWORD", "ENCRYPTION_KEYS", "POSTGRES_DB", "POSTGRES_USER",
+		"POSTGRES_PASSWORD", "POSTGRES_HOST", "POSTGRES_PORT",
+	}
 
 	err := godotenv.Load(envPath)
 	if err != nil {

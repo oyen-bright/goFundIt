@@ -1,11 +1,14 @@
 package main
 
 import (
-	"log"
+	"fmt"
 
 	appConfig "github.com/oyen-bright/goFundIt/config"
-	encryptor "github.com/oyen-bright/goFundIt/internal/encryption"
+	"github.com/oyen-bright/goFundIt/config/providers"
+	"github.com/oyen-bright/goFundIt/internal/database"
+	"github.com/oyen-bright/goFundIt/internal/otp"
 	"github.com/oyen-bright/goFundIt/pkg/email"
+	"github.com/oyen-bright/goFundIt/pkg/encryption"
 )
 
 func main() {
@@ -15,33 +18,31 @@ func main() {
 		panic(err)
 
 	}
+	db, err := database.Init(*cfg)
+	// migrations.DropOtpTable(db)
+	defer database.Close(db)
+	if err != nil {
+		panic(err)
+	}
 
-	encryptedData, err := encryptor.Encrypt(cfg.EncryptionKey, encryptor.Data{
-		Email: "test@email.com",
-		Data:  "1",
+	encryptor := encryption.New(cfg.EncryptionKey)
+
+	emailer := email.New(providers.EmailSMTP, email.EmailConfig{
+		Host:           cfg.EmailHost,
+		Port:           cfg.EmailPort,
+		From:           cfg.EmailName,
+		Username:       cfg.EmailUsername,
+		Password:       cfg.EmailPassword,
+		SendGridAPIKey: cfg.SendGridAPIKey,
 	})
-	if err != nil {
-		panic(err)
-	}
-	log.Println(encryptedData)
 
-	decripredData, err := encryptor.Decrypt(cfg.EncryptionKey, encryptor.Data{
-		Email: "test@email.com",
-		Data:  encryptedData,
-	})
+	otpService := otp.OtpService{DB: db, Emailer: &emailer, Encryptor: encryptor}
+	err = otpService.RequestOTP("bright@krotrust.com", "Bright")
+	// isVerified, err := otpService.VerifyOTP("bright@krotrust.com", "MSCKKR")
+	// fmt.Print(isVerified)
 
-	log.Println(decripredData)
+	fmt.Print(err)
 
-	if err != nil {
-		panic(err)
-	}
-
-	emailer := email.New(*cfg)
-	emailTemplate := email.Verification([]string{"bright@krotrust.com"}, "Aha", encryptedData)
-	err = emailer.SendEmailTemplate(*emailTemplate)
-
-	if err != nil {
-		panic(err)
-	}
+	// router := gin.Default()
 
 }
