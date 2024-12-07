@@ -4,19 +4,17 @@ import (
 	"math/rand"
 	"strings"
 	"time"
-
-	"github.com/oyen-bright/goFundIt/internal/otp/model"
 )
 
 const CHARSET = "abcdefghijklmnopqrstuvwxyz"
 const ExpireTime = 5 // minutes
 const OTP_LENGTH = 6
 
-func New(email string) model.Otp {
+func New(email string) Otp {
 
 	code := GenerateOTP(0)
 	expireAt := GenerateExpireDate()
-	return model.Otp{
+	return Otp{
 		Code:      code,
 		Email:     strings.ToLower(email),
 		CreatedAt: time.Now(),

@@ -1,7 +1,6 @@
 package otp
 
 import (
-	"github.com/oyen-bright/goFundIt/internal/otp/model"
 	"github.com/oyen-bright/goFundIt/pkg/email"
 	emailTemplates "github.com/oyen-bright/goFundIt/pkg/email/templates"
 	encryptor "github.com/oyen-bright/goFundIt/pkg/encryption"
@@ -73,16 +72,16 @@ func (s *OtpService) VerifyOTP(email, code string) (bool, error) {
 
 // Clears users previous OTPs from the database
 func clearUserOTPs(dB *gorm.DB, email, code string) error {
-	return dB.Where("email = ? AND code != ?", email, code).Delete(&model.Otp{}).Error
+	return dB.Where("email = ? AND code != ?", email, code).Delete(&Otp{}).Error
 }
 
 // Inserts OTP into the database
-func insertOTP(dB *gorm.DB, otp model.Otp) error {
+func insertOTP(dB *gorm.DB, otp Otp) error {
 	return dB.Create(&otp).Error
 }
 
 // Sends OTP to the user via email
-func sendOTP(emailer email.Emailer, otp model.Otp, name string) error {
+func sendOTP(emailer email.Emailer, otp Otp, name string) error {
 	verificationTemplate := emailTemplates.Verification([]string{otp.Email}, name, otp.Code)
 	return emailer.SendEmailTemplate(*verificationTemplate)
 }

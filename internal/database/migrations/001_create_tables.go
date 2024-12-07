@@ -1,14 +1,15 @@
 package migrations
 
 import (
-	"github.com/oyen-bright/goFundIt/internal/otp/model"
+	"github.com/oyen-bright/goFundIt/internal/otp"
 	"gorm.io/gorm"
 )
 
 func Migrate(db *gorm.DB) error {
 	// Applying migration
+
 	err := db.AutoMigrate(
-		&model.Otp{},
+		&otp.Otp{},
 	)
 	if err != nil {
 		return err
@@ -25,7 +26,7 @@ func ClearOtpTable(db *gorm.DB) error {
 }
 func DropOtpTable(db *gorm.DB) error {
 	// Dropping the otp table
-	err := db.Migrator().DropTable(&model.Otp{})
+	err := db.Migrator().DropTable(&otp.Otp{})
 	if err != nil {
 		return err
 	}

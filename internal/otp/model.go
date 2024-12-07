@@ -1,4 +1,4 @@
-package model
+package otp
 
 import (
 	"time"
