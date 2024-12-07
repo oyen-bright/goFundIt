@@ -1,41 +1,35 @@
 package email
 
 import (
-	"bytes"
-	"text/template"
+	"github.com/oyen-bright/goFundIt/config/providers"
+	"github.com/oyen-bright/goFundIt/pkg/email/models"
 )
 
-type Email struct {
-	Name    string
-	To      []string
-	Subject string
-	Body    string
+type EmailConfig struct {
+	From           string
+	Host           string
+	Port           int
+	Username       string
+	Password       string
+	SendGridAPIKey string
 }
 
-func (e Email) PrepareBody() string {
-	return "Subject: " + e.Subject + "\n\n" + e.Body
-
+type Emailer interface {
+	SendEmail(models.Email) error
+	SendEmailTemplate(models.EmailTemplate) error
 }
 
-type EmailTemplate struct {
-	To      []string
-	Name    string
-	Subject string
-	Path    string
-	Data    map[string]interface{}
-}
+func New(provider providers.EmailProvider, cfg EmailConfig) Emailer {
+	switch provider {
+	case providers.EmailSMTP:
+		return &smtpEmailer{
+			config: cfg,
+		}
 
-func (e *EmailTemplate) PrepareBody() (string, string, error) {
-	var body bytes.Buffer
-	headers := "MIME-version: 1.0;\nContent-Type: text/html; charset=\"UTF-8\";"
-
-	t, err := template.ParseFiles(e.Path)
-	if err != nil {
-		return "", "", err
+	default:
+		return &sendGridEmailer{
+			config: cfg,
+			key:    cfg.SendGridAPIKey,
+		}
 	}
-	err = t.Execute(&body, e.Data)
-	if err != nil {
-		return "", "", err
-	}
-	return "Subject:" + e.Subject + "\n" + headers + "\n\n" + body.String(), body.String(), nil
 }
