@@ -1,0 +1,21 @@
+POST http://localhost:8080/auth/
+Content-Type: application/json
+X-API-KEY:{{X_API_KEY}}
+
+{
+  "name":"Aha",
+  "email":"bright@krotrust.com"
+}
+
+
+###
+
+POST http://localhost:8080/auth/verify
+Content-Type: application/json
+X-API-KEY:{{X_API_KEY}}
+
+{
+  "email":"bright@krotrust.com",
+  "code":"JQFUXG",
+  "requestId": "97575"
+}
