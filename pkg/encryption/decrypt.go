@@ -9,6 +9,11 @@ import (
 
 func decryptData(data string, key string) (string, error) {
 
+	// Don't encrypt if the data is empty
+	if data == "" {
+		return "", nil
+	}
+
 	block, err := aes.NewCipher([]byte(key))
 	if err != nil {
 		return "", err

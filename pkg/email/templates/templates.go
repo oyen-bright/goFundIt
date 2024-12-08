@@ -20,6 +20,7 @@ func Verification(to []string, name, verificationCode string) *models.EmailTempl
 		Path:    generateFile("email_verification.html"),
 		Data: map[string]interface{}{
 			"verificationCode": verificationCode,
+			"name":             name,
 		},
 	}
 }
