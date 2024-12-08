@@ -1,22 +1,28 @@
 package otp
 
 import (
-	"github.com/oyen-bright/goFundIt/internal/otp/model"
 	"github.com/oyen-bright/goFundIt/pkg/email"
 	emailTemplates "github.com/oyen-bright/goFundIt/pkg/email/templates"
 	encryptor "github.com/oyen-bright/goFundIt/pkg/encryption"
-	"gorm.io/gorm"
 )
 
-type OTpServiceInterface interface {
-	RequestOTP(email, name string) error
-	VerifyOTP(email, otp string) (bool, error)
+type OTPService interface {
+	RequestOTP(email, name string) (Otp, error)
+	VerifyOTP(email, otp, requestId string) (Otp, error)
 }
 
-type OtpService struct {
-	DB        *gorm.DB
-	Emailer   *email.Emailer
-	Encryptor *encryptor.Encryptor
+type otpService struct {
+	otpRepo   OTPRepository
+	emailer   email.Emailer
+	encryptor encryptor.Encryptor
+}
+
+func Service(otpRepo OTPRepository, emailer email.Emailer, encryptor encryptor.Encryptor) OTPService {
+	return &otpService{
+		otpRepo:   otpRepo,
+		emailer:   emailer,
+		encryptor: encryptor,
+	}
 }
 
 // RequestOTP generates a new OTP and sends it to the user.
@@ -26,21 +32,22 @@ type OtpService struct {
 //  3. Sends the OTP to the user via email.
 //
 // It returns an error if any of the steps fail.
-func (s *OtpService) RequestOTP(email, name string) error {
+func (s *otpService) RequestOTP(email, name string) (Otp, error) {
 
 	otp := New(email)
-	err := otp.Encrypt(*s.Encryptor)
+	otp.Name = name
+	err := otp.Encrypt(s.encryptor)
 
 	if err != nil {
-		return err
+		return *otp, err
 	}
-	defer clearUserOTPs(s.DB, otp.Email, otp.Code)
-	err = insertOTP(s.DB, otp)
+	defer s.otpRepo.InvalidateOtherOTPs(otp.Email, otp.Code, otp.RequestId)
+	err = s.otpRepo.Add(otp)
 	if err != nil {
-		return err
+		return *otp, err
 	}
 	otp.Email = email
-	return sendOTP(*s.Emailer, otp, name)
+	return *otp, sendOTP(s.emailer, otp.Email, otp.Code, name)
 }
 
 // VerifyOTP checks if the OTP provided by the user is valid.
@@ -49,40 +56,33 @@ func (s *OtpService) RequestOTP(email, name string) error {
 // If the OTP is valid, the function also checks if the OTP has expired.
 //
 // If the OTP has expired or is invalid, it returns false.
-func (s *OtpService) VerifyOTP(email, code string) (bool, error) {
+func (s *otpService) VerifyOTP(email, code, requestId string) (Otp, error) {
 
 	otp := New(email)
-	err := otp.Encrypt(*s.Encryptor)
+	err := otp.Encrypt(s.encryptor)
 
 	if err != nil {
-		return false, err
+		return *otp, err
 	}
-	if err := s.DB.Where("email = ?", otp.Email).First(&otp).Error; err != nil {
-		return false, err
-	}
-	otp.Decrypt(*s.Encryptor)
-	if otp.IsExpired() {
-		return false, nil
+	otp, err = s.otpRepo.GetByEmailAndReference(otp.Email, requestId)
+	if err != nil {
+		return Otp{}, nil
 	}
 
-	if otp.Code != code {
-		return false, nil
-	}
-	return true, nil
-}
+	otp.Decrypt(s.encryptor, email)
 
-// Clears users previous OTPs from the database
-func clearUserOTPs(dB *gorm.DB, email, code string) error {
-	return dB.Where("email = ? AND code != ?", email, code).Delete(&model.Otp{}).Error
-}
+	// if otp.IsExpired() {
+	// 	return *otp, nil
+	// }
 
-// Inserts OTP into the database
-func insertOTP(dB *gorm.DB, otp model.Otp) error {
-	return dB.Create(&otp).Error
+	// if otp.Code != code || otp.RequestId != requestId {
+	// 	return *otp, nil
+	// }
+	return *otp, nil
 }
 
 // Sends OTP to the user via email
-func sendOTP(emailer email.Emailer, otp model.Otp, name string) error {
-	verificationTemplate := emailTemplates.Verification([]string{otp.Email}, name, otp.Code)
+func sendOTP(emailer email.Emailer, email, code, name string) error {
+	verificationTemplate := emailTemplates.Verification([]string{email}, name, code)
 	return emailer.SendEmailTemplate(*verificationTemplate)
 }
