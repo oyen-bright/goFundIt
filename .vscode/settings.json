@@ -4,6 +4,7 @@
     "Encryptor",
     "godotenv",
     "gomail",
+    "gonic",
     "gorm",
     "oyen",
     "sendgrid"

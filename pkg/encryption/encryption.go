@@ -2,6 +2,7 @@ package encryption
 
 import (
 	"errors"
+	"reflect"
 
 	"github.com/oyen-bright/goFundIt/pkg/encryption/model"
 )
@@ -29,24 +30,41 @@ func (e *Encryptor) Encrypt(data model.Data) (string, error) {
 	return encryptData(data.Data, encryptionKey)
 }
 
-func (e *Encryptor) EncryptT(email, data string) (string, error) {
-
-	modelData := model.Data{
-		Email: email,
-		Data:  data,
-	}
-	// Check if the secret key is missing
-	if len(e.Keys) == 0 {
-		return "", errors.New("missing secret key")
+func (e *Encryptor) EncryptStruct(data interface{}, key string) (interface{}, error) {
+	v := reflect.ValueOf(data)
+	if v.Kind() == reflect.Ptr {
+		v = v.Elem()
 	}
 
-	//Encrypt data with the last key in the slice
-	key := e.Keys[len(e.Keys)-1]
-	encryptionKey, err := modelData.GenerateEncryptionKey(key)
-	if err != nil {
-		return "", err
+	for i := 0; i < v.NumField(); i++ {
+		field := v.Field(i)
+		fieldType := v.Type().Field(i)
+
+		// Check if the field has the "encrypt" tag set to "true"
+		if tag, ok := fieldType.Tag.Lookup("encrypt"); ok && tag == "true" {
+
+			//prepare the data to be encrypted
+			modelData := model.Data{
+				Key:  key,
+				Data: field.Interface().(string),
+			}
+
+			// Encrypt the field value
+			encryptedData, err := e.Encrypt(modelData)
+			if err != nil {
+				return data, err
+			}
+
+			// Ensure the field is settable
+			if field.CanSet() && field.Kind() == reflect.String {
+				field.SetString(encryptedData)
+			} else {
+				return data, errors.New("field is not settable or not a string")
+			}
+		}
 	}
-	return encryptData(modelData.Data, encryptionKey)
+
+	return data, nil
 }
 
 func (e *Encryptor) Decrypt(data model.Data) (string, error) {
@@ -55,6 +73,7 @@ func (e *Encryptor) Decrypt(data model.Data) (string, error) {
 
 	// Reverse the slice
 	// Loop through the keys to find a match to decrypt the data
+
 	for index, key := range e.Keys {
 		encryptionKey, err := data.GenerateEncryptionKey(key)
 		if err != nil {
@@ -75,4 +94,58 @@ func (e *Encryptor) Decrypt(data model.Data) (string, error) {
 
 	}
 	return *plaintext, nil
+}
+
+func (e *Encryptor) DecryptStruct(data interface{}, key string) (interface{}, error) {
+	v := reflect.ValueOf(data)
+
+	if v.Kind() == reflect.Ptr {
+		v = v.Elem()
+	}
+
+	if v.Kind() != reflect.Struct {
+		return data, errors.New("input data is not a struct")
+	}
+
+	for i := 0; i < v.NumField(); i++ {
+		field := v.Field(i)
+		fieldType := v.Type().Field(i)
+
+		// Check if the field has the "encrypt" tag set to "true"
+		if tag, ok := fieldType.Tag.Lookup("encrypt"); ok && tag == "true" {
+			modelData := model.Data{
+				Key:  key,
+				Data: field.Interface().(string),
+			}
+
+			// Try to decrypt using available keys
+			var decryptErr error
+			for _, sKey := range e.Keys {
+				encryptionKey, err := modelData.GenerateEncryptionKey(sKey)
+				if err != nil {
+					decryptErr = err
+					continue
+				}
+
+				decryptedData, err := decryptData(modelData.Data, encryptionKey)
+				if err == nil {
+					if field.CanSet() && field.Kind() == reflect.String {
+						field.SetString(decryptedData)
+						decryptErr = nil
+						break
+					} else {
+						return data, errors.New("field is not settable or not a string")
+					}
+				} else {
+					decryptErr = err
+				}
+			}
+
+			if decryptErr != nil {
+				return data, decryptErr
+			}
+		}
+	}
+
+	return data, nil
 }

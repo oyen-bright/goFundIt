@@ -13,24 +13,22 @@ import (
 	"github.com/joho/godotenv"
 	"github.com/oyen-bright/goFundIt/config/environment"
 	"github.com/oyen-bright/goFundIt/config/providers"
+	"github.com/oyen-bright/goFundIt/pkg/email"
 )
 
 type AppConfig struct {
 	Environment      environment.Environment
 	EmailProvider    providers.EmailProvider
-	Port             int
-	EmailHost        string
-	EmailPort        int
-	EmailUsername    string
-	EmailPassword    string
-	EmailName        string
-	SendGridAPIKey   string
+	Port             string
+	EmailConfig      email.EmailConfig
 	EncryptionKey    []string
 	PostgresDB       string
 	PostgresUser     string
 	PostgresPassword string
 	PostgresHost     string
 	PostgresPort     int
+	XAPIKey          string
+	JWTSecret        string
 }
 
 var BaseDir string
@@ -72,40 +70,40 @@ func LoadConfig() (*AppConfig, error) {
 		return nil, err
 	}
 
-	port, err := strconv.Atoi(envData["PORT"])
-	if err != nil {
-		return nil, err
-	}
-
 	emailPort, err := strconv.Atoi(envData["EMAIL_PORT"])
 	if err != nil {
 		return nil, err
 	}
 
 	postgresPort, err := strconv.Atoi(envData["POSTGRES_PORT"])
-
 	if err != nil {
 		return nil, err
 	}
 
 	emailProvider.Email(envData["EMAIL_PROVIDER"])
 
+	emailConfig := email.EmailConfig{
+		Host:           envData["EMAIL_HOST"],
+		Port:           emailPort,
+		From:           envData["EMAIL_NAME"],
+		Username:       envData["EMAIL_USERNAME"],
+		Password:       envData["EMAIL_PASSWORD"],
+		SendGridAPIKey: envData["SENDGRID_API_KEY"],
+	}
+
 	return &AppConfig{
 		Environment:      environment,
-		Port:             port,
+		Port:             envData["PORT"],
 		EmailProvider:    emailProvider,
-		EmailHost:        envData["EMAIL_HOST"],
-		EmailPort:        emailPort,
-		EmailUsername:    envData["EMAIL_USERNAME"],
-		EmailPassword:    envData["EMAIL_PASSWORD"],
-		EmailName:        envData["EMAIL_NAME"],
-		SendGridAPIKey:   envData["SENDGRID_API_KEY"],
+		EmailConfig:      emailConfig,
 		EncryptionKey:    strings.Split(envData["ENCRYPTION_KEYS"], ","),
 		PostgresDB:       envData["POSTGRES_DB"],
 		PostgresUser:     envData["POSTGRES_USER"],
 		PostgresPassword: envData["POSTGRES_PASSWORD"],
 		PostgresHost:     envData["POSTGRES_HOST"],
 		PostgresPort:     postgresPort,
+		XAPIKey:          envData["X_API_KEY"],
+		JWTSecret:        envData["JWT_SECRET"],
 	}, nil
 }
 
@@ -126,7 +124,8 @@ func loadEnv(envPath string) (map[string]string, error) {
 	requiredEnvs := []string{
 		"PORT", "EMAIL_PROVIDER", "EMAIL_HOST", "EMAIL_PORT", "EMAIL_USERNAME",
 		"EMAIL_PASSWORD", "ENCRYPTION_KEYS", "POSTGRES_DB", "POSTGRES_USER",
-		"POSTGRES_PASSWORD", "POSTGRES_HOST", "POSTGRES_PORT",
+		"POSTGRES_PASSWORD", "POSTGRES_HOST", "POSTGRES_PORT", "X_API_KEY",
+		"JWT_SECRET",
 	}
 
 	err := godotenv.Load(envPath)

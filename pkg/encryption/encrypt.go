@@ -10,6 +10,12 @@ import (
 // TODO: reduce the size of the encrypted data
 // TODO: consider using a different encryption algorithm or different nonce for each data
 func encryptData(data string, key string) (string, error) {
+
+	// Don't encrypt if the data is empty
+	if data == "" {
+		return "", nil
+	}
+
 	block, err := aes.NewCipher([]byte(key))
 	if err != nil {
 		return "", err
