@@ -6,6 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/oyen-bright/goFundIt/config"
 	"github.com/oyen-bright/goFundIt/config/providers"
+	"github.com/oyen-bright/goFundIt/internal/activity"
 	"github.com/oyen-bright/goFundIt/internal/auth"
 	"github.com/oyen-bright/goFundIt/internal/campaign"
 	"github.com/oyen-bright/goFundIt/internal/contributor"
@@ -49,7 +50,7 @@ func main() {
 	router := gin.Default()
 
 	// Register general middlewares
-	router.Use(middlewares.APIKeyAuthMiddleware(cfg.XAPIKey))
+	router.Use(middlewares.APIKey(cfg.XAPIKey))
 
 	// Initialize encryption and email services
 	encryptor := encryption.New(cfg.EncryptionKey)
@@ -63,21 +64,24 @@ func main() {
 	otpRepo := otp.Repository(db)
 	campaignRepo := campaign.Repository(db)
 	contributionRepo := contributor.Repository(db)
+	activityRepo := activity.Repository(db)
 
 	// Create service instances
 	otpService := otp.Service(otpRepo, emailer, *encryptor, logger)
 	contributionService := contributor.Service(contributionRepo, logger)
 	authService := auth.Service(authRepo, otpService, *encryptor, jwt, logger)
 	campaignService := campaign.Service(campaignRepo, contributionService, authService, logger)
+	activityService := activity.Service(activityRepo, authService, campaignService, logger)
 
 	// Create handler instances
 	authHandler := auth.Handler(authService)
 	campaignHandler := campaign.Handler(campaignService)
+	activityHandler := activity.Handler(activityService)
 
 	// Register routes
 	authHandler.RegisterRoutes(router.Group("/auth"), []gin.HandlerFunc{})
-	campaignHandler.RegisterRoutes(router.Group("/campaign"), []gin.HandlerFunc{middlewares.AuthMiddleware(jwt)})
-
+	campaignHandler.RegisterRoutes(router.Group("/campaign"), []gin.HandlerFunc{middlewares.Auth(jwt), middlewares.CampaignKey()})
+	activityHandler.RegisterRoutes(router.Group("/activity"), []gin.HandlerFunc{middlewares.Auth(jwt), middlewares.CampaignKey()})
 	// Start the server on the specified port
 	router.Run(cfg.Port)
 }

@@ -8,7 +8,7 @@ import (
 	"github.com/oyen-bright/goFundIt/internal/utils/jwt"
 )
 
-func AuthMiddleware(jwt jwt.Jwt) gin.HandlerFunc {
+func Auth(jwt jwt.Jwt) gin.HandlerFunc {
 	return func(c *gin.Context) {
 
 		authHeader := c.GetHeader("Authorization")

@@ -1,20 +1,20 @@
 package campaign
 
-import (
-	"net/http"
+// import (
+// 	"net/http"
 
-	"github.com/gin-gonic/gin"
-)
+// 	"github.com/gin-gonic/gin"
+// )
 
-func CheckCampaignKey() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		campaignKey := c.GetHeader("Campaign-Key")
+// func CheckCampaignKey() gin.HandlerFunc {
+// 	return func(c *gin.Context) {
+// 		campaignKey := c.GetHeader("Campaign-Key")
 
-		if campaignKey == "" {
-			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": "Unauthorized"})
-			return
-		}
+// 		if campaignKey == "" {
+// 			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": "Unauthorized"})
+// 			return
+// 		}
 
-		c.Next()
-	}
-}
+// 		c.Next()
+// 	}
+// }

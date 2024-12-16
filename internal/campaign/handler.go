@@ -26,10 +26,11 @@ func Handler(service CampaignService) interfaces.HandlerInterface {
 //   - GET /:id: Retrieves a specific campaign by ID.
 //   - PATCH /:id: Updates a specific campaign by ID.
 func (c *campaignHandler) RegisterRoutes(campaignRoute *gin.RouterGroup, middlewares []gin.HandlerFunc) {
-	campaignRoute.Use(middlewares...)
+	campaignRoute.Use(middlewares[0])
 	campaignRoute.POST("/create", c.handleCreateCampaign)
+
 	protectedCampaignRoute := campaignRoute.Group("/")
-	protectedCampaignRoute.Use(CheckCampaignKey())
+	protectedCampaignRoute.Use(middlewares[1])
 	protectedCampaignRoute.GET("/", c.handleGetCampaigns)
 	protectedCampaignRoute.GET("/:id", c.handleGetCampaigns)
 	protectedCampaignRoute.PATCH("/:id", c.handleUpdateCampaign)
@@ -41,7 +42,7 @@ func (c *campaignHandler) RegisterRoutes(campaignRoute *gin.RouterGroup, middlew
 //   - Title: required, string
 //   - Description: optional, string
 //   - Images: []{imageUrl: required, url}
-//   - Activities: []{title: required, string, subtitle: optional, string, imageUrl: optional, string, isMandatory: required, bool, isApproved: required, bool}
+//   - Activities: []{title: required, string, subtitle: optional, string, imageUrl: optional, string, isMandatory: optional, bool}
 //   - TargetAmount: required, number
 //   - StartDate: required, date
 //   - EndDate: required, date
@@ -68,7 +69,7 @@ func (c *campaignHandler) handleCreateCampaign(context *gin.Context) {
 		response.FromError(context, err)
 		return
 	}
-	response.Success(context, "Campaigns Created successfully", campaign.ToJSON())
+	response.Success(context, "Campaigns created successfully", campaign.ToJSON())
 
 }
 

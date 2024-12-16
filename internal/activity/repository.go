@@ -6,7 +6,7 @@ import (
 )
 
 type ActivityRepository interface {
-	Create(activity *Activity) error
+	Create(activity *Activity) (Activity, error)
 	Update(activity *Activity) error
 	Delete(activity *Activity) error
 	GetActivitiesByCampaignID(campaignID string) ([]Activity, error)
@@ -22,8 +22,9 @@ func Repository(db *gorm.DB) ActivityRepository {
 	return &activityRepository{db: db}
 }
 
-func (r *activityRepository) Create(activity *Activity) error {
-	return r.db.Create(activity).Error
+func (r *activityRepository) Create(activity *Activity) (Activity, error) {
+	err := r.db.Create(activity).Error
+	return *activity, err
 }
 
 func (r *activityRepository) Update(activity *Activity) error {

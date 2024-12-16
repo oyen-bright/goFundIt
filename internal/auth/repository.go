@@ -3,7 +3,6 @@ package auth
 import (
 	"log"
 
-	"github.com/oyen-bright/goFundIt/pkg/errs"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )
@@ -13,7 +12,6 @@ type AuthRepository interface {
 	createMultiple(users []User) ([]User, error)
 	delete(user *User) error
 
-	FindByEmail(email string, preload bool) (*User, errs.DB)
 	FindByHandle(handle string) (*User, error)
 	FindNonExistingUsers(users []User) ([]User, error)
 }
@@ -51,19 +49,7 @@ func (r *authRepository) delete(user *User) error {
 	return r.db.Create(user).Error
 }
 
-// ----------------------------------------------------------------------
-func (r *authRepository) FindByEmail(email string, preload bool) (*User, errs.DB) {
-	var user User
-	query := r.db.Where("email = ?", email)
-	if preload {
-		query = query.Preload("Contributions")
-	}
-	err := query.First(&user).Error
-	if err != nil {
-		return nil, errs.NewDB(err)
-	}
-	return &user, nil
-}
+// ---------------------------------------------------------------------
 
 func (r *authRepository) FindByHandle(handle string) (*User, error) {
 	var user User

@@ -10,12 +10,11 @@ import (
 )
 
 type CampaignService interface {
-	//  creates a new campaign for a user.
 	CreateCampaign(campaign Campaign, userHandle string) (Campaign, error)
+	GetCampaignByID(id string) (*Campaign, error)
 
 	userCanCreateCampaign(userHandle string) error
 	emailsCanContribute(contributorsEmail []string) ([]string, error)
-	// GetCampaignByID(id string) (Campaign, error)
 	// UpdateCampaign(campaign Campaign) (Campaign, error)
 	// DeleteCampaign(campaignID string) error
 	// JoinCampaign(userID uint, campaignID string) error
@@ -84,7 +83,18 @@ func (s *campaignService) CreateCampaign(campaign Campaign, userHandle string) (
 	}
 
 	return campaign, nil
+}
 
+// GetCampaignByID fetches campaign by id is not found returns err
+func (s *campaignService) GetCampaignByID(id string) (*Campaign, error) {
+	campaign, err := s.repo.GetByID(id, true)
+	if err != nil {
+		if errs.NewDB(err).IsNotfound() {
+			return nil, errs.BadRequest("Campaign does not exist", nil)
+		}
+		return nil, errs.InternalServerError(err).Log(s.logger)
+	}
+	return &campaign, nil
 }
 
 // userCanCreateCampaign checks if a user is allowed to create a campaign.
