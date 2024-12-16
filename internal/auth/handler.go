@@ -1,8 +1,6 @@
 package auth
 
 import (
-	"net/http"
-
 	"github.com/gin-gonic/gin"
 	"github.com/oyen-bright/goFundIt/internal/interfaces"
 	"github.com/oyen-bright/goFundIt/internal/otp"
@@ -10,14 +8,12 @@ import (
 )
 
 type authHandler struct {
-	otpService  otp.OTPService
-	authService AuthService
+	service AuthService
 }
 
-func Handler(otpService otp.OTPService, authService AuthService) interfaces.HandlerInterface {
+func Handler(service AuthService) interfaces.HandlerInterface {
 	return &authHandler{
-		otpService:  otpService,
-		authService: authService,
+		service: service,
 	}
 }
 
@@ -38,14 +34,18 @@ func (a *authHandler) RegisterRoutes(authRoute *gin.RouterGroup, middlewares []g
 
 func (a *authHandler) handleAuth(context *gin.Context) {
 	var user User
+
+	//Validate Request
+	//Email- required, email
+	//Name- optional, string
 	if err := context.BindJSON(&user); err != nil {
-		response.BadRequest(context, err.Error())
+		response.BadRequest(context, "Invalid inputs, please check and try again", response.ExtractValidationErrors(err))
 		return
 	}
 
-	otp, err := a.otpService.RequestOTP(user.Email, user.Name)
+	otp, err := a.service.RequestAuth(user.Email, user.Name)
 	if err != nil {
-		response.InternalServerError(context)
+		response.FromError(context, err)
 		return
 	}
 
@@ -53,37 +53,22 @@ func (a *authHandler) handleAuth(context *gin.Context) {
 
 }
 
-// TODO: delete otp after verification
 func (a *authHandler) handleVerifyAuth(context *gin.Context) {
 	var _otp otp.Otp
+
+	//Validate Request
+	//Email- required, email
+	//Code- required, string
+	//RequestId- required, string
 	if err := context.BindJSON(&_otp); err != nil {
-		response.BadRequest(context, err.Error())
+		response.BadRequest(context, "Invalid inputs, please check and try again", response.ExtractValidationErrors(err))
 		return
 	}
 
-	_otp, err := a.otpService.VerifyOTP(_otp.Email, _otp.Code, _otp.RequestId)
+	//Verify Auth
+	token, err := a.service.VerifyAuth(_otp.Email, _otp.Code, _otp.RequestId)
 	if err != nil {
-		response.InternalServerError(context)
-		return
-	}
-
-	isVerified := _otp != (otp.Otp{})
-
-	if !isVerified || _otp.IsExpired() {
-		response.DefaultResponse(context, http.StatusNotFound, "Invalid OTP", nil)
-		return
-	}
-
-	newUser := New(_otp.Name, _otp.Email, true)
-	err = a.authService.CreateUser(*newUser)
-	if err != nil {
-		response.InternalServerError(context)
-		return
-	}
-
-	token, err := a.authService.GenerateToken(*newUser)
-	if err != nil {
-		response.InternalServerError(context)
+		response.FromError(context, err)
 		return
 	}
 

@@ -15,7 +15,7 @@ const OTP_LENGTH = 6
 
 type Otp struct {
 	ID        uint      `gorm:"primaryKey"`
-	Email     string    `gorm:"index;not null" encrypt:"true" binding:"required"`
+	Email     string    `gorm:"index;not null" encrypt:"true" binding:"required,email"`
 	Code      string    `gorm:"not null"`
 	Name      string    `encrypt:"true"`
 	RequestId string    `gorm:"not null"`
@@ -36,26 +36,30 @@ func (o *Otp) ToJSON() map[string]interface{} {
 }
 
 func (o *Otp) Encrypt(e encryption.Encryptor) error {
-	encrypted, err := e.EncryptStruct(o, o.Email)
-	if err != nil {
-		return err
-	}
-	if otp, ok := encrypted.(*Otp); ok {
-		*o = *otp
-	}
-	return err
+	//TODO:disabled for now for faster dev
+	return nil
+	// encrypted, err := e.EncryptStruct(o, o.Email)
+	// if err != nil {
+	// 	return err
+	// }
+	// if otp, ok := encrypted.(*Otp); ok {
+	// 	*o = *otp
+	// }
+	// return err
 
 }
 
 func (o *Otp) Decrypt(e encryption.Encryptor, key string) error {
-	encrypted, err := e.DecryptStruct(o, key)
-	if err != nil {
-		return err
-	}
-	if otp, ok := encrypted.(*Otp); ok {
-		*o = *otp
-	}
-	return err
+	//TODO:disabled for now for faster dev
+	return nil
+	// encrypted, err := e.DecryptStruct(o, key)
+	// if err != nil {
+	// 	return err
+	// }
+	// if otp, ok := encrypted.(*Otp); ok {
+	// 	*o = *otp
+	// }
+	// return err
 }
 
 func New(email string) *Otp {

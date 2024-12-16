@@ -1,8 +1,6 @@
 package jwt
 
 import (
-	"crypto/sha256"
-	"encoding/hex"
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
@@ -33,8 +31,8 @@ func (j jwtCfg) GenerateToken(id uint, email, handle string) (string, error) {
 	expirationTime := time.Now().Add(24 * time.Hour) // Token expires after 24 hours
 	claims := &Claims{
 		Id:     id,
-		Email:  hashString(email),
-		Handle: hashString(handle),
+		Email:  email,
+		Handle: handle,
 		StandardClaims: jwt.StandardClaims{
 			ExpiresAt: expirationTime.Unix(),
 		},
@@ -55,11 +53,6 @@ func (j jwtCfg) ValidateToken(tokenString string) (*Claims, error) {
 	if !token.Valid {
 		return nil, jwt.ErrSignatureInvalid
 	}
-	return claims, nil
-}
 
-// hashString hashes a string using SHA-256.
-func hashString(s string) string {
-	hash := sha256.Sum256([]byte(s))
-	return hex.EncodeToString(hash[:])
+	return claims, nil
 }

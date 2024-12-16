@@ -1,9 +1,13 @@
 package otp
 
 import (
+	"net/http"
+
 	"github.com/oyen-bright/goFundIt/pkg/email"
 	emailTemplates "github.com/oyen-bright/goFundIt/pkg/email/templates"
 	encryptor "github.com/oyen-bright/goFundIt/pkg/encryption"
+	"github.com/oyen-bright/goFundIt/pkg/errs"
+	"github.com/oyen-bright/goFundIt/pkg/logger"
 )
 
 type OTPService interface {
@@ -15,12 +19,14 @@ type otpService struct {
 	otpRepo   OTPRepository
 	emailer   email.Emailer
 	encryptor encryptor.Encryptor
+	logger    logger.Logger
 }
 
-func Service(otpRepo OTPRepository, emailer email.Emailer, encryptor encryptor.Encryptor) OTPService {
+func Service(otpRepo OTPRepository, emailer email.Emailer, encryptor encryptor.Encryptor, logger logger.Logger) OTPService {
 	return &otpService{
 		otpRepo:   otpRepo,
 		emailer:   emailer,
+		logger:    logger,
 		encryptor: encryptor,
 	}
 }
@@ -39,7 +45,7 @@ func (s *otpService) RequestOTP(email, name string) (Otp, error) {
 	err := otp.Encrypt(s.encryptor)
 
 	if err != nil {
-		return *otp, err
+		return *otp, errs.InternalServerError(err).Log(s.logger)
 	}
 	defer s.otpRepo.InvalidateOtherOTPs(otp.Email, otp.Code, otp.RequestId)
 	err = s.otpRepo.Add(otp)
@@ -47,7 +53,12 @@ func (s *otpService) RequestOTP(email, name string) (Otp, error) {
 		return *otp, err
 	}
 	otp.Email = email
-	return *otp, sendOTP(s.emailer, otp.Email, otp.Code, name)
+
+	if err = sendOTP(s.emailer, otp.Email, otp.Code, name); err != nil {
+		return *otp, errs.InternalServerError(err).Log(s.logger)
+	}
+
+	return *otp, nil
 }
 
 // VerifyOTP checks if the OTP provided by the user is valid.
@@ -62,22 +73,25 @@ func (s *otpService) VerifyOTP(email, code, requestId string) (Otp, error) {
 	err := otp.Encrypt(s.encryptor)
 
 	if err != nil {
-		return *otp, err
+		return *otp, errs.InternalServerError(err).Log(s.logger)
 	}
 	otp, err = s.otpRepo.GetByEmailAndReference(otp.Email, requestId)
 	if err != nil {
-		return Otp{}, nil
+		return Otp{}, errs.New("Invalid OTP", http.StatusNotFound)
 	}
 
-	otp.Decrypt(s.encryptor, email)
+	if err = otp.Decrypt(s.encryptor, email); err != nil {
+		return *otp, errs.InternalServerError(err).Log(s.logger)
+	}
 
-	// if otp.IsExpired() {
-	// 	return *otp, nil
-	// }
+	if otp.IsExpired() {
+		return *otp, errs.New("OTP has expired", http.StatusBadRequest)
+	}
 
-	// if otp.Code != code || otp.RequestId != requestId {
-	// 	return *otp, nil
-	// }
+	if otp.Code != code || otp.RequestId != requestId {
+		return *otp, errs.New("Invalid OTP", http.StatusBadRequest)
+	}
+	defer s.otpRepo.Delete(otp)
 	return *otp, nil
 }
 

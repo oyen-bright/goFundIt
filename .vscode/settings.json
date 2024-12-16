@@ -6,8 +6,10 @@
     "gomail",
     "gonic",
     "gorm",
+    "minlength",
     "oyen",
-    "sendgrid"
+    "sendgrid",
+    "varchar"
   ],
   "sqltools.connections": [
     {

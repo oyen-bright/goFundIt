@@ -8,6 +8,7 @@ type OTPRepository interface {
 	GetByEmailAndReference(email, requestId string) (*Otp, error)
 	Add(otp *Otp) error
 	InvalidateOtherOTPs(email, code, requestId string) error
+	Delete(otp *Otp) error
 }
 
 type otpRepository struct {
@@ -28,6 +29,10 @@ func (r *otpRepository) GetByEmailAndReference(email, requestId string) (*Otp, e
 
 func (r *otpRepository) Add(otp *Otp) error {
 	return r.db.Create(otp).Error
+}
+
+func (r *otpRepository) Delete(otp *Otp) error {
+	return r.db.Delete(otp).Error
 }
 
 func (r *otpRepository) InvalidateOtherOTPs(email, code, requestId string) error {

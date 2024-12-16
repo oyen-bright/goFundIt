@@ -18,38 +18,19 @@ type response struct {
 	Errors  interface{} `json:"errors,omitempty"`
 }
 
-func DefaultResponse(c *gin.Context, statusCode int, message string, data interface{}) {
+func DefaultResponse(c *gin.Context, statusCode int, message string, data interface{}, err interface{}) {
 	c.JSON(statusCode, response{
 		Status:  http.StatusText(statusCode),
 		Message: message,
 		Data:    data,
+		Errors:  err,
 	})
 }
 
-// TODO: Implement better error handling for bad request responses when fields fail validation.
-func BadRequest(c *gin.Context, message ...string) {
-	msg := "Internal Server Error"
-	if len(message) > 0 {
-		msg = message[0]
-	}
-	DefaultResponse(c, http.StatusBadRequest, msg, nil)
-}
-
-func Unauthorized(c *gin.Context, message string) {
-	if message == "" {
-		message = "Unauthorized"
-	}
-	DefaultResponse(c, http.StatusUnauthorized, message, nil)
-}
-
-func InternalServerError(c *gin.Context, message ...string) {
-	msg := "Internal Server Error"
-	if len(message) > 0 {
-		msg = message[0]
-	}
-	DefaultResponse(c, http.StatusInternalServerError, msg, nil)
-}
-
 func Success(c *gin.Context, message string, data interface{}) {
-	DefaultResponse(c, http.StatusOK, message, data)
+	DefaultResponse(c, http.StatusOK, message, data, nil)
+}
+
+func Created(c *gin.Context, message string, data interface{}) {
+	DefaultResponse(c, http.StatusCreated, message, data, nil)
 }
