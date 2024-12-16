@@ -19,7 +19,7 @@ type campaignRepository struct {
 	db *gorm.DB
 }
 
-func NewRepository(db *gorm.DB) CampaignRepository {
+func Repository(db *gorm.DB) CampaignRepository {
 	return &campaignRepository{db: db}
 }
 

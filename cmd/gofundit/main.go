@@ -38,7 +38,6 @@ func initialize() (*config.AppConfig, *gorm.DB) {
 
 func main() {
 
-	testCamaping()
 	//Initialize the logger
 	logger := logger.New()
 
@@ -81,10 +80,4 @@ func main() {
 
 	// Start the server on the specified port
 	router.Run(cfg.Port)
-}
-
-func testCamaping() {
-
-	fmt.Println(campaign.NewDummyCampaign().ToJSON())
-
 }
