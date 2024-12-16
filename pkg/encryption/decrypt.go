@@ -44,3 +44,27 @@ func decryptData(data string, key string) (string, error) {
 	return string(plaintext), nil
 
 }
+
+// func DecryptDataM(encryptedData, secretKey, email string) (string, error) {
+// 	// Decode the hex-encoded encrypted data
+// 	encryptedBytes, err := hex.DecodeString(encryptedData)
+// 	if err != nil {
+// 		return "", err
+// 	}
+
+// 	// Derive the hash from the given email + secret key
+// 	emailHash := deriveHash(email, secretKey)
+
+// 	// XOR the encrypted data with the hash to decrypt
+// 	decrypted := xorData(encryptedBytes, []byte(emailHash))
+
+// 	return string(decrypted), nil
+// }
+
+// // deriveHash generates a hash for a single email + the secret key
+// func deriveHash(email, secretKey string) string {
+// 	hash := sha256.New()
+// 	hash.Write([]byte(email))
+// 	hash.Write([]byte(secretKey))
+// 	return hex.EncodeToString(hash.Sum(nil))
+// }
