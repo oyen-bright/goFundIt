@@ -17,7 +17,7 @@ var encryptor *encryption.Encryptor
 func mockConfig() *config.AppConfig {
 	return &config.AppConfig{
 		Environment:   environment.Development,
-		Port:          ":8080",
+		ServerPort:    ":8080",
 		EmailProvider: providers.EmailSMTP,
 		EncryptionKey: []string{"test-key"},
 	}

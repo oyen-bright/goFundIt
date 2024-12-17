@@ -1,4 +1,4 @@
-package errs
+package database
 
 import (
 	"errors"
@@ -6,7 +6,7 @@ import (
 	"gorm.io/gorm"
 )
 
-type DB interface {
+type DBError interface {
 	error
 	Is(err error) bool
 	IsNotfound() bool
@@ -38,6 +38,6 @@ func (e *WrapError) IsPrimaryKeyViolated() bool {
 	return errors.Is(e.err, gorm.ErrDuplicatedKey)
 }
 
-func NewDB(err error) DB {
+func Error(err error) DBError {
 	return &WrapError{err: err}
 }
