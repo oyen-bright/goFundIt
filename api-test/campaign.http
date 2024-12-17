@@ -2,7 +2,7 @@
 POST http://localhost:8080/campaign/create
 Content-Type: application/json
 X-API-KEY:{{X_API_KEY}}
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MCwiZW1haWwiOiJicmlnaHRAa3JvdHJ1c3QuY29tIiwiaGFuZGxlIjoiQlJGVlpQIiwiZXhwIjoxNzM0NDM2NDc5fQ.nTnDlvKrILN5xachXYGMnJPlI9e9MYAUZ960cb5NpGY
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MCwiZW1haWwiOiJicmlnaHRAa3JvdHJ1c3QuY29tIiwiaGFuZGxlIjoiQlJXUFlZIiwiZXhwIjoxNzM0NTIyNTM2fQ.fEr13DP_NFrc0Ab5BbGMe2Kqd1R814mbDbhohqFJv7g
 
 
 {
@@ -16,8 +16,8 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MCwiZW1haWwiO
     {"title":"Wildlife Protection", "cost":3000, "IsMandatory":false, "isApproved":true}
   ],
   "Contributors":[
-   {"amount":1000, "email":"bright@krotrust.com" }
-  #  {"amount":500, "email":"supporter@example.com" }
+   {"amount":500, "email":"bright@krotrust.com" },
+   {"amount":500, "email":"supporter@example.com" }
   ],
   "targetAmount":1000, 
   "StartDate": "2025-01-01T00:00:00Z",
