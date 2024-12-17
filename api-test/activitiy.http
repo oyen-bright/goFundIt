@@ -1,0 +1,56 @@
+
+
+
+POST http://localhost:8080/activity/SAHTLBZHB/new
+Content-Type: application/json
+X-API-KEY:{{X_API_KEY}}
+Campaign-Key: SAHTLBZHB
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MCwiZW1haWwiOiJicmlnaHRAa3JvdHJ1c3QuY29tIiwiaGFuZGxlIjoiQlJXUFlZIiwiZXhwIjoxNzM0NTIyNTM2fQ.fEr13DP_NFrc0Ab5BbGMe2Kqd1R814mbDbhohqFJv7g
+
+{
+  "title":"Save the Rainforest 33",
+  "cost":1000,
+  "isMandatory":true
+}
+
+###
+
+PATCH  http://localhost:8080/activity/SAHTLBZHB/1
+Content-Type: application/json
+X-API-KEY:{{X_API_KEY}}
+Campaign-Key: SAHTLBZHB
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MCwiZW1haWwiOiJicmlnaHRAa3JvdHJ1c3QuY29tIiwiaGFuZGxlIjoiQlJXUFlZIiwiZXhwIjoxNzM0NTIyNTM2fQ.fEr13DP_NFrc0Ab5BbGMe2Kqd1R814mbDbhohqFJv7g
+
+{
+  "title":"Updated the activity",
+  "cost":5000
+}
+
+
+
+###
+
+GET http://localhost:8080/activity/SAHTLBZHB
+Content-Type: application/json
+X-API-KEY:{{X_API_KEY}}
+Campaign-Key: SAHTLBZHB
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MCwiZW1haWwiOiJicmlnaHRAa3JvdHJ1c3QuY29tIiwiaGFuZGxlIjoiQlJXUFlZIiwiZXhwIjoxNzM0NTIyNTM2fQ.fEr13DP_NFrc0Ab5BbGMe2Kqd1R814mbDbhohqFJv7g
+
+
+
+###
+
+GET http://localhost:8080/activity/SAHTLBZHB/er
+Content-Type: application/json
+X-API-KEY:{{X_API_KEY}}
+Campaign-Key: SAHTLBZHB
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MCwiZW1haWwiOiJicmlnaHRAa3JvdHJ1c3QuY29tIiwiaGFuZGxlIjoiQlJXUFlZIiwiZXhwIjoxNzM0NTIyNTM2fQ.fEr13DP_NFrc0Ab5BbGMe2Kqd1R814mbDbhohqFJv7g
+
+
+###
+DELETE  http://localhost:8080/activity/SAHTLBZHB/3
+Content-Type: application/json
+X-API-KEY:{{X_API_KEY}}
+Campaign-Key: SAHTLBZHB
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MCwiZW1haWwiOiJicmlnaHRAa3JvdHJ1c3QuY29tIiwiaGFuZGxlIjoiQlJXUFlZIiwiZXhwIjoxNzM0NTIyNTM2fQ.fEr13DP_NFrc0Ab5BbGMe2Kqd1R814mbDbhohqFJv7g
+
