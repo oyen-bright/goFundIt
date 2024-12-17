@@ -1,40 +1,50 @@
+### Environment Variables
+@baseUrl = {{baseUrl}}
+@authToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MCwiZW1haWwiOiJicmlnaHRAa3JvdHJ1c3QuY29tIiwiaGFuZGxlIjoiQlJXUFlZIiwiZXhwIjoxNzM0NTIyNTM2fQ.fEr13DP_NFrc0Ab5BbGMe2Kqd1R814mbDbhohqFJv7g
 
-POST http://localhost:8080/campaign/create
-Content-Type: application/json
-X-API-KEY:{{X_API_KEY}}
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MCwiZW1haWwiOiJicmlnaHRAa3JvdHJ1c3QuY29tIiwiaGFuZGxlIjoiQlJXUFlZIiwiZXhwIjoxNzM0NTIyNTM2fQ.fEr13DP_NFrc0Ab5BbGMe2Kqd1R814mbDbhohqFJv7g
+### Common Headers
+@contentType = application/json
+@apiKey = {{X_API_KEY}}
 
-
-{
-  "title":"Save the Rainforest",
-  "description":"Join us in our mission to protect and preserve the rainforest. Your contributions will help fund conservation efforts, support local communities, and promote sustainable practices.",
-  "images":[
-    {"ImageUrl":"https://example.com/rainforest.jpg"}
-  ],
-  "Activities":[
-    {"title":"Tree Planting", "cost":5000, "IsMandatory":true, "isApproved":true},
-    {"title":"Wildlife Protection", "cost":3000, "IsMandatory":false, "isApproved":true}
-  ],
-  "Contributors":[
-   {"amount":500, "email":"bright@krotrust.com" },
-   {"amount":500, "email":"supporter@example.com" }
-  ],
-  "targetAmount":1000, 
-  "StartDate": "2025-01-01T00:00:00Z",
-  "EndDate": "2025-12-31T23:59:59Z"
-}
-
-
-###
-
-GET http://localhost:8080/campaign/d32339
-Content-Type: application/json
-X-API-KEY:{{X_API_KEY}}
-Campaign-Key: d32339
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MCwiZW1haWwiOiJicmlnaHRAa3JvdHJ1c3QuY29tIiwiaGFuZGxlIjoiQlJUQVpYIiwiZXhwIjoxNzM0NDM0MjAyfQ.aYBt4Md2PcnY6iX_HpoCiStnbApZKISFMFfy_6ZVlVk
+### Create New Campaign
+POST {{baseUrl}}/campaign/create
+Content-Type: {{contentType}}
+X-API-KEY: {{apiKey}}
+Authorization: Bearer {{authToken}}
 
 {
-  "name":"Aha",
-  "email":"bright@krotrust.com"
+    "title": "Save the Rainforest",
+    "description": "Join us in our mission to protect and preserve the rainforest. Your contributions will help fund conservation efforts, support local communities, and promote sustainable practices.",
+    "images": [
+        {
+            "ImageUrl": "https://example.com/rainforest.jpg"
+        }
+    ],
+    "Activities": [
+        {
+            "title": "Tree Planting",
+            "cost": 5000,
+            "IsMandatory": true,
+            "isApproved": true
+        },
+        {
+            "title": "Wildlife Protection",
+            "cost": 3000,
+            "IsMandatory": false,
+            "isApproved": true
+        }
+    ],
+    "Contributors": [
+        {
+            "amount": 500,
+            "email": "bright@krotrust.com"
+        },
+        {
+            "amount": 500,
+            "email": "supporter@example.com"
+        }
+    ],
+    "targetAmount": 1000,
+    "StartDate": "2025-01-01T00:00:00Z",
+    "EndDate": "2025-12-31T23:59:59Z"
 }
-

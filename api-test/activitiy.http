@@ -1,56 +1,57 @@
+### Environment Variables
+@baseUrl = {{baseUrl}}
+@campaignId = SAHTLBZHB
+@authToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MCwiZW1haWwiOiJicmlnaHRAa3JvdHJ1c3QuY29tIiwiaGFuZGxlIjoiQlJXUFlZIiwiZXhwIjoxNzM0NTIyNTM2fQ.fEr13DP_NFrc0Ab5BbGMe2Kqd1R814mbDbhohqFJv7g
 
+### Common Headers
+@contentType = application/json
+@apiKey = {{X_API_KEY}}
 
-
-POST http://localhost:8080/activity/SAHTLBZHB/new
-Content-Type: application/json
-X-API-KEY:{{X_API_KEY}}
-Campaign-Key: SAHTLBZHB
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MCwiZW1haWwiOiJicmlnaHRAa3JvdHJ1c3QuY29tIiwiaGFuZGxlIjoiQlJXUFlZIiwiZXhwIjoxNzM0NTIyNTM2fQ.fEr13DP_NFrc0Ab5BbGMe2Kqd1R814mbDbhohqFJv7g
-
-{
-  "title":"Save the Rainforest 33",
-  "cost":1000,
-  "isMandatory":true
-}
-
-###
-
-PATCH  http://localhost:8080/activity/SAHTLBZHB/1
-Content-Type: application/json
-X-API-KEY:{{X_API_KEY}}
-Campaign-Key: SAHTLBZHB
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MCwiZW1haWwiOiJicmlnaHRAa3JvdHJ1c3QuY29tIiwiaGFuZGxlIjoiQlJXUFlZIiwiZXhwIjoxNzM0NTIyNTM2fQ.fEr13DP_NFrc0Ab5BbGMe2Kqd1R814mbDbhohqFJv7g
+### Create New Activity
+POST {{baseUrl}}/activity/{{campaignId}}/new
+Content-Type: {{contentType}}
+X-API-KEY: {{apiKey}}
+Campaign-Key: {{campaignId}}
+Authorization: Bearer {{authToken}}
 
 {
-  "title":"Updated the activity",
-  "cost":5000
+    "title": "Save the Rainforest 33",
+    "cost": 1000,
+    "isMandatory": true
 }
 
+### Update Activity
+PATCH {{baseUrl}}/activity/{{campaignId}}/1
+Content-Type: {{contentType}}
+X-API-KEY: {{apiKey}}
+Campaign-Key: {{campaignId}}
+Authorization: Bearer {{authToken}}
+
+{
+    "title": "Updated the activity",
+    "cost": 5000
+}
+
+### Get All Activities for Campaign
+GET {{baseUrl}}/activity/{{campaignId}}
+Content-Type: {{contentType}}
+X-API-KEY: {{apiKey}}
+Campaign-Key: {{campaignId}}
+Authorization: Bearer {{authToken}}
 
 
-###
-
-GET http://localhost:8080/activity/SAHTLBZHB
-Content-Type: application/json
-X-API-KEY:{{X_API_KEY}}
-Campaign-Key: SAHTLBZHB
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MCwiZW1haWwiOiJicmlnaHRAa3JvdHJ1c3QuY29tIiwiaGFuZGxlIjoiQlJXUFlZIiwiZXhwIjoxNzM0NTIyNTM2fQ.fEr13DP_NFrc0Ab5BbGMe2Kqd1R814mbDbhohqFJv7g
-
+### Get Single Activity
+GET {{baseUrl}}/activity/{{campaignId}}/er
+Content-Type: {{contentType}}
+X-API-KEY: {{apiKey}}
+Campaign-Key: {{campaignId}}
+Authorization: Bearer {{authToken}}
 
 
-###
-
-GET http://localhost:8080/activity/SAHTLBZHB/er
-Content-Type: application/json
-X-API-KEY:{{X_API_KEY}}
-Campaign-Key: SAHTLBZHB
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MCwiZW1haWwiOiJicmlnaHRAa3JvdHJ1c3QuY29tIiwiaGFuZGxlIjoiQlJXUFlZIiwiZXhwIjoxNzM0NTIyNTM2fQ.fEr13DP_NFrc0Ab5BbGMe2Kqd1R814mbDbhohqFJv7g
-
-
-###
-DELETE  http://localhost:8080/activity/SAHTLBZHB/3
-Content-Type: application/json
-X-API-KEY:{{X_API_KEY}}
-Campaign-Key: SAHTLBZHB
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MCwiZW1haWwiOiJicmlnaHRAa3JvdHJ1c3QuY29tIiwiaGFuZGxlIjoiQlJXUFlZIiwiZXhwIjoxNzM0NTIyNTM2fQ.fEr13DP_NFrc0Ab5BbGMe2Kqd1R814mbDbhohqFJv7g
-
+### Delete Activity
+# @name deleteActivity
+DELETE {{baseUrl}}/activity/{{campaignId}}/3
+Content-Type: {{contentType}}
+X-API-KEY: {{apiKey}}
+Campaign-Key: {{campaignId}}
+Authorization: Bearer {{authToken}}
