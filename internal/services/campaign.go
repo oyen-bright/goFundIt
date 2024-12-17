@@ -1,6 +1,7 @@
 package services
 
 import (
+	"fmt"
 	"strings"
 	"time"
 
@@ -84,6 +85,7 @@ func (s *campaignService) GetCampaignByID(id string) (*models.Campaign, error) {
 		}
 		return nil, errs.InternalServerError(err).Log(s.logger)
 	}
+	fmt.Println(campaign.CreatedBy.Email)
 	return &campaign, nil
 }
 

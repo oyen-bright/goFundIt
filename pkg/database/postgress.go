@@ -6,6 +6,7 @@ import (
 	"github.com/oyen-bright/goFundIt/pkg/database/migrations"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 )
 
 type Config struct {
@@ -21,9 +22,9 @@ func Init(cfg Config) (*gorm.DB, error) {
 	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%d sslmode=disable",
 		cfg.Host, cfg.User, cfg.Password, cfg.DBName, cfg.Port,
 	)
-	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
-
-	db.Logger = db.Logger.LogMode(3)
+	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{
+		Logger: logger.Default.LogMode(logger.Info),
+	})
 
 	if err != nil {
 		return nil, err
