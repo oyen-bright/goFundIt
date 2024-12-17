@@ -2,11 +2,18 @@ module github.com/oyen-bright/goFundIt
 
 go 1.22.4
 
-require gorm.io/driver/postgres v1.5.11
+require (
+	github.com/stretchr/testify v1.9.0
+	gorm.io/driver/postgres v1.5.11
+)
 
 require (
+	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/kr/text v0.2.0 // indirect
+	github.com/mattn/go-sqlite3 v1.14.22 // indirect
+	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/rogpeppe/go-internal v1.13.1 // indirect
+	github.com/stretchr/objx v0.5.2 // indirect
 )
 
 require (
@@ -50,5 +57,6 @@ require (
 	gopkg.in/alexcesaro/quotedprintable.v3 v3.0.0-20150716171945-2caba252f4dc // indirect
 	gopkg.in/gomail.v2 v2.0.0-20160411212932-81ebce5c23df
 	gopkg.in/yaml.v3 v3.0.1 // indirect
+	gorm.io/driver/sqlite v1.5.7
 	gorm.io/gorm v1.25.12
 )

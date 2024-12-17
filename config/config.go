@@ -4,31 +4,27 @@ import (
 	"errors"
 	"flag"
 	"fmt"
-	"strconv"
-	"strings"
-
 	"os"
 	"path/filepath"
+	"strconv"
+	"strings"
 
 	"github.com/joho/godotenv"
 	"github.com/oyen-bright/goFundIt/config/environment"
 	"github.com/oyen-bright/goFundIt/config/providers"
+	"github.com/oyen-bright/goFundIt/pkg/database"
 	"github.com/oyen-bright/goFundIt/pkg/email"
 )
 
 type AppConfig struct {
-	Environment      environment.Environment
-	EmailProvider    providers.EmailProvider
-	Port             string
-	EmailConfig      email.EmailConfig
-	EncryptionKey    []string
-	PostgresDB       string
-	PostgresUser     string
-	PostgresPassword string
-	PostgresHost     string
-	PostgresPort     int
-	XAPIKey          string
-	JWTSecret        string
+	Environment   environment.Environment
+	EmailProvider providers.EmailProvider
+	ServerPort    string
+	EmailConfig   email.EmailConfig
+	DBConfig      database.Config
+	EncryptionKey []string
+	XAPIKey       string
+	JWTSecret     string
 }
 
 var BaseDir string
@@ -42,31 +38,53 @@ func init() {
 }
 
 // LoadConfig loads the configuration for the application based on the environment.
-//   - It parses the environment flag.
-//   - Initializes the environment.
-//   - Loads the corresponding .env file.
-//   - If no flag for env is provided, it defaults to "" which is Development.
-//   - To set env flag, run the application with -env=stg or -env=prod.
-//   - Returns a Config struct with the environment and default port.
-//
-// Returns:
-//   - *Config: A pointer to the Config struct containing the environment and port.
-//   - error: An error if any occurs during the loading of the configuration.
 func LoadConfig() (*AppConfig, error) {
+	env := parseEnvFlag()
+	environment := initializeEnvironment(env)
 
-	var env string
-	var environment environment.Environment
-	var emailProvider providers.EmailProvider
-
-	envFlag := flag.String("env", "", "Environment the application is running in")
-	flag.Parse()
-
-	env = *envFlag
-	environment.New(env)
-
-	envPath := filepath.Join(BaseDir, "config", "env", ".env."+environment.String())
-	envData, err := loadEnv(envPath)
+	envData, err := loadEnvFile(environment)
 	if err != nil {
+		return nil, err
+	}
+
+	appConfig, err := parseEnvData(envData)
+	if err != nil {
+		return nil, err
+	}
+
+	appConfig.Environment = environment
+
+	return appConfig, nil
+}
+
+func parseEnvFlag() string {
+	//Default env is dev
+	envFlag := flag.String("env", "dev", "Environment the application is running in")
+	flag.Parse()
+	return *envFlag
+}
+
+func initializeEnvironment(env string) environment.Environment {
+	return environment.NewEnvironmentConfig(env).Current
+}
+
+func loadEnvFile(env environment.Environment) (map[string]string, error) {
+	envPath := filepath.Join(BaseDir, "config", "env", ".env."+env.String())
+	if err := godotenv.Load(envPath); err != nil {
+		return nil, err
+	}
+	return godotenv.Read(envPath)
+}
+
+func parseEnvData(envData map[string]string) (*AppConfig, error) {
+	requiredEnvs := []string{
+		"PORT", "EMAIL_PROVIDER", "EMAIL_HOST", "EMAIL_PORT", "EMAIL_USERNAME",
+		"EMAIL_PASSWORD", "ENCRYPTION_KEYS", "POSTGRES_DB", "POSTGRES_USER",
+		"POSTGRES_PASSWORD", "POSTGRES_HOST", "POSTGRES_PORT", "X_API_KEY",
+		"JWT_SECRET",
+	}
+
+	if err := checkRequiredEnvs(envData, requiredEnvs); err != nil {
 		return nil, err
 	}
 
@@ -79,8 +97,8 @@ func LoadConfig() (*AppConfig, error) {
 	if err != nil {
 		return nil, err
 	}
-
-	emailProvider.Email(envData["EMAIL_PROVIDER"])
+	var emailProvider providers.EmailProvider
+	providers.NewEmailProvider(providers.SMTP)
 
 	emailConfig := email.EmailConfig{
 		Host:           envData["EMAIL_HOST"],
@@ -91,56 +109,30 @@ func LoadConfig() (*AppConfig, error) {
 		SendGridAPIKey: envData["SENDGRID_API_KEY"],
 	}
 
+	dbConfig := database.Config{
+		Host:     envData["POSTGRES_HOST"],
+		Port:     postgresPort,
+		Password: envData["POSTGRES_PASSWORD"],
+		DBName:   envData["POSTGRES_DB"],
+		User:     envData["POSTGRES_USER"],
+	}
+
 	return &AppConfig{
-		Environment:      environment,
-		Port:             envData["PORT"],
-		EmailProvider:    emailProvider,
-		EmailConfig:      emailConfig,
-		EncryptionKey:    strings.Split(envData["ENCRYPTION_KEYS"], ","),
-		PostgresDB:       envData["POSTGRES_DB"],
-		PostgresUser:     envData["POSTGRES_USER"],
-		PostgresPassword: envData["POSTGRES_PASSWORD"],
-		PostgresHost:     envData["POSTGRES_HOST"],
-		PostgresPort:     postgresPort,
-		XAPIKey:          envData["X_API_KEY"],
-		JWTSecret:        envData["JWT_SECRET"],
+		ServerPort:    envData["PORT"],
+		EmailProvider: emailProvider,
+		EmailConfig:   emailConfig,
+		EncryptionKey: strings.Split(envData["ENCRYPTION_KEYS"], ","),
+		DBConfig:      dbConfig,
+		XAPIKey:       envData["X_API_KEY"],
+		JWTSecret:     envData["JWT_SECRET"],
 	}, nil
 }
 
-// loadEnv loads environment variables from a specified file and ensures that
-// all required environment variables are present.
-//
-// Parameters:
-//   - envPath: The path to the environment file to load.
-//
-// Returns:
-//   - A map containing the environment variables and their values.
-//   - An error if there is an issue loading the environment file or if any
-//     required environment variables are missing.
-//
-// Required Environment Variables:
-//   - PORT: The port number on which the application should run.
-func loadEnv(envPath string) (map[string]string, error) {
-	requiredEnvs := []string{
-		"PORT", "EMAIL_PROVIDER", "EMAIL_HOST", "EMAIL_PORT", "EMAIL_USERNAME",
-		"EMAIL_PASSWORD", "ENCRYPTION_KEYS", "POSTGRES_DB", "POSTGRES_USER",
-		"POSTGRES_PASSWORD", "POSTGRES_HOST", "POSTGRES_PORT", "X_API_KEY",
-		"JWT_SECRET",
-	}
-
-	err := godotenv.Load(envPath)
-	if err != nil {
-		return nil, err
-	}
-
-	envData, err := godotenv.Read(envPath)
-	if err != nil {
-		return nil, err
-	}
+func checkRequiredEnvs(envData map[string]string, requiredEnvs []string) error {
 	for _, env := range requiredEnvs {
 		if _, isAvailable := envData[env]; !isAvailable {
-			return nil, errors.New("Missing required environment variable: " + env)
+			return errors.New("Missing required environment variable: " + env)
 		}
 	}
-	return envData, nil
+	return nil
 }

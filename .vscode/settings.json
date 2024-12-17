@@ -8,6 +8,7 @@
     "gorm",
     "minlength",
     "oyen",
+    "postgress",
     "sendgrid",
     "varchar"
   ],
