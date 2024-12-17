@@ -17,14 +17,11 @@ type Activity struct {
 	Cost            float64       `gorm:"not null" binding:"required" validate:"required,gt=0" json:"cost"`
 	IsApproved      bool          `gorm:"not null; default:false" json:"isApproved"`
 	Contributors    []Contributor `gorm:"many2many:activity_contributors" binding:"-" json:"contributors"`
+	Comments        []Comment     `gorm:"foreignKey:ActivityID" json:"comments" binding:"-"`
 	CreatedByHandle string        `gorm:"not null" validate:"required" json:"-"`
 	CreatedBy       User          `gorm:"references:Handle"  binding:"-" validate:"-" json:"-"`
 	CreatedAt       time.Time     `gorm:"not null" json:"-"`
 	UpdatedAt       time.Time     `json:"-"`
-}
-
-func (a *Activity) ToJSON() map[string]interface{} {
-	return ToJSON(*a)
 }
 
 func (a *Activity) Validate() error {
@@ -48,8 +45,23 @@ func New(campaignID, title, subtitle, imageURL, CreatedByHandle string, isMandat
 	}
 }
 
-func (a *Activity) BeforeCreate(tx *gorm.DB) (err error) {
-	return a.Validate()
+// GetPaidContributors returns a slice of contributors who have successfully paid
+func (a *Activity) GetPaidContributors() []Contributor {
+	paidContributors := make([]Contributor, 0)
+
+	for _, contributor := range a.Contributors {
+		if contributor.HasPaid() {
+			paidContributors = append(paidContributors, contributor)
+		}
+	}
+
+	return paidContributors
+}
+
+// You might also want to add these helper methods
+// GetPaidContributorsCount returns the number of paid contributors
+func (a *Activity) GetPaidContributorsCount() int {
+	return len(a.GetPaidContributors())
 }
 
 // UpdateCampaignId updates the campaignId of the model
@@ -84,4 +96,8 @@ func (a *Activity) ApproveActivity() {
 // ApproveActivity sets the IsApproved field to true
 func (a *Activity) MarkAsNotMandatory() {
 	a.IsMandatory = false
+}
+
+func (a *Activity) BeforeCreate(tx *gorm.DB) (err error) {
+	return a.Validate()
 }

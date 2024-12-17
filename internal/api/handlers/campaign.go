@@ -51,7 +51,7 @@ func (c *CampaignHandler) HandleCreateCampaign(context *gin.Context) {
 		response.FromError(context, err)
 		return
 	}
-	response.Success(context, "Campaigns created successfully", campaign.ToJSON())
+	response.Success(context, "Campaigns created successfully", campaign)
 
 }
 

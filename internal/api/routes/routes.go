@@ -41,6 +41,10 @@ func SetupRoutes(cfg Config) {
 	activityGroup := cfg.Router.Group("/activity")
 	activityGroup.Use(middlewares.Auth(cfg.JWT), middlewares.CampaignKey())
 	{
-		activityGroup.POST("/:campaignID/new", cfg.ActivityHandler.HandleNewActivity)
+		activityGroup.GET("/:campaignID", cfg.ActivityHandler.HandleGetActivitiesByCampaignID)
+		activityGroup.GET("/:campaignID/:activityID", cfg.ActivityHandler.HandleGetActivityByID)
+		activityGroup.POST("/:campaignID", cfg.ActivityHandler.HandleCreateActivity)
+		activityGroup.PATCH("/:campaignID/:activityID", cfg.ActivityHandler.HandleUpdateActivity)
+		activityGroup.DELETE("/:campaignID/:activityID", cfg.ActivityHandler.HandleDeleteActivityByID)
 	}
 }

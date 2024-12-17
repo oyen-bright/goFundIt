@@ -2,6 +2,7 @@ package models
 
 import (
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/go-playground/validator/v10"
@@ -46,9 +47,9 @@ func NewCampaign(title, description string, targetAmount float64, startDate, end
 	return c
 }
 
-func (c *Campaign) ToJSON() map[string]interface{} {
-	return ToJSON(*c)
-}
+// func (c *Campaign) ToJSON() map[string]interface{} {
+// 	return ToJSON(*c)
+// }
 
 // FromBinding initializes a Campaign instance with the provided auth.User as the creator.
 // It generates a unique campaign ID based on the campaign's title and updates all associated
@@ -95,7 +96,9 @@ func (c *Campaign) EmailIsPartOfCampaign(email string) bool {
 	}
 
 	for _, contributor := range c.Contributors {
-		if contributor.Email == email {
+
+		fmt.Println(contributor.UserEmail)
+		if contributor.UserEmail == email {
 			return true
 		}
 	}

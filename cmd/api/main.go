@@ -28,6 +28,7 @@ func initialize() (*config.AppConfig, *gorm.DB) {
 	if err != nil {
 		panic(err)
 	}
+	db.Debug()
 
 	return cfg, db
 }
