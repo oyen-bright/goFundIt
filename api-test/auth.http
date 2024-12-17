@@ -1,21 +1,30 @@
-POST http://localhost:8080/auth/
-Content-Type: application/json
-X-API-KEY:{{X_API_KEY}}
+### Environment Variables
+@baseUrl = {{baseUrl}}
+@userEmail = bright@krotrust.com
+
+### Common Headers
+@contentType = application/json
+@apiKey = {{X_API_KEY}}
+
+
+### Request Authentication
+POST {{baseUrl}}/auth/
+Content-Type: {{contentType}}
+X-API-KEY: {{apiKey}}
 
 {
-  "name":"Aha",
-  "email":"bright@krotrust.com"
+    "name": "Aha",
+    "email": "{{userEmail}}"
 }
 
 
-###
-
-POST http://localhost:8080/auth/verify
-Content-Type: application/json
-X-API-KEY:{{X_API_KEY}}
+### Verify Authentication
+POST {{baseUrl}}/auth/verify
+Content-Type: {{contentType}}
+X-API-KEY: {{apiKey}}
 
 {
-  "email":"bright@krotrust.com",
-  "code":"VRWFFZ",
-  "requestId": "90487"
+    "email": "{{userEmail}}",
+    "code": "VRWFFZ",
+    "requestId": "90487"
 }

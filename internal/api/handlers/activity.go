@@ -21,124 +21,116 @@ func NewActivityHandler(service services.ActivityService) *ActivityHandler {
 	}
 }
 
-// handleNewActivity handles incoming activity creation requests.
-// Required Fields:
-//   - Title: required, string
-//   - Subtitle: optional, string
-//   - imageUrl: optional, string
-//   - isMandatory; optional, boolean, defaults:false
-func (a *ActivityHandler) HandleCreateActivity(context *gin.Context) {
-
+// HandleCreateActivity handles the creation of a new activity
+func (a *ActivityHandler) HandleCreateActivity(c *gin.Context) {
 	var activity models.Activity
+	claims := getClaimsFromContext(c)
+	campaignID := c.Param("campaignID")
 
-	claims := context.MustGet("claims").(jwt.Claims)
-	campaignID := context.Param("campaignID")
-
-	//bind request to the Activity model
-	if err := context.BindJSON(&activity); err != nil {
-		response.BadRequest(context, "Invalid inputs, please check and try again", utils.ExtractValidationErrors(err))
+	if err := c.BindJSON(&activity); err != nil {
+		response.BadRequest(c, "Invalid inputs", utils.ExtractValidationErrors(err))
 		return
 	}
 
-	//create activity
 	activity, err := a.service.CreateActivity(activity, claims.Handle, campaignID)
-
 	if err != nil {
-		response.FromError(context, err)
+		response.FromError(c, err)
 		return
 	}
-	response.Success(context, "Activity created successfully", activity)
 
+	response.Success(c, "Activity created successfully", activity)
 }
 
-func (a *ActivityHandler) HandleGetActivitiesByCampaignID(context *gin.Context) {
+// HandleGetActivitiesByCampaignID handles fetching all activities for a campaign
+func (a *ActivityHandler) HandleGetActivitiesByCampaignID(c *gin.Context) {
+	campaignID := c.Param("campaignID")
 
-	// claims := context.MustGet("claims").(jwt.Claims)
-	campaignID := context.Param("campaignID")
-
-	//get Activities
 	activities, err := a.service.GetActivitiesByCampaignID(campaignID)
-
 	if err != nil {
-		response.FromError(context, err)
+		response.FromError(c, err)
 		return
 	}
-	response.Success(context, "Activities Fetched successfully", activities)
 
+	response.Success(c, "Activities fetched successfully", activities)
 }
 
-func (a *ActivityHandler) HandleGetActivityByID(context *gin.Context) {
-
-	// claims := context.MustGet("claims").(jwt.Claims)
-	campaignID := context.Param("campaignID")
-	activityID, err := strconv.ParseUint(context.Param("activityID"), 10, 64)
-
+// HandleGetActivityByID handles fetching a single activity by its ID
+func (a *ActivityHandler) HandleGetActivityByID(c *gin.Context) {
+	campaignID := c.Param("campaignID")
+	activityID, err := parseActivityID(c)
 	if err != nil {
-		response.BadRequest(context, "Invalid Activity ID", nil)
+		response.BadRequest(c, "Invalid Activity ID", nil)
 		return
 	}
 
-	//get Activity
-	activities, err := a.service.GetActivityByID(uint(activityID), campaignID)
-
+	activity, err := a.service.GetActivityByID(activityID, campaignID)
 	if err != nil {
-		response.FromError(context, err)
+		response.FromError(c, err)
 		return
 	}
-	response.Success(context, "Activity Fetched successfully", activities)
 
+	response.Success(c, "Activity fetched successfully", activity)
 }
 
-func (a *ActivityHandler) HandleUpdateActivity(context *gin.Context) {
+// HandleUpdateActivity handles updating an existing activity
+func (a *ActivityHandler) HandleUpdateActivity(c *gin.Context) {
 	var activity models.Activity
+	claims := getClaimsFromContext(c)
+	campaignID := c.Param("campaignID")
 
-	claims := context.MustGet("claims").(jwt.Claims)
-	campaignID := context.Param("campaignID")
-	activityID, err := strconv.ParseUint(context.Param("activityID"), 10, 64)
-
+	activityID, err := parseActivityID(c)
 	if err != nil {
-		response.BadRequest(context, "Invalid Activity ID", nil)
+		response.BadRequest(c, "Invalid Activity ID", nil)
 		return
 	}
 
-	//bind request to the Activity model
-	if err := context.BindJSON(&activity); err != nil {
-		response.BadRequest(context, "Invalid inputs, please check and try again", utils.ExtractValidationErrors(err))
+	if err := c.BindJSON(&activity); err != nil {
+		response.BadRequest(c, "Invalid inputs", utils.ExtractValidationErrors(err))
 		return
 	}
 
-	activity.ID = uint(activityID)
+	activity.ID = activityID
 	activity.CampaignID = campaignID
 
-	//get Activity
-	err = a.service.UpdateActivity(&activity, claims.Handle)
-
-	if err != nil {
-		response.FromError(context, err)
+	if err := a.service.UpdateActivity(&activity, claims.Handle); err != nil {
+		response.FromError(c, err)
 		return
 	}
-	response.Success(context, "Activity Updated successfully", activity)
 
+	response.Success(c, "Activity updated successfully", activity)
 }
 
-func (a *ActivityHandler) HandleDeleteActivityByID(context *gin.Context) {
+// HandleDeleteActivityByID handles deleting an activity
+func (a *ActivityHandler) HandleDeleteActivityByID(c *gin.Context) {
+	claims := getClaimsFromContext(c)
+	campaignID := c.Param("campaignID")
 
-	claims := context.MustGet("claims").(jwt.Claims)
-	campaignID := context.Param("campaignID")
-	activityID, err := strconv.ParseUint(context.Param("activityID"), 10, 64)
-
+	activityID, err := parseActivityID(c)
 	if err != nil {
-		response.BadRequest(context, "Invalid Activity ID", nil)
+		response.BadRequest(c, "Invalid Activity ID", nil)
 		return
 	}
 
-	//get Activity
-	err = a.service.DeleteActivityByID(uint(activityID), campaignID, claims.Handle)
-
-	if err != nil {
-		response.FromError(context, err)
+	if err := a.service.DeleteActivityByID(activityID, campaignID, claims.Handle); err != nil {
+		response.FromError(c, err)
 		return
 	}
-	response.Success(context, "Activity deleted successfully", nil)
 
+	response.Success(c, "Activity deleted successfully", nil)
+}
+
+// Helper functions
+
+// getClaimsFromContext extracts JWT claims from the context
+func getClaimsFromContext(c *gin.Context) jwt.Claims {
+	return c.MustGet("claims").(jwt.Claims)
+}
+
+// parseActivityID converts the activity ID from the URL parameter to uint
+func parseActivityID(c *gin.Context) (uint, error) {
+	id, err := strconv.ParseUint(c.Param("activityID"), 10, 64)
+	if err != nil {
+		return 0, err
+	}
+	return uint(id), nil
 }
