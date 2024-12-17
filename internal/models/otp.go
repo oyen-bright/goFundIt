@@ -1,4 +1,4 @@
-package otp
+package models
 
 import (
 	"time"
@@ -62,7 +62,7 @@ func (o *Otp) Decrypt(e encryption.Encryptor, key string) error {
 	// return err
 }
 
-func New(email string) *Otp {
+func NewOTP(email string) *Otp {
 
 	code := GenerateOTP(0)
 	expireAt := GenerateExpireDate()
