@@ -19,7 +19,7 @@ func (r *campaignRepository) GetByID(id string, preload bool) (models.Campaign, 
 	query := r.db.Where("id = ?", id)
 
 	if preload {
-		query = query.Preload("Images").Preload("Activities").Preload("Contributors")
+		query = query.Preload("Images").Preload("Activities").Preload("Contributors").Preload("CreatedBy")
 	}
 
 	err := query.First(&campaign).Error

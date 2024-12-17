@@ -18,9 +18,9 @@ type Contributor struct {
 	ID            uint      `gorm:"primaryKey" json:"id"`
 	CampaignID    string    `gorm:"not null;foreignKey:CampaignID;index:idx_campaign_user,unique" validate:"required" json:"campaignId"`
 	Amount        float64   `gorm:"not null" binding:"required" validate:"gt=0,required" json:"amount"`
-	Email         string    `gorm:"-" binding:"required,email,lowercase" validate:"email,required" json:"email"`
+	Email         string    `gorm:"-" binding:"required,email,lowercase"`
 	PaymentStatus string    `gorm:"not null;default:pending" json:"paymentStatus" binding:"-"`
-	UserEmail     string    `gorm:"not null;foreignKey:UserEmail;index:idx_campaign_user,unique" json:"userEmail"`
+	UserEmail     string    `gorm:"not null;foreignKey:UserEmail;index:idx_campaign_user,unique" json:"email"`
 	CreatedAt     time.Time `gorm:"not null" json:"-"`
 	UpdatedAt     time.Time `json:"-"`
 }
@@ -44,6 +44,19 @@ func NewContributor(campaignID, email string, amount float64) *Contributor {
 		Email:      email,
 		UserEmail:  email,
 	}
+}
+func (c *Contributor) HasPaid() bool {
+	return c.PaymentStatus == PaymentStatusSucceeded
+}
+
+// IsPending checks if the payment is still pending
+func (c *Contributor) IsPending() bool {
+	return c.PaymentStatus == PaymentStatusPending
+}
+
+// HasFailed checks if the payment has failed
+func (c *Contributor) HasFailed() bool {
+	return c.PaymentStatus == PaymentStatusFailed
 }
 
 // UpdateCampaignId updates the campaignId of the model
