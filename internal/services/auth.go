@@ -1,6 +1,8 @@
 package services
 
 import (
+	"log"
+
 	"github.com/oyen-bright/goFundIt/internal/models"
 	repositories "github.com/oyen-bright/goFundIt/internal/repositories/interfaces"
 	services "github.com/oyen-bright/goFundIt/internal/services/interfaces"
@@ -11,6 +13,19 @@ import (
 	"github.com/oyen-bright/goFundIt/pkg/logger"
 )
 
+// TODO(oyen-bright): Split this service into separate AuthService and UserService
+// AuthService should handle:
+// - Authentication (RequestAuth, VerifyAuth, GenerateToken)
+// - Token management
+// UserService should handle:
+// - User CRUD operations
+// - User queries
+// Created: 2024-12-18
+// Priority: Medium
+
+// authService handles both authentication and user management
+// This service currently has two responsibilities and should be split
+// into separate services for better separation of concerns
 type authService struct {
 	authRepo   repositories.AuthRepository
 	otpService services.OTPService
@@ -35,6 +50,7 @@ func NewAuthService(
 	}
 }
 
+// Authentication Methods
 func (s *authService) RequestAuth(email, name string) (models.Otp, error) {
 	otp, err := s.otpService.RequestOTP(email, name)
 	if err != nil {
@@ -44,26 +60,32 @@ func (s *authService) RequestAuth(email, name string) (models.Otp, error) {
 }
 
 func (s *authService) VerifyAuth(email, code, requestID string) (string, error) {
+	// Verify OTP
 	otp, err := s.otpService.VerifyOTP(email, code, requestID)
 	if err != nil {
 		return "", errs.BadRequest("Invalid OTP", err).Log(s.logger)
 	}
 
-	// Create User
-	newUser := models.NewUser(otp.Name, otp.Email, true)
-	if err := s.CreateUser(*newUser); err != nil {
-		return "", err
-	}
-
-	// Generate Authentication token
-	token, err := s.GenerateToken(*newUser)
+	// Get or create user
+	user, err := s.getOrCreateUser(otp)
 	if err != nil {
 		return "", err
 	}
 
+	// Generate Authentication token
+	return s.GenerateToken(*user)
+}
+
+func (s *authService) GenerateToken(u models.User) (string, error) {
+	log.Println("Generating token for user", u.Email, u.Handle, u.ID)
+	token, err := s.jwt.GenerateToken(u.ID, u.Email, u.Handle)
+	if err != nil {
+		return "", errs.InternalServerError(err).Log(s.logger)
+	}
 	return token, nil
 }
 
+// User Management Methods
 func (s *authService) CreateUser(u models.User) error {
 	// Check if user already exists
 	_, err := s.authRepo.FindByHandle(u.Handle)
@@ -97,14 +119,6 @@ func (s *authService) CreateUsers(users []models.User) ([]models.User, error) {
 	return createdUsers, nil
 }
 
-func (s *authService) FindNonExistingUsers(users []models.User) ([]models.User, error) {
-	nonExistingUsers, err := s.authRepo.FindNonExistingUsers(users)
-	if err != nil {
-		return nil, errs.InternalServerError(err).Log(s.logger)
-	}
-	return nonExistingUsers, nil
-}
-
 func (s *authService) UpdateUser(u models.User) error {
 	if err := u.Encrypt(s.encryptor); err != nil {
 		return errs.InternalServerError(err).Log(s.logger)
@@ -115,18 +129,6 @@ func (s *authService) UpdateUser(u models.User) error {
 	}
 
 	return nil
-}
-
-func (s *authService) GetUserByHandle(handle string) (models.User, error) {
-	user, err := s.authRepo.FindByHandle(handle)
-	if err != nil {
-		if database.Error(err).IsNotfound() {
-			return models.User{}, errs.BadRequest("User not found", nil)
-		}
-		return models.User{}, errs.InternalServerError(err).Log(s.logger)
-	}
-
-	return *user, nil
 }
 
 func (s *authService) DeleteUser(handle string) error {
@@ -145,11 +147,56 @@ func (s *authService) DeleteUser(handle string) error {
 	return nil
 }
 
-func (s *authService) GenerateToken(u models.User) (string, error) {
-	token, err := s.jwt.GenerateToken(u.ID, u.Email, u.Handle)
+// User Query Methods
+func (s *authService) GetUserByHandle(handle string) (models.User, error) {
+	user, err := s.authRepo.FindByHandle(handle)
 	if err != nil {
-		return "", errs.InternalServerError(err).Log(s.logger)
+		if database.Error(err).IsNotfound() {
+			return models.User{}, errs.BadRequest("User not found", nil)
+		}
+		return models.User{}, errs.InternalServerError(err).Log(s.logger)
 	}
 
-	return token, nil
+	return *user, nil
+}
+
+func (s *authService) GetUserByEmail(email string) (models.User, error) {
+	user, err := s.authRepo.FindByEmail(email)
+	if err != nil {
+		if database.Error(err).IsNotfound() {
+			return models.User{}, errs.BadRequest("User not found", nil)
+		}
+		return models.User{}, errs.InternalServerError(err).Log(s.logger)
+	}
+
+	return *user, nil
+}
+
+func (s *authService) FindExistingAndNonExistingUsers(emails []string) (existing []models.User, nonExisting []string, err error) {
+	existing, nonExisting, err = s.authRepo.FindExistingAndNonExistingUsers(emails)
+	if err != nil {
+		return nil, nil, errs.InternalServerError(err).Log(s.logger)
+	}
+	return existing, nonExisting, nil
+}
+
+// Helper methods
+
+func (s *authService) getOrCreateUser(otp models.Otp) (*models.User, error) {
+	user, err := s.authRepo.FindByEmail(otp.Email)
+	if err == nil {
+		return user, nil
+	}
+
+	if !database.Error(err).IsNotfound() {
+		return nil, errs.InternalServerError(err).Log(s.logger)
+	}
+
+	// Create new user
+	newUser := models.NewUser(otp.Name, otp.Email, true)
+	if err := s.CreateUser(*newUser); err != nil {
+		return nil, err
+	}
+
+	return newUser, nil
 }

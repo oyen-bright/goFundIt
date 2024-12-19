@@ -52,16 +52,35 @@ func (r *authRepository) FindByHandle(handle string) (*models.User, error) {
 	return &user, nil
 }
 
-func (r *authRepository) FindNonExistingUsers(users []models.User) ([]models.User, error) {
-	var nonExistingUsers []models.User
-	for _, user := range users {
-		var existingUser models.User
-		err := r.db.Where("email = ?", user.Email).First(&existingUser).Error
-		if err != nil && err == gorm.ErrRecordNotFound {
-			nonExistingUsers = append(nonExistingUsers, user)
-		} else if err != nil {
-			return nil, err
+func (r *authRepository) FindByEmail(email string) (*models.User, error) {
+	var user models.User
+	err := r.db.Preload("Contributions").Where("email = ?", email).First(&user).Error
+
+	if err != nil {
+		return nil, err
+	}
+	return &user, nil
+}
+
+func (r *authRepository) FindExistingAndNonExistingUsers(emails []string) (existing []models.User, nonExisting []string, err error) {
+	// Find all existing users with their contributions in a single query
+	var existingUsers []models.User
+	if err := r.db.Preload("Contributions").Where("email IN ?", emails).Find(&existingUsers).Error; err != nil {
+		return nil, nil, err
+	}
+
+	// Create a map of found emails for faster lookup
+	foundEmails := make(map[string]bool)
+	for _, user := range existingUsers {
+		foundEmails[user.Email] = true
+	}
+
+	// Determine non-existing emails
+	for _, email := range emails {
+		if !foundEmails[email] {
+			nonExisting = append(nonExisting, email)
 		}
 	}
-	return nonExistingUsers, nil
+
+	return existingUsers, nonExisting, nil
 }
