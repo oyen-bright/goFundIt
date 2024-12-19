@@ -19,7 +19,6 @@ func NewCampaignRepository(db *gorm.DB) interfaces.CampaignRepository {
 func (r *campaignRepository) GetByID(id string, preload bool) (models.Campaign, error) {
 	var campaign models.Campaign
 
-	log.Println(id)
 	query := r.db.Where("id = ?", id)
 
 	if preload {
