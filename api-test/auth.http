@@ -1,5 +1,4 @@
 ### Environment Variables
-@baseUrl = {{baseUrl}}
 @userEmail = bright@krotrust.com
 
 ### Common Headers
@@ -25,6 +24,6 @@ X-API-KEY: {{apiKey}}
 
 {
     "email": "{{userEmail}}",
-    "code": "VRWFFZ",
-    "requestId": "90487"
+    "code": "UWVWHJ",
+    "requestId": "30186"
 }

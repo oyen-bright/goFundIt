@@ -1,10 +1,11 @@
 ### Environment Variables
-@baseUrl = {{baseUrl}}
-@authToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MCwiZW1haWwiOiJicmlnaHRAa3JvdHJ1c3QuY29tIiwiaGFuZGxlIjoiQlJXUFlZIiwiZXhwIjoxNzM0NTIyNTM2fQ.fEr13DP_NFrc0Ab5BbGMe2Kqd1R814mbDbhohqFJv7g
+@authToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJicmlnaHRAa3JvdHJ1c3QuY29tIiwiaGFuZGxlIjoiQlJXUFlZIiwiZXhwIjoxNzM0NjkwODIyfQ.ttv62k3xQ7KenP7elsAGBetjIt-ECp3wY5QprJY96A4
 
 ### Common Headers
 @contentType = application/json
 @apiKey = {{X_API_KEY}}
+
+@campaignId = SABWDMPTO
 
 ### Create New Campaign
 POST {{baseUrl}}/campaign/create
@@ -37,14 +38,21 @@ Authorization: Bearer {{authToken}}
     "Contributors": [
         {
             "amount": 500,
-            "email": "bright@krotrust.com"
+            "Email": "bright@krotrust.com"
         },
         {
             "amount": 500,
-            "email": "supporter@example.com"
+            "Email": "supporter@example.com"
         }
     ],
     "targetAmount": 1000,
     "StartDate": "2025-01-01T00:00:00Z",
     "EndDate": "2025-12-31T23:59:59Z"
 }
+
+###
+
+GET {{baseUrl}}/campaign/{{campaignId}}
+X-API-KEY: {{apiKey}}
+Campaign-Key: {{campaignId}}
+Authorization: Bearer {{authToken}}
