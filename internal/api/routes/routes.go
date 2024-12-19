@@ -8,11 +8,12 @@ import (
 )
 
 type Config struct {
-	Router          *gin.Engine
-	AuthHandler     *handlers.AuthHandler
-	CampaignHandler *handlers.CampaignHandler
-	ActivityHandler *handlers.ActivityHandler
-	JWT             jwt.Jwt
+	Router             *gin.Engine
+	AuthHandler        *handlers.AuthHandler
+	CampaignHandler    *handlers.CampaignHandler
+	ContributorHandler *handlers.ContributorHandler
+	ActivityHandler    *handlers.ActivityHandler
+	JWT                jwt.Jwt
 }
 
 func SetupRoutes(cfg Config) {
@@ -31,9 +32,8 @@ func SetupRoutes(cfg Config) {
 
 		protected := campaignGroup.Use(middlewares.CampaignKey())
 		{
-			protected.GET("/", cfg.CampaignHandler.HandleGetCampaigns)
-			protected.GET("/:id", cfg.CampaignHandler.HandleGetCampaigns)
-			protected.PATCH("/:id", cfg.CampaignHandler.HandleUpdateCampaign)
+			protected.GET("/:id", cfg.CampaignHandler.HandleGetCampaignByID)
+			protected.PATCH("/:id", cfg.CampaignHandler.HandleUpdateCampaignByID)
 		}
 	}
 
@@ -46,5 +46,24 @@ func SetupRoutes(cfg Config) {
 		activityGroup.POST("/:campaignID", cfg.ActivityHandler.HandleCreateActivity)
 		activityGroup.PATCH("/:campaignID/:activityID", cfg.ActivityHandler.HandleUpdateActivity)
 		activityGroup.DELETE("/:campaignID/:activityID", cfg.ActivityHandler.HandleDeleteActivityByID)
+
+		participation := activityGroup.Group("/:campaignID/:activityID/participants")
+		{
+			participation.POST("/:contributorID", cfg.ActivityHandler.HandleOptInContributor)   // Opt in
+			participation.DELETE("/:contributorID", cfg.ActivityHandler.HandleOptInContributor) // Opt out
+			participation.GET("/", cfg.ActivityHandler.HandleGetParticipants)                   // List participants
+		}
 	}
+
+	// Contributor Routes
+	contributorGroup := cfg.Router.Group("/contributor")
+	contributorGroup.Use(middlewares.Auth(cfg.JWT), middlewares.CampaignKey())
+	{
+		contributorGroup.POST("/:campaignID", cfg.ContributorHandler.HandleAddContributor)
+		contributorGroup.DELETE("/:campaignID/:contributorID", cfg.ContributorHandler.HandleRemoveContributor)
+		contributorGroup.PATCH("/:campaignID/:contributorID", cfg.ContributorHandler.HandleEditContributor)
+		contributorGroup.GET("/:campaignID", cfg.ContributorHandler.HandleGetContributorsByCampaignID)
+		contributorGroup.GET("/:campaignID/:contributorID", cfg.ContributorHandler.HandleGetContributorByID)
+	}
+
 }

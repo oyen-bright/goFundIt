@@ -28,40 +28,49 @@ func NewCampaignHandler(service services.CampaignService) *CampaignHandler {
 //   - TargetAmount: required, number
 //   - StartDate: required, date
 //   - EndDate: required, date
-func (c *CampaignHandler) HandleCreateCampaign(context *gin.Context) {
+func (h *CampaignHandler) HandleCreateCampaign(c *gin.Context) {
 
-	claims := context.MustGet("claims").(jwt.Claims)
+	claims := c.MustGet("claims").(jwt.Claims)
 	var campaign models.Campaign
 
 	//bind request to the campaign model
-	if err := context.BindJSON(&campaign); err != nil {
-		response.BadRequest(context, "Invalid inputs, please check and try again", utils.ExtractValidationErrors(err))
+	if err := c.BindJSON(&campaign); err != nil {
+		response.BadRequest(c, "Invalid inputs, please check and try again", utils.ExtractValidationErrors(err))
 		return
 	}
+
 	//validate the request
 	if err := campaign.ValidateNewCampaign(); err != nil {
-		response.BadRequest(context, "Invalid inputs, please check and try again", utils.ExtractValidationErrors(err))
+		response.BadRequest(c, "Invalid inputs, please check and try again", utils.ExtractValidationErrors(err))
 		return
 	}
 
 	//create service
-	campaign, err := c.service.CreateCampaign(campaign, claims.Handle)
+	campaign, err := h.service.CreateCampaign(campaign, claims.Handle)
 
 	if err != nil {
-		response.FromError(context, err)
+		response.FromError(c, err)
 		return
 	}
-	response.Success(context, "Campaigns created successfully", campaign)
+	response.Success(c, "Campaigns created successfully", campaign)
 
 }
 
-func (c *CampaignHandler) HandleGetCampaigns(context *gin.Context) {
+func (h *CampaignHandler) HandleGetCampaignByID(c *gin.Context) {
 
-	response.Success(context, "Campaigns retrieved successfully", []string{})
+	campaignID := c.Param("id")
+
+	campaign, err := h.service.GetCampaignByID(campaignID)
+	if err != nil {
+		response.FromError(c, err)
+		return
+	}
+
+	response.Success(c, "Campaigns retrieved successfully", campaign)
 
 }
 
-func (c *CampaignHandler) HandleUpdateCampaign(context *gin.Context) {
+func (c *CampaignHandler) HandleUpdateCampaignByID(context *gin.Context) {
 
 	response.Success(context, "Campaigns Updated successfully", []string{})
 

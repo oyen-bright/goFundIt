@@ -1,12 +1,9 @@
 package handlers
 
 import (
-	"strconv"
-
 	"github.com/gin-gonic/gin"
 	"github.com/oyen-bright/goFundIt/internal/models"
 	services "github.com/oyen-bright/goFundIt/internal/services/interfaces"
-	"github.com/oyen-bright/goFundIt/pkg/jwt"
 	"github.com/oyen-bright/goFundIt/pkg/response"
 	"github.com/oyen-bright/goFundIt/pkg/utils"
 )
@@ -43,7 +40,7 @@ func (a *ActivityHandler) HandleCreateActivity(c *gin.Context) {
 
 // HandleGetActivitiesByCampaignID handles fetching all activities for a campaign
 func (a *ActivityHandler) HandleGetActivitiesByCampaignID(c *gin.Context) {
-	campaignID := c.Param("campaignID")
+	campaignID := GetCampaignID(c)
 
 	activities, err := a.service.GetActivitiesByCampaignID(campaignID)
 	if err != nil {
@@ -56,7 +53,7 @@ func (a *ActivityHandler) HandleGetActivitiesByCampaignID(c *gin.Context) {
 
 // HandleGetActivityByID handles fetching a single activity by its ID
 func (a *ActivityHandler) HandleGetActivityByID(c *gin.Context) {
-	campaignID := c.Param("campaignID")
+	campaignID := GetCampaignID(c)
 	activityID, err := parseActivityID(c)
 	if err != nil {
 		response.BadRequest(c, "Invalid Activity ID", nil)
@@ -76,7 +73,7 @@ func (a *ActivityHandler) HandleGetActivityByID(c *gin.Context) {
 func (a *ActivityHandler) HandleUpdateActivity(c *gin.Context) {
 	var activity models.Activity
 	claims := getClaimsFromContext(c)
-	campaignID := c.Param("campaignID")
+	campaignID := GetCampaignID(c)
 
 	activityID, err := parseActivityID(c)
 	if err != nil {
@@ -103,7 +100,7 @@ func (a *ActivityHandler) HandleUpdateActivity(c *gin.Context) {
 // HandleDeleteActivityByID handles deleting an activity
 func (a *ActivityHandler) HandleDeleteActivityByID(c *gin.Context) {
 	claims := getClaimsFromContext(c)
-	campaignID := c.Param("campaignID")
+	campaignID := GetCampaignID(c)
 
 	activityID, err := parseActivityID(c)
 	if err != nil {
@@ -119,18 +116,66 @@ func (a *ActivityHandler) HandleDeleteActivityByID(c *gin.Context) {
 	response.Success(c, "Activity deleted successfully", nil)
 }
 
-// Helper functions
+// HandleOptInContributor handles opting in a contributor to an activity
+func (a *ActivityHandler) HandleOptInContributor(c *gin.Context) {
+	claims := getClaimsFromContext(c)
+	campaignID := GetCampaignID(c)
+	contributorID, err := parseContributorID(c)
+	if err != nil {
+		response.BadRequest(c, "Invalid Contributor ID", nil)
+		return
+	}
+	activityID, err := parseActivityID(c)
+	if err != nil {
+		response.BadRequest(c, "Invalid Activity ID", nil)
+		return
+	}
 
-// getClaimsFromContext extracts JWT claims from the context
-func getClaimsFromContext(c *gin.Context) jwt.Claims {
-	return c.MustGet("claims").(jwt.Claims)
+	if err := a.service.OptInContributor(campaignID, claims.Email, activityID, contributorID); err != nil {
+		response.FromError(c, err)
+		return
+	}
+
+	response.Success(c, "Contributor opted in successfully", nil)
 }
 
-// parseActivityID converts the activity ID from the URL parameter to uint
-func parseActivityID(c *gin.Context) (uint, error) {
-	id, err := strconv.ParseUint(c.Param("activityID"), 10, 64)
+// HandleOptOutContributor handles opting out a contributor from an activity
+func (a *ActivityHandler) HandleOptOutContributor(c *gin.Context) {
+	claims := getClaimsFromContext(c)
+	campaignID := GetCampaignID(c)
+	contributorID, err := parseContributorID(c)
 	if err != nil {
-		return 0, err
+		response.BadRequest(c, "Invalid Contributor ID", nil)
+		return
 	}
-	return uint(id), nil
+	activityID, err := parseActivityID(c)
+	if err != nil {
+		response.BadRequest(c, "Invalid Activity ID", nil)
+		return
+	}
+
+	if err := a.service.OptOutContributor(campaignID, claims.Email, activityID, contributorID); err != nil {
+		response.FromError(c, err)
+		return
+	}
+
+	response.Success(c, "Contributor opted out successfully", nil)
+}
+
+// HandleGetParticipants handles fetching all participants for an activity
+func (a *ActivityHandler) HandleGetParticipants(c *gin.Context) {
+	campaignID := GetCampaignID(c)
+	activityID, err := parseActivityID(c)
+	if err != nil {
+		response.BadRequest(c, "Invalid Activity ID", nil)
+		return
+	}
+
+	participants, err := a.service.GetParticipants(activityID, campaignID)
+	if err != nil {
+		response.FromError(c, err)
+		return
+	}
+
+	response.Success(c, "Participants fetched successfully", participants)
 }

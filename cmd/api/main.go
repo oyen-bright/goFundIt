@@ -56,15 +56,16 @@ func main() {
 
 	// Initialize Services
 	otpService := services.NewOTPService(otpRepo, emailer, *encryptor, logger)
-	contributorService := services.NewContributorService(contributorRepo, logger)
 	authService := services.NewAuthService(authRepo, otpService, *encryptor, jwtService, logger)
-	campaignService := services.NewCampaignService(campaignRepo, contributorService, authService, logger)
+	campaignService := services.NewCampaignService(campaignRepo, authService, logger)
+	contributorService := services.NewContributorService(contributorRepo, campaignService, logger)
 	activityService := services.NewActivityService(activityRepo, authService, campaignService, logger)
 
 	// Initialize Handlers
 	authHandler := handlers.NewAuthHandler(authService)
 	campaignHandler := handlers.NewCampaignHandler(campaignService)
 	activityHandler := handlers.NewActivityHandler(activityService)
+	contributorHandler := handlers.NewContributorHandler(contributorService)
 
 	// Initialize Gin Router
 	router := gin.Default()
@@ -72,11 +73,12 @@ func main() {
 
 	// Setup Routes
 	routes.SetupRoutes(routes.Config{
-		Router:          router,
-		AuthHandler:     authHandler,
-		CampaignHandler: campaignHandler,
-		ActivityHandler: activityHandler,
-		JWT:             jwtService,
+		Router:             router,
+		AuthHandler:        authHandler,
+		CampaignHandler:    campaignHandler,
+		ContributorHandler: contributorHandler,
+		ActivityHandler:    activityHandler,
+		JWT:                jwtService,
 	})
 
 	// Start Server
