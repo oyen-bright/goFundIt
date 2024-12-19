@@ -5,14 +5,14 @@ import (
 )
 
 type ContributorService interface {
-	AddContributorToCampaign(contribution *models.Contributor) error
-	RemoveContributorFromCampaign(contribution *models.Contributor) error
-	CanContributeToCampaign(userID uint, campaignID string) (bool, error)
-	GetContributors(campaignID string) ([]models.Contributor, error)
+	AddContributorToCampaign(contribution *models.Contributor, campaignId, userHandle string) error
+	UpdateContributor(contributor *models.Contributor, contributorID uint, userEmail string) (retrievedContributor models.Contributor, err error)
+	GetContributorsByCampaignID(campaignID string) ([]models.Contributor, error)
+	RemoveContributorFromCampaign(contributorId uint, campaignId, userHandle string) error
 	GetContributorByID(contributorID uint) (models.Contributor, error)
-	GetContributorByUserHandle(userHandle uint) (models.Contributor, error)
-	GetEmailsOfExistingContributors(emails []string) ([]string, error)
-	ContributeToCampaign(userID uint, campaignID string, amount float64) error
-	ProcessPayment(paymentID string) error
-	RefundPayment(paymentID string) error
+	// GetEmailsOfActiveContributors(emails []string) ([]string, error)
+	// GetContributorByUserHandle(userHandle uint) (models.Contributor, error)
+	// ContributeToCampaign(userID uint, campaignID string, amount float64) error
+	// ProcessPayment(paymentID string) error
+	// RefundPayment(paymentID string) error
 }

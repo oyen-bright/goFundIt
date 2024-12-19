@@ -3,9 +3,6 @@ package services
 import (
 	"fmt"
 	"strings"
-	"time"
-
-	"github.com/go-playground/validator/v10"
 
 	"github.com/oyen-bright/goFundIt/internal/models"
 	repositories "github.com/oyen-bright/goFundIt/internal/repositories/interfaces"
@@ -16,129 +13,92 @@ import (
 )
 
 type campaignService struct {
-	repo               repositories.CampaignRepository
-	contributorService services.ContributorService
-	authService        services.AuthService
-	logger             logger.Logger
+	repo        repositories.CampaignRepository
+	authService services.AuthService
+	logger      logger.Logger
 }
 
-func NewCampaignService(repo repositories.CampaignRepository, contributorService services.ContributorService, authService services.AuthService, logger logger.Logger) services.CampaignService {
-	return &campaignService{repo: repo, contributorService: contributorService, authService: authService, logger: logger}
+func NewCampaignService(repo repositories.CampaignRepository, authService services.AuthService, logger logger.Logger) services.CampaignService {
+	return &campaignService{repo: repo, authService: authService, logger: logger}
 }
 
 // CreateCampaign creates a new campaign for a user.
 func (s *campaignService) CreateCampaign(campaign models.Campaign, userHandle string) (models.Campaign, error) {
-
-	// check if user can create a Campaign via the user handle
-	if err := s.UserCanCreateCampaign(userHandle); err != nil {
+	// Check if user already has a campaign
+	if err := s.CheckExistingCampaign(userHandle); err != nil {
 		return models.Campaign{}, err
 	}
 
-	// Check if contributors is not involved in any other campaigns
-	emailsCanNotContribute, err := s.EmailsCanContribute(campaign.GetContributorsEmails())
+	// Validate contributors and get existing/non-existing users
+	existing, nonExisting, err := s.authService.FindExistingAndNonExistingUsers(campaign.GetContributorsEmails())
 	if err != nil {
 		return models.Campaign{}, err
 	}
-	if len(emailsCanNotContribute) > 0 {
-		return models.Campaign{}, errs.BadRequest("Emails "+strings.Join(emailsCanNotContribute, ", ")+" already have campaigns.", emailsCanNotContribute)
+
+	// Check if existing users can contribute
+	var invalidEmails []string
+	for _, user := range existing {
+		if !user.CanContributeToACampaign() {
+			invalidEmails = append(invalidEmails, user.Email)
+		}
+	}
+	if len(invalidEmails) > 0 {
+		return models.Campaign{}, errs.BadRequest(
+			fmt.Sprintf("Users cannot contribute: %s, already part of another campaign", strings.Join(invalidEmails, ", ")),
+			invalidEmails,
+		)
 	}
 
-	// Get the user by the user handle
+	// Create new users for non-existing emails
+	if len(nonExisting) > 0 {
+		_, err = s.authService.CreateUsers(createUsersFromEmails(nonExisting))
+		if err != nil {
+			return models.Campaign{}, err
+		}
+	}
+
+	// Get creator's user details
 	user, err := s.authService.GetUserByHandle(userHandle)
 	if err != nil {
 		return models.Campaign{}, err
 	}
 
-	// Create CampaignID and update the CampaignID on the bound images, activities, and contributors as well as update the creeatedBy of the campaign and activities
+	// Setup campaign with creator's details
 	campaign.FromBinding(user)
 
-	// Create new users struct from the contributors
-	campaignUsers := getUsersFromContributors(campaign.Contributors)
-
-	// Remove already existing users
-	newUsers, err := s.authService.FindNonExistingUsers(campaignUsers)
-	if err != nil {
-		return models.Campaign{}, err
-	}
-
-	// Create the new users
-	_, err = s.authService.CreateUsers(newUsers)
-	if err != nil {
-		return models.Campaign{}, err
-	}
-
-	// Create campaign
-	campaign, err = s.repo.Create(&campaign)
-	if err != nil {
-		return models.Campaign{}, errs.InternalServerError(err).Log(s.logger)
-	}
-
-	return campaign, nil
+	// Create campaign in database
+	return s.repo.Create(&campaign)
 }
 
-// GetCampaignByID fetches campaign by id is not found returns err
+// createUsersFromEmails converts a list of emails to user models
+func createUsersFromEmails(emails []string) []models.User {
+	users := make([]models.User, 0, len(emails))
+	for _, email := range emails {
+		users = append(users, *models.NewUser("", email, false))
+	}
+	return users
+}
+
+// checkExistingCampaign verifies if user can create a new campaign
+func (s *campaignService) CheckExistingCampaign(userHandle string) error {
+	campaign, err := s.repo.GetByCreatorHandle(userHandle, false)
+	if err == nil && campaign.ID != "" {
+		return errs.BadRequest("You already have an active campaign", nil)
+	}
+	if err != nil && !database.Error(err).IsNotfound() {
+		return errs.InternalServerError(err).Log(s.logger)
+	}
+	return nil
+}
+
+// GetCampaignByID fetches campaign by ID
 func (s *campaignService) GetCampaignByID(id string) (*models.Campaign, error) {
 	campaign, err := s.repo.GetByID(id, true)
 	if err != nil {
 		if database.Error(err).IsNotfound() {
-			return nil, errs.BadRequest("Campaign does not exist", nil)
+			return nil, errs.BadRequest("Campaign not found", nil)
 		}
 		return nil, errs.InternalServerError(err).Log(s.logger)
 	}
-	fmt.Println(campaign.CreatedBy.Email)
 	return &campaign, nil
-}
-
-// userCanCreateCampaign checks if a user is allowed to create a campaign.
-func (s *campaignService) UserCanCreateCampaign(userHandle string) error {
-
-	_, err := s.repo.GetByCreatorHandle(userHandle, false)
-	if err != nil {
-		if database.Error(err).IsNotfound() {
-			return nil
-		}
-
-		return errs.InternalServerError(err).Log(s.logger)
-	}
-	return errs.BadRequest("You have an existing campaign. Please finish it before creating a new one.", nil)
-}
-
-// emailsCanContribute checks if the provided email addresses can contribute to a campaign.
-func (s *campaignService) EmailsCanContribute(contributorsEmail []string) ([]string, error) {
-	return s.contributorService.GetEmailsOfExistingContributors(contributorsEmail)
-}
-
-// getUsersFromContributors converts a list of contributors to a list of users.
-func getUsersFromContributors(contributors []models.Contributor) []models.User {
-	users := make([]models.User, 0, len(contributors))
-
-	for _, c := range contributors {
-		users = append(users, *models.NewUser("", c.Email, false))
-	}
-
-	return users
-}
-
-func validateContributionSum(fl validator.FieldLevel) bool {
-	campaign, ok := fl.Parent().Interface().(models.Campaign)
-	if !ok {
-		return false
-	}
-
-	totalContributions := calculateContributionTotal(campaign)
-
-	return totalContributions == campaign.TargetAmount
-}
-
-func calculateContributionTotal(campaign models.Campaign) float64 {
-	var totalAmount float64
-	for _, contributor := range campaign.Contributors {
-		totalAmount += contributor.Amount
-	}
-
-	return totalAmount
-}
-
-func isCampaignStartDateValid(campaign models.Campaign) bool {
-	return campaign.StartDate.After(time.Now()) || campaign.StartDate.Equal(time.Now())
 }

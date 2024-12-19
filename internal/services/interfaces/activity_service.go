@@ -10,7 +10,7 @@ type ActivityService interface {
 	GetActivityByID(activityID uint, campaignID string) (models.Activity, error)
 	UpdateActivity(activity *models.Activity, userHandle string) error
 	DeleteActivityByID(activityID uint, campaignID, userHandle string) error
-	// JoinActivity(contributorID uint, activityID uint) error
-	// LeaveActivity(contributorID uint, activityID uint) error
-	// GetActivityParticipants(activityID uint) ([]contributor.Contributor, error)
+	OptInContributor(campaignID, userEmail string, activityID, contributorID uint) error
+	OptOutContributor(campaignID, userEmail string, activityID, contributorID uint) error
+	GetParticipants(activityID uint, campaignId string) ([]models.Contributor, error)
 }
