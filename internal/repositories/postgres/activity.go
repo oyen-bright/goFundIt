@@ -49,6 +49,21 @@ func (r *activityRepository) GetActivityByID(activityID uint) (models.Activity, 
 	return activity, err
 }
 
+// RemoveContributorFromActivity removes a contributor from an activity
+func (r *activityRepository) RemoveContributorFromActivity(activityID uint, contributorID uint) error {
+	return r.db.Table("activities_contributors").
+		Where("activity_id = ? AND contributor_id = ?", activityID, contributorID).
+		Delete(nil).Error
+}
+
+// AddContributorToActivity adds a contributor to an activity
+func (r *activityRepository) AddContributorToActivity(activityID uint, contributorID uint) error {
+	return r.db.Table("activities_contributors").Create(map[string]interface{}{
+		"activity_id":    activityID,
+		"contributor_id": contributorID,
+	}).Error
+}
+
 // GetActivitiesByCampaignID fetches all activities for a specific campaign
 func (r *activityRepository) GetActivitiesByCampaignID(campaignID string) ([]models.Activity, error) {
 	var activities []models.Activity
@@ -69,8 +84,8 @@ func (r *activityRepository) DeleteActivity(activityID uint) error {
 // GetActivityParticipants retrieves all contributors for a specific activity
 func (r *activityRepository) GetActivityParticipants(activityID uint) ([]models.Contributor, error) {
 	var participants []models.Contributor
-	//TODO:"fix query"
-	err := r.db.Joins("JOIN activity_contributors ON activity_contributors.contributor_id = contributors.id").
-		Where("activity_contributors.activity_id = ?", activityID).Find(&participants).Error
+	err := r.db.Table("contributors").
+		Joins("JOIN activities_contributors ON activities_contributors.contributor_id = contributors.id").
+		Where("activities_contributors.activity_id = ?", activityID).Find(&participants).Error
 	return participants, err
 }

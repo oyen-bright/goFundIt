@@ -1,6 +1,8 @@
 package postgress
 
 import (
+	"log"
+
 	"github.com/oyen-bright/goFundIt/internal/models"
 	"github.com/oyen-bright/goFundIt/internal/repositories/interfaces"
 	"gorm.io/gorm"
@@ -16,21 +18,25 @@ func NewCampaignRepository(db *gorm.DB) interfaces.CampaignRepository {
 
 func (r *campaignRepository) GetByID(id string, preload bool) (models.Campaign, error) {
 	var campaign models.Campaign
+
+	log.Println(id)
 	query := r.db.Where("id = ?", id)
 
 	if preload {
-		query = query.Preload("Images").Preload("Activities").Preload("Contributors").Preload("CreatedBy")
+		query = query.Preload("Images").Preload("Activities.Contributors").Preload("Activities").Preload("Contributors").Preload("CreatedBy")
 	}
 
 	err := query.First(&campaign).Error
 	if err != nil {
 		return models.Campaign{}, err
 	}
+	log.Println(len(campaign.Activities))
 	return campaign, nil
 }
 
 func (r *campaignRepository) GetByCreatorHandle(handle string, preload bool) (models.Campaign, error) {
 	var campaign models.Campaign
+
 	query := r.db.Where("created_by_handle = ?", handle)
 
 	if preload {

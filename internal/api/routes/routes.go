@@ -49,9 +49,9 @@ func SetupRoutes(cfg Config) {
 
 		participation := activityGroup.Group("/:campaignID/:activityID/participants")
 		{
-			participation.POST("/:contributorID", cfg.ActivityHandler.HandleOptInContributor)   // Opt in
-			participation.DELETE("/:contributorID", cfg.ActivityHandler.HandleOptInContributor) // Opt out
-			participation.GET("/", cfg.ActivityHandler.HandleGetParticipants)                   // List participants
+			participation.POST("/:contributorID", cfg.ActivityHandler.HandleOptInContributor)    // Opt in
+			participation.DELETE("/:contributorID", cfg.ActivityHandler.HandleOptOutContributor) // Opt out
+			participation.GET("/", cfg.ActivityHandler.HandleGetParticipants)                    // List participants
 		}
 	}
 

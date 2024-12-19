@@ -12,4 +12,6 @@ type ActivityRepository interface {
 	GetActivitiesByCampaignID(campaignID string) ([]models.Activity, error)
 	GetActivityParticipants(activityID uint) ([]models.Contributor, error)
 	UpdateActivity(activity *models.Activity) error
+	AddContributorToActivity(activityID uint, contributorID uint) error
+	RemoveContributorFromActivity(activityID uint, contributorID uint) error
 }

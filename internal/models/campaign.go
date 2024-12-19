@@ -23,9 +23,9 @@ type Campaign struct {
 	Title           string          `gorm:"type:varchar(255);not null" validate:"required,min=4" binding:"required" json:"title"`
 	Description     string          `gorm:"type:text" binding:"required" validate:"required,min=100" json:"description"`
 	TargetAmount    float64         `gorm:"not null" validate:"required,gt=0" binding:"required,gt=0" json:"targetAmount"`
-	Images          []CampaignImage `gorm:"foreignKey:CampaignID" binding:"omitempty,dive,required" validate:"-" json:"images"`
-	Activities      []Activity      `gorm:"many2many:campaign_activities;constraint:OnDelete:CASCADE" binding:"omitempty,dive,required" validate:"-" json:"-"`
-	Contributors    []Contributor   `gorm:"many2many:campaign_contributors;constraint:OnDelete:CASCADE" binding:"required,gt=0,dive,required" validate:"required,gt=0,dive,required,contributorSum" json:"contributors"`
+	Images          []CampaignImage `gorm:"foreignKey:CampaignID;constraint:OnDelete:CASCADE" binding:"omitempty,dive,required" validate:"-" json:"images"`
+	Activities      []Activity      `gorm:"foreignKey:CampaignID;constraint:OnDelete:CASCADE" binding:"omitempty,dive,required" validate:"-" `
+	Contributors    []Contributor   `gorm:"foreignKey:CampaignID;constraint:OnDelete:CASCADE" binding:"required,gt=0,dive,required" validate:"required,gt=0,dive,required,contributorSum" json:"contributors"`
 	StartDate       time.Time       `gorm:"not null" validate:"required" binding:"required" json:"startDate"`
 	EndDate         time.Time       `gorm:"not null" validate:"required,gtfield=StartDate" binding:"required,gtfield=StartDate" json:"endDate"`
 	CreatedByHandle string          `gorm:"not null" validate:"required" binding:"-" json:"createdByHandle"`

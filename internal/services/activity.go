@@ -1,6 +1,8 @@
 package services
 
 import (
+	"log"
+
 	"github.com/oyen-bright/goFundIt/internal/models"
 	repositories "github.com/oyen-bright/goFundIt/internal/repositories/interfaces"
 	services "github.com/oyen-bright/goFundIt/internal/services/interfaces"
@@ -138,14 +140,12 @@ func (s *activityService) OptInContributor(campaignID, userEmail string, activit
 	if err != nil {
 		return err
 	}
+
 	if activity.IsContributorOptedIn(contributorID) {
 		return errs.BadRequest("Contributor has already opted in.", nil)
 	}
 
-	// Add contributor to activity
-	activity.AddContributor(*contributor)
-
-	if err := s.repo.UpdateActivity(activity); err != nil {
+	if err := s.repo.AddContributorToActivity(activity.ID, contributor.ID); err != nil {
 		return (errs.InternalServerError(err)).Log(s.logger)
 	}
 
@@ -169,10 +169,7 @@ func (s *activityService) OptOutContributor(campaignID, userEmail string, activi
 		return errs.BadRequest("Contributor has already opted out.", nil)
 	}
 
-	// Add contributor to activity
-	activity.RemoveContributor(*contributor)
-
-	if err := s.repo.UpdateActivity(activity); err != nil {
+	if err := s.repo.RemoveContributorFromActivity(activityID, contributor.ID); err != nil {
 		return (errs.InternalServerError(err)).Log(s.logger)
 	}
 
@@ -258,7 +255,7 @@ func (s *activityService) validateContributorActivityForOptInOptOut(campaign *mo
 	if contributor.HasPaid() {
 		return nil, nil, errs.BadRequest("Action cannot be performed after making a payment.", nil)
 	}
-
+	log.Println(len(campaign.Activities))
 	// Validate activity
 	activity = campaign.GetActivityById(activityID)
 	if activity == nil {
