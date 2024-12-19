@@ -10,5 +10,6 @@ type AuthRepository interface {
 	Delete(user *models.User) error
 
 	FindByHandle(handle string) (*models.User, error)
-	FindNonExistingUsers(users []models.User) ([]models.User, error)
+	FindByEmail(email string) (*models.User, error)
+	FindExistingAndNonExistingUsers(emails []string) (existing []models.User, nonExisting []string, err error)
 }

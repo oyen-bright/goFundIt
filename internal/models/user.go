@@ -14,7 +14,7 @@ type User struct {
 	Handle        string        `gorm:"uniqueIndex;not null"`
 	Name          string        `gorm:"not null" encrypt:"true"`
 	Verified      bool          `gorm:"not null"`
-	Contributions []Contributor `gorm:"foreignKey:UserEmail;references:Email"`
+	Contributions []Contributor `gorm:"foreignKey:Email;references:Email"`
 	CreatedAt     time.Time     `gorm:"not null"`
 	UpdatedAt     time.Time
 }
@@ -27,6 +27,12 @@ func NewUser(name, email string, verified bool) *User {
 		Verified: verified,
 	}
 }
+
+func (u *User) CanContributeToACampaign() bool {
+	return len(u.Contributions) == 0
+
+}
+
 func (u *User) BeforeCreate(tx *gorm.DB) (err error) {
 
 	//TODO:failing because data Already encrypted
