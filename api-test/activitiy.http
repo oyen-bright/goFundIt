@@ -5,8 +5,8 @@
 @contentType = application/json
 @apiKey = {{X_API_KEY}}
 @ContributorID = 1
-@ActivityID = 2
-@campaignId = SABWDMPTO
+@ActivityID = 6
+@campaignId = SAQRDEMSU
 
 ### Create New Activity
 POST {{baseUrl}}/activity/{{campaignId}}
@@ -16,8 +16,9 @@ Campaign-Key: {{campaignId}}
 Authorization: Bearer {{authToken}}
 
 {
-    "title": "Save the Rainforest 33",
+    "title": "Save the Rainforest 300",
     "cost": 1000,
+    
     "isMandatory": true
 }
 
@@ -29,8 +30,9 @@ Campaign-Key: {{campaignId}}
 Authorization: Bearer {{authToken}}
 
 {
-    "title": "Updated the activity",
-    "cost": 5000
+    "title": "Updated the activity aprove",
+    "cost": 5000,
+      "isApproved": true
 }
 
 ### Get All Activities for Campaign
@@ -71,6 +73,8 @@ Content-Type: {{contentType}}
 X-API-KEY: {{apiKey}}
 Campaign-Key: {{campaignId}}
 Authorization: Bearer {{authToken}}
+
+
 
 ### Get All Participants for Activity
 GET {{baseUrl}}/activity/{{campaignId}}/{{ActivityID}}/participants

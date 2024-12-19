@@ -5,7 +5,7 @@
 @contentType = application/json
 @apiKey = {{X_API_KEY}}
 
-@campaignId = SABWDMPTO
+@campaignId = SAQRDEMSU
 
 ### Create New Campaign
 POST {{baseUrl}}/campaign/create
@@ -29,7 +29,19 @@ Authorization: Bearer {{authToken}}
             "isApproved": true
         },
         {
-            "title": "Wildlife Protection",
+            "title": "Wildlife Protection 2",
+            "cost": 3000,
+            "IsMandatory": false,
+            "isApproved": true
+        },
+         {
+            "title": "Wildlife Protection 3",
+            "cost": 3000,
+            "IsMandatory": false,
+            "isApproved": true
+        },
+         {
+            "title": "Wildlife Protection 4",
             "cost": 3000,
             "IsMandatory": false,
             "isApproved": true
