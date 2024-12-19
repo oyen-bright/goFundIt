@@ -19,6 +19,11 @@ func GetCampaignID(c *gin.Context) string {
 	return c.Param("campaignID")
 }
 
+// GetCommentID extracts the commentID form the requestParam
+func getCommentID(c *gin.Context) string {
+	return c.Param("commentID")
+}
+
 // parseActivityID converts the activity ID from the URL parameter to uint
 func parseActivityID(c *gin.Context) (uint, error) {
 	id, err := strconv.ParseUint(c.Param("activityID"), 10, 64)

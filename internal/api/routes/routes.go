@@ -12,6 +12,7 @@ type Config struct {
 	AuthHandler        *handlers.AuthHandler
 	CampaignHandler    *handlers.CampaignHandler
 	ContributorHandler *handlers.ContributorHandler
+	CommentHandler     *handlers.CommentHandler
 	ActivityHandler    *handlers.ActivityHandler
 	JWT                jwt.Jwt
 }
@@ -52,6 +53,15 @@ func SetupRoutes(cfg Config) {
 			participation.POST("/:contributorID", cfg.ActivityHandler.HandleOptInContributor)    // Opt in
 			participation.DELETE("/:contributorID", cfg.ActivityHandler.HandleOptOutContributor) // Opt out
 			participation.GET("/", cfg.ActivityHandler.HandleGetParticipants)                    // List participants
+		}
+
+		comments := activityGroup.Group("/:campaignID/:activityID/comments")
+		{
+			comments.POST("/", cfg.CommentHandler.HandleCreateComment)
+			comments.PATCH("/:commentID", cfg.CommentHandler.HandleUpdateComment)
+			comments.GET("/", cfg.CommentHandler.HandleGetActivityComments)
+			comments.GET("/:commentID/replies", cfg.CommentHandler.HandleGetCommentReplies)
+			comments.DELETE("/:commentID", cfg.CommentHandler.HandleDeleteComment)
 		}
 	}
 

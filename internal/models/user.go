@@ -9,14 +9,14 @@ import (
 )
 
 type User struct {
-	ID            uint          `gorm:"primaryKey"`
+	ID            uint          `gorm:"primaryKey" json:"-"`
 	Email         string        `gorm:"uniqueIndex;not null" encrypt:"true" binding:"required,email,lowercase"  validate:"email"`
 	Handle        string        `gorm:"uniqueIndex;not null"`
 	Name          string        `gorm:"not null" encrypt:"true"`
-	Verified      bool          `gorm:"not null"`
-	Contributions []Contributor `gorm:"foreignKey:Email;references:Email"`
-	CreatedAt     time.Time     `gorm:"not null"`
-	UpdatedAt     time.Time
+	Verified      bool          `gorm:"not null" json:"-"`
+	Contributions []Contributor `gorm:"foreignKey:Email;references:Email" json:"-"`
+	CreatedAt     time.Time     `gorm:"not null" json:"-"`
+	UpdatedAt     time.Time     `json:"-"`
 }
 
 func NewUser(name, email string, verified bool) *User {

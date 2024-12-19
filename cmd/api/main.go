@@ -53,6 +53,7 @@ func main() {
 	campaignRepo := postgress.NewCampaignRepository(db)
 	contributorRepo := postgress.NewContributorRepository(db)
 	activityRepo := postgress.NewActivityRepo(db)
+	commentRepo := postgress.NewCommentRepository(db)
 
 	// Initialize Services
 	otpService := services.NewOTPService(otpRepo, emailer, *encryptor, logger)
@@ -60,12 +61,14 @@ func main() {
 	campaignService := services.NewCampaignService(campaignRepo, authService, logger)
 	contributorService := services.NewContributorService(contributorRepo, campaignService, logger)
 	activityService := services.NewActivityService(activityRepo, authService, campaignService, logger)
+	commentService := services.NewCommentService(commentRepo, authService, activityService, logger)
 
 	// Initialize Handlers
 	authHandler := handlers.NewAuthHandler(authService)
 	campaignHandler := handlers.NewCampaignHandler(campaignService)
 	activityHandler := handlers.NewActivityHandler(activityService)
 	contributorHandler := handlers.NewContributorHandler(contributorService)
+	commentHandler := handlers.NewCommentHandler(commentService)
 
 	// Initialize Gin Router
 	router := gin.Default()
@@ -78,6 +81,7 @@ func main() {
 		CampaignHandler:    campaignHandler,
 		ContributorHandler: contributorHandler,
 		ActivityHandler:    activityHandler,
+		CommentHandler:     commentHandler,
 		JWT:                jwtService,
 	})
 
