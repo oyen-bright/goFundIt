@@ -1,0 +1,17 @@
+@apiKey = {{X_API_KEY}}
+@campaignId = SAQRDEMSU
+
+
+
+GET {{baseUrl}}/suggestions/activity/{{campaignId}}
+X-API-KEY: {{apiKey}}
+
+
+###
+
+POST {{baseUrl}}/suggestions/activity/
+X-API-KEY: {{apiKey}}
+
+{
+    "content": "Holiday Trip Our annal holiday trip begins  1st next month we will be going to paris please play your contribution on time"
+}
