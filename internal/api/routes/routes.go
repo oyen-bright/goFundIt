@@ -11,6 +11,7 @@ type Config struct {
 	Router             *gin.Engine
 	AuthHandler        *handlers.AuthHandler
 	CampaignHandler    *handlers.CampaignHandler
+	SuggestionHandler  *handlers.SuggestionHandler
 	ContributorHandler *handlers.ContributorHandler
 	CommentHandler     *handlers.CommentHandler
 	ActivityHandler    *handlers.ActivityHandler
@@ -50,9 +51,9 @@ func SetupRoutes(cfg Config) {
 
 		participation := activityGroup.Group("/:campaignID/:activityID/participants")
 		{
-			participation.POST("/:contributorID", cfg.ActivityHandler.HandleOptInContributor)    // Opt in
-			participation.DELETE("/:contributorID", cfg.ActivityHandler.HandleOptOutContributor) // Opt out
-			participation.GET("/", cfg.ActivityHandler.HandleGetParticipants)                    // List participants
+			participation.POST("/:contributorID", cfg.ActivityHandler.HandleOptInContributor)
+			participation.DELETE("/:contributorID", cfg.ActivityHandler.HandleOptOutContributor)
+			participation.GET("/", cfg.ActivityHandler.HandleGetParticipants)
 		}
 
 		comments := activityGroup.Group("/:campaignID/:activityID/comments")
@@ -74,6 +75,14 @@ func SetupRoutes(cfg Config) {
 		contributorGroup.PATCH("/:campaignID/:contributorID", cfg.ContributorHandler.HandleEditContributor)
 		contributorGroup.GET("/:campaignID", cfg.ContributorHandler.HandleGetContributorsByCampaignID)
 		contributorGroup.GET("/:campaignID/:contributorID", cfg.ContributorHandler.HandleGetContributorByID)
+	}
+
+	// Suggestions Routes
+	suggestionsGroup := cfg.Router.Group("/suggestions")
+	activitySuggestions := suggestionsGroup.Group("/activity")
+	{
+		activitySuggestions.GET("/:campaignID", cfg.SuggestionHandler.HandleGetActivitySuggestions)
+		activitySuggestions.POST("/", cfg.SuggestionHandler.HandleGetActivitySuggestionsViaText)
 	}
 
 }
