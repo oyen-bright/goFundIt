@@ -5,6 +5,7 @@ import (
 	"github.com/oyen-bright/goFundIt/config"
 	"github.com/oyen-bright/goFundIt/config/providers"
 
+	"github.com/oyen-bright/goFundIt/internal/ai/gemini"
 	"github.com/oyen-bright/goFundIt/internal/api/handlers"
 	"github.com/oyen-bright/goFundIt/internal/api/middlewares"
 	"github.com/oyen-bright/goFundIt/internal/api/routes"
@@ -43,6 +44,9 @@ func main() {
 	defer database.Close(db)
 
 	// Initialize Core Services
+	aiClient, _ := gemini.NewClient(cfg.GeminiKey)
+	defer gemini.Close(aiClient)
+
 	encryptor := encryption.New(cfg.EncryptionKey)
 	emailer := email.New(providers.EmailSMTP, cfg.EmailConfig)
 	jwtService := jwt.New(cfg.JWTSecret)
@@ -62,6 +66,7 @@ func main() {
 	contributorService := services.NewContributorService(contributorRepo, campaignService, logger)
 	activityService := services.NewActivityService(activityRepo, authService, campaignService, logger)
 	commentService := services.NewCommentService(commentRepo, authService, activityService, logger)
+	suggestionService := services.NewSuggestionService(aiClient, campaignService, logger)
 
 	// Initialize Handlers
 	authHandler := handlers.NewAuthHandler(authService)
@@ -69,19 +74,21 @@ func main() {
 	activityHandler := handlers.NewActivityHandler(activityService)
 	contributorHandler := handlers.NewContributorHandler(contributorService)
 	commentHandler := handlers.NewCommentHandler(commentService)
-
+	suggestionHandler := handlers.NewSuggestionHandler(suggestionService)
 	// Initialize Gin Router
 	router := gin.Default()
 	router.Use(middlewares.APIKey(cfg.XAPIKey))
 
 	// Setup Routes
 	routes.SetupRoutes(routes.Config{
-		Router:             router,
+		Router: router,
+
 		AuthHandler:        authHandler,
 		CampaignHandler:    campaignHandler,
 		ContributorHandler: contributorHandler,
 		ActivityHandler:    activityHandler,
 		CommentHandler:     commentHandler,
+		SuggestionHandler:  suggestionHandler,
 		JWT:                jwtService,
 	})
 
