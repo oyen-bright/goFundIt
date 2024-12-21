@@ -1,0 +1,12 @@
+
+@apiKey = {{X_API_KEY}}
+@authToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJicmlnaHRAa3JvdHJ1c3QuY29tIiwiaGFuZGxlIjoiQlJXUFlZIiwiZXhwIjoxNzM0NjkwODIyfQ.ttv62k3xQ7KenP7elsAGBetjIt-ECp3wY5QprJY96A4
+
+@campaignId = SAQRDEMSU
+
+GET  {{baseUrl}}/ws/campaign/{{campaignId}}
+
+X-API-KEY: {{apiKey}}
+Authorization: Bearer {{authToken}}
+Campaign-Key: {{campaignId}}
+

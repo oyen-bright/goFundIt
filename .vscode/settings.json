@@ -11,6 +11,7 @@
     "oyen",
     "postgress",
     "sendgrid",
+    "upgrader",
     "varchar"
   ],
   "sqltools.connections": [
