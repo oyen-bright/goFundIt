@@ -16,6 +16,7 @@ import (
 	"github.com/oyen-bright/goFundIt/pkg/encryption"
 	"github.com/oyen-bright/goFundIt/pkg/jwt"
 	"github.com/oyen-bright/goFundIt/pkg/logger"
+	"github.com/oyen-bright/goFundIt/pkg/websocket"
 
 	"gorm.io/gorm"
 )
@@ -51,6 +52,10 @@ func main() {
 	emailer := email.New(providers.EmailSMTP, cfg.EmailConfig)
 	jwtService := jwt.New(cfg.JWTSecret)
 
+	websocketHub := websocket.NewHub()
+	go websocketHub.Run()
+	defer websocketHub.Close()
+
 	// Initialize Repositories
 	authRepo := postgress.NewAuthRepository(db)
 	otpRepo := postgress.NewOTPRepository(db)
@@ -59,13 +64,16 @@ func main() {
 	activityRepo := postgress.NewActivityRepo(db)
 	commentRepo := postgress.NewCommentRepository(db)
 
+	// initialize the event broadcaster
+	eventBroadcaster := services.NewEventBroadcaster(websocketHub)
+
 	// Initialize Services
 	otpService := services.NewOTPService(otpRepo, emailer, *encryptor, logger)
 	authService := services.NewAuthService(authRepo, otpService, *encryptor, jwtService, logger)
-	campaignService := services.NewCampaignService(campaignRepo, authService, logger)
-	contributorService := services.NewContributorService(contributorRepo, campaignService, logger)
-	activityService := services.NewActivityService(activityRepo, authService, campaignService, logger)
-	commentService := services.NewCommentService(commentRepo, authService, activityService, logger)
+	campaignService := services.NewCampaignService(campaignRepo, authService, eventBroadcaster, logger)
+	contributorService := services.NewContributorService(contributorRepo, campaignService, eventBroadcaster, logger)
+	activityService := services.NewActivityService(activityRepo, authService, campaignService, eventBroadcaster, logger)
+	commentService := services.NewCommentService(commentRepo, authService, activityService, eventBroadcaster, logger)
 	suggestionService := services.NewSuggestionService(aiClient, campaignService, logger)
 
 	// Initialize Handlers
@@ -75,20 +83,22 @@ func main() {
 	contributorHandler := handlers.NewContributorHandler(contributorService)
 	commentHandler := handlers.NewCommentHandler(commentService)
 	suggestionHandler := handlers.NewSuggestionHandler(suggestionService)
+	websocketHandler := handlers.NewWebSocketHandler(websocketHub, campaignService)
+
 	// Initialize Gin Router
 	router := gin.Default()
 	router.Use(middlewares.APIKey(cfg.XAPIKey))
 
 	// Setup Routes
 	routes.SetupRoutes(routes.Config{
-		Router: router,
-
+		Router:             router,
 		AuthHandler:        authHandler,
 		CampaignHandler:    campaignHandler,
 		ContributorHandler: contributorHandler,
 		ActivityHandler:    activityHandler,
 		CommentHandler:     commentHandler,
 		SuggestionHandler:  suggestionHandler,
+		WebSocketHandler:   websocketHandler,
 		JWT:                jwtService,
 	})
 

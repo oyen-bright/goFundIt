@@ -9,12 +9,14 @@ import (
 	"github.com/oyen-bright/goFundIt/pkg/database"
 	"github.com/oyen-bright/goFundIt/pkg/errs"
 	"github.com/oyen-bright/goFundIt/pkg/logger"
+	"github.com/oyen-bright/goFundIt/pkg/websocket"
 )
 
 type activityService struct {
 	repo            repositories.ActivityRepository
 	authService     services.AuthService
 	campaignService services.CampaignService
+	broadcaster     services.EventBroadcaster
 	logger          logger.Logger
 }
 
@@ -22,12 +24,15 @@ func NewActivityService(
 	repo repositories.ActivityRepository,
 	authService services.AuthService,
 	campaignService services.CampaignService,
+	eventBroadcaster services.EventBroadcaster,
 	logger logger.Logger,
 ) services.ActivityService {
 	return &activityService{
-		repo:            repo,
+		repo: repo,
+
 		authService:     authService,
 		campaignService: campaignService,
+		broadcaster:     eventBroadcaster,
 		logger:          logger,
 	}
 }
@@ -56,6 +61,9 @@ func (s *activityService) CreateActivity(activity models.Activity, userHandle, c
 	if err != nil {
 		return models.Activity{}, (errs.InternalServerError(err)).Log(s.logger)
 	}
+
+	// Broadcast update
+	s.broadcaster.NewEvent(campaignID, websocket.EventTypeActivityCreated, createdActivity)
 
 	return createdActivity, nil
 }
@@ -105,6 +113,9 @@ func (s *activityService) UpdateActivity(activity *models.Activity, userHandle s
 		return (errs.InternalServerError(err)).Log(s.logger)
 	}
 
+	// Broadcast update
+	s.broadcaster.NewEvent(activity.CampaignID, websocket.EventTypeActivityUpdated, existingActivity)
+
 	return nil
 }
 
@@ -122,6 +133,9 @@ func (s *activityService) DeleteActivityByID(activityID uint, campaignID, userHa
 	if err := s.repo.Delete(&activity); err != nil {
 		return (errs.InternalServerError(err)).Log(s.logger)
 	}
+
+	// Broadcast update
+	s.broadcaster.NewEvent(campaignID, websocket.EventTypeActivityDeleted, activityID)
 
 	return nil
 }
@@ -149,6 +163,10 @@ func (s *activityService) OptInContributor(campaignID, userEmail string, activit
 		return (errs.InternalServerError(err)).Log(s.logger)
 	}
 
+	// Broadcast update
+	activity.AddContributor(*contributor)
+	s.broadcaster.NewEvent(campaignID, websocket.EventTypeActivityUpdated, activity)
+
 	return nil
 }
 
@@ -172,6 +190,10 @@ func (s *activityService) OptOutContributor(campaignID, userEmail string, activi
 	if err := s.repo.RemoveContributorFromActivity(activityID, contributor.ID); err != nil {
 		return (errs.InternalServerError(err)).Log(s.logger)
 	}
+
+	// Broadcast update
+	activity.RemoveContributor(*contributor)
+	s.broadcaster.NewEvent(campaignID, websocket.EventTypeActivityUpdated, activity)
 
 	return nil
 }

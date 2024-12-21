@@ -1,8 +1,6 @@
 package services
 
 import (
-	"log"
-
 	"github.com/oyen-bright/goFundIt/internal/models"
 	repositories "github.com/oyen-bright/goFundIt/internal/repositories/interfaces"
 	services "github.com/oyen-bright/goFundIt/internal/services/interfaces"
@@ -54,7 +52,7 @@ func NewAuthService(
 func (s *authService) RequestAuth(email, name string) (models.Otp, error) {
 	otp, err := s.otpService.RequestOTP(email, name)
 	if err != nil {
-		return models.Otp{}, errs.InternalServerError(err).Log(s.logger)
+		// return models.Otp{}, errs.InternalServerError(err).Log(s.logger)
 	}
 	return otp, nil
 }
@@ -77,7 +75,6 @@ func (s *authService) VerifyAuth(email, code, requestID string) (string, error) 
 }
 
 func (s *authService) GenerateToken(u models.User) (string, error) {
-	log.Println("Generating token for user", u.Email, u.Handle, u.ID)
 	token, err := s.jwt.GenerateToken(u.ID, u.Email, u.Handle)
 	if err != nil {
 		return "", errs.InternalServerError(err).Log(s.logger)

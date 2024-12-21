@@ -15,10 +15,19 @@ type Config struct {
 	ContributorHandler *handlers.ContributorHandler
 	CommentHandler     *handlers.CommentHandler
 	ActivityHandler    *handlers.ActivityHandler
+	WebSocketHandler   *handlers.WebSocketHandler
 	JWT                jwt.Jwt
 }
 
 func SetupRoutes(cfg Config) {
+
+	// Websocket Routes
+	ws := cfg.Router.Group("/ws")
+	ws.Use(middlewares.Auth(cfg.JWT), middlewares.CampaignKey())
+	{
+		ws.GET("/campaign/:campaignID", cfg.WebSocketHandler.HandleCampaignWebSocket)
+	}
+
 	// Auth Routes
 	authGroup := cfg.Router.Group("/auth")
 	{
