@@ -15,11 +15,12 @@ import (
 type campaignService struct {
 	repo        repositories.CampaignRepository
 	authService services.AuthService
+	broadcaster services.EventBroadcaster
 	logger      logger.Logger
 }
 
-func NewCampaignService(repo repositories.CampaignRepository, authService services.AuthService, logger logger.Logger) services.CampaignService {
-	return &campaignService{repo: repo, authService: authService, logger: logger}
+func NewCampaignService(repo repositories.CampaignRepository, authService services.AuthService, broadcast services.EventBroadcaster, logger logger.Logger) services.CampaignService {
+	return &campaignService{repo: repo, authService: authService, logger: logger, broadcaster: broadcast}
 }
 
 // CreateCampaign creates a new campaign for a user.

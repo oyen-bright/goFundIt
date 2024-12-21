@@ -9,17 +9,19 @@ import (
 	"github.com/oyen-bright/goFundIt/pkg/database"
 	"github.com/oyen-bright/goFundIt/pkg/errs"
 	"github.com/oyen-bright/goFundIt/pkg/logger"
+	"github.com/oyen-bright/goFundIt/pkg/websocket"
 )
 
 type contributorService struct {
 	repo            repositories.ContributorRepository
 	campaignService services.CampaignService
 	authService     services.AuthService
+	broadcaster     services.EventBroadcaster
 	logger          logger.Logger
 }
 
-func NewContributorService(repo repositories.ContributorRepository, campaignService services.CampaignService, logger logger.Logger) services.ContributorService {
-	return &contributorService{repo: repo, logger: logger, campaignService: campaignService}
+func NewContributorService(repo repositories.ContributorRepository, campaignService services.CampaignService, broadcaster services.EventBroadcaster, logger logger.Logger) services.ContributorService {
+	return &contributorService{repo: repo, logger: logger, campaignService: campaignService, broadcaster: broadcaster}
 }
 
 // AddContributorToCampaign adds a contributor to a campaign
@@ -55,6 +57,10 @@ func (s *contributorService) AddContributorToCampaign(contributor *models.Contri
 	if err = s.repo.Create(contributor); err != nil {
 		return errs.InternalServerError(err).Log(s.logger)
 	}
+
+	// broadcast event
+	s.broadcaster.NewEvent(campaign.ID, websocket.EventTypeContributionCreated, contributor)
+
 	return nil
 }
 
@@ -81,6 +87,9 @@ func (s *contributorService) UpdateContributor(contributor *models.Contributor, 
 	}
 
 	retrievedContributor.Name = contributor.Name
+
+	// broadcast event
+	s.broadcaster.NewEvent(retrievedContributor.CampaignID, websocket.EventTypeContributorUpdated, retrievedContributor)
 
 	return retrievedContributor, nil
 }
@@ -112,6 +121,9 @@ func (s *contributorService) RemoveContributorFromCampaign(contributorId uint, c
 	if err != nil {
 		return errs.InternalServerError(err).Log(s.logger)
 	}
+
+	// broadcast event
+	s.broadcaster.NewEvent(campaign.ID, websocket.EventTypeContributorDeleted, contributor)
 	return nil
 }
 

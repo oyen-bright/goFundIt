@@ -7,19 +7,22 @@ import (
 	"github.com/oyen-bright/goFundIt/pkg/database"
 	"github.com/oyen-bright/goFundIt/pkg/errs"
 	"github.com/oyen-bright/goFundIt/pkg/logger"
+	"github.com/oyen-bright/goFundIt/pkg/websocket"
 )
 
 type commentService struct {
 	repo            interfaces.CommentRepository
 	authService     services.AuthService
 	activityService services.ActivityService
+	broadcaster     services.EventBroadcaster
 	logger          logger.Logger
 }
 
-func NewCommentService(repo interfaces.CommentRepository, authService services.AuthService, activityService services.ActivityService, logger logger.Logger) services.CommentService {
+func NewCommentService(repo interfaces.CommentRepository, authService services.AuthService, activityService services.ActivityService, broadcaster services.EventBroadcaster, logger logger.Logger) services.CommentService {
 	return &commentService{
 		repo:            repo,
 		authService:     authService,
+		broadcaster:     broadcaster,
 		activityService: activityService,
 		logger:          logger,
 	}
@@ -60,6 +63,9 @@ func (c *commentService) CreateComment(comment *models.Comment, campaignID strin
 
 		return errs.InternalServerError(err).Log(c.logger)
 	}
+
+	// Broadcast new comment
+	c.broadcaster.NewEvent(campaignID, websocket.EventTypeCommentCreated, comment)
 	return nil
 }
 
@@ -70,8 +76,20 @@ func (c *commentService) DeleteComment(commentID string, userHandle string) erro
 	if err != nil {
 		return err
 	}
+
 	//Delete comment
-	return c.repo.Delete(commentID)
+	err = c.repo.Delete(commentID)
+
+	if err != nil {
+		return errs.InternalServerError(err).Log(c.logger)
+	}
+
+	// Broadcast event
+	//TODO: Check if this is the right event to broadcast
+	c.broadcaster.NewEvent(commentID, websocket.EventTypeCommentDeleted, commentID)
+
+	return nil
+
 }
 
 func (c *commentService) GetActivityComments(activityID uint) ([]models.Comment, error) {
@@ -100,7 +118,13 @@ func (c *commentService) UpdateComment(comment models.Comment, userHandle string
 	}
 
 	// Update comment
-	return c.repo.Update(&comment)
+	err = c.repo.Update(&comment)
+	if err != nil {
+		return errs.InternalServerError(err).Log(c.logger)
+	}
+	//TODO Broadcast event ?
+
+	return nil
 
 }
 
