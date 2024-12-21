@@ -53,6 +53,7 @@ require (
 	github.com/go-playground/validator/v10 v10.23.0
 	github.com/goccy/go-json v0.10.3 // indirect
 	github.com/google/generative-ai-go v0.19.0
+	github.com/gorilla/websocket v1.5.3
 	github.com/jackc/pgpassfile v1.0.0 // indirect
 	github.com/jackc/pgservicefile v0.0.0-20221227161230-091c0ba34f0a // indirect
 	github.com/jackc/pgx/v5 v5.5.5 // indirect
