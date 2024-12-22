@@ -9,6 +9,7 @@
     "gorm",
     "minlength",
     "oyen",
+    "Paystack",
     "postgress",
     "sendgrid",
     "upgrader",

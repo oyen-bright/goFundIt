@@ -1,11 +1,11 @@
 ### Environment Variables
-@authToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJicmlnaHRAa3JvdHJ1c3QuY29tIiwiaGFuZGxlIjoiQlJXUFlZIiwiZXhwIjoxNzM0NjkwODIyfQ.ttv62k3xQ7KenP7elsAGBetjIt-ECp3wY5QprJY96A4
+@authToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJicmlnaHRAa3JvdHJ1c3QuY29tIiwiaGFuZGxlIjoiQlJXUFlZIiwiZXhwIjoxNzM0OTAwNjA4fQ.aMatupAQJATJtqk_6bX_OCObwIfqmuMX7TeeHvgpz3U
 
 ### Common Headers
 @contentType = application/json
 @apiKey = {{X_API_KEY}}
 
-@campaignId = SAQRDEMSU
+@campaignId = TRMQTMOEA
 
 ### Create New Campaign
 POST {{baseUrl}}/campaign/create
@@ -14,52 +14,50 @@ X-API-KEY: {{apiKey}}
 Authorization: Bearer {{authToken}}
 
 {
-    "title": "Save the Rainforest",
-    "description": "Join us in our mission to protect and preserve the rainforest. Your contributions will help fund conservation efforts, support local communities, and promote sustainable practices.",
+    "title": "Trip to New York",
+    "description": "Exciting journey to explore the Big Apple! Experience the vibrant culture, iconic landmarks, and unforgettable moments in New York City.",
     "images": [
         {
-            "ImageUrl": "https://example.com/rainforest.jpg"
+            "ImageUrl": "https://example.com/newyork.jpg"
         }
     ],
+    "PaymentMethod": "fiat",
+    "fiatCurrency": "NGN",
     "Activities": [
         {
-            "title": "Tree Planting",
-            "cost": 5000,
+            "title": "Times Square Visit",
+            "cost": 100,
             "IsMandatory": true,
             "isApproved": true
         },
         {
-            "title": "Wildlife Protection 2",
-            "cost": 3000,
+            "title": "Statue of Liberty Tour",
+            "cost": 150,
+            "IsMandatory": true,
+            "isApproved": true
+        },
+        {
+            "title": "Broadway Show",
+            "cost": 200,
             "IsMandatory": false,
             "isApproved": true
         },
-         {
-            "title": "Wildlife Protection 3",
-            "cost": 3000,
-            "IsMandatory": false,
-            "isApproved": true
-        },
-         {
-            "title": "Wildlife Protection 4",
-            "cost": 3000,
+        {
+            "title": "Central Park Tour",
+            "cost": 50,
             "IsMandatory": false,
             "isApproved": true
         }
     ],
     "Contributors": [
         {
-            "amount": 500,
+            "amount": 2000,
             "Email": "bright@krotrust.com"
-        },
-        {
-            "amount": 500,
-            "Email": "supporter@example.com"
         }
     ],
-    "targetAmount": 1000,
+    "targetAmount": 2000,
     "StartDate": "2025-01-01T00:00:00Z",
-    "EndDate": "2025-12-31T23:59:59Z"
+    "EndDate":"2025-01-03T00:00:00Z"
 }
 
 ###

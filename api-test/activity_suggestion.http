@@ -13,5 +13,5 @@ POST {{baseUrl}}/suggestions/activity/
 X-API-KEY: {{apiKey}}
 
 {
-    "content": "Holiday Trip Our annal holiday trip begins  1st next month we will be going to paris please play your contribution on time"
+    "content": "HOliday in  nyc  Our anuall holiday isd comminh up please contribute on time an select you racbiities "
 }

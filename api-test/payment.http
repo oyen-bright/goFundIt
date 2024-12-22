@@ -1,0 +1,25 @@
+@authToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJicmlnaHRAa3JvdHJ1c3QuY29tIiwiaGFuZGxlIjoiQlJXUFlZIiwiZXhwIjoxNzM0OTAwNjA4fQ.aMatupAQJATJtqk_6bX_OCObwIfqmuMX7TeeHvgpz3U
+
+### Common Headers
+@contentType = application/json
+@apiKey = {{X_API_KEY}}
+@campaignId = TRMQTMOEA
+@contributorId = 1
+
+@paymentReference = GF-O32KZQVXRV
+
+### Initialize Payment
+
+POST {{baseUrl}}/payment/contributor/{{contributorId}}
+Content-Type: {{contentType}}
+X-API-KEY: {{apiKey}}
+Campaign-Key: {{campaignId}}
+Authorization: Bearer {{authToken}}
+
+
+### Verify Payment
+POST {{baseUrl}}/payment/verify/{{paymentReference}}
+Content-Type: {{contentType}}
+X-API-KEY: {{apiKey}}
+Campaign-Key: {{campaignId}}
+Authorization: Bearer {{authToken}}

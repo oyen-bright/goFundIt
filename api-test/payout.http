@@ -1,0 +1,45 @@
+@authToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJicmlnaHRAa3JvdHJ1c3QuY29tIiwiaGFuZGxlIjoiQlJXUFlZIiwiZXhwIjoxNzM0OTg3Mzc3fQ.1ctJaWVTsNuvABDYnTeIUhEo_RpIYhwWw1ZXO2TK9Qg
+
+### Common Headers
+@contentType = application/json
+@apiKey = {{X_API_KEY}}
+@campaignId = TRMQTMOEA
+
+### Get Bank list
+GET {{baseUrl}}/payout/bank-list
+Content-Type: {{contentType}}
+X-API-KEY: {{apiKey}}
+
+
+### Verify Bank Account
+POST {{baseUrl}}/payout/verify/bank-account
+Content-Type: {{contentType}}
+X-API-KEY: {{apiKey}}
+
+{
+    "AccountNumber": "0708737418",
+    "BankCode": "058"
+}
+
+### Initiate Payout
+POST {{baseUrl}}/payout/{{campaignId}}
+Content-Type: {{contentType}}
+X-API-KEY: {{apiKey}}
+Authorization: Bearer {{authToken}}
+Campaign-Key: {{campaignId}}
+
+
+{
+    "BankName": "GTB",
+    "bankCode": "058",
+    "accountNumber": "0708737418",
+    "accountName": "OYENIYI BRIGHT AJANI"
+}
+
+### 
+
+GET  {{baseUrl}}/payout/{{campaignId}}
+Content-Type: {{contentType}}
+X-API-KEY: {{apiKey}}
+Authorization: Bearer {{authToken}}
+Campaign-Key: {{campaignId}}
