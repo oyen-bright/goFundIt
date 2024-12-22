@@ -5,10 +5,10 @@ import (
 )
 
 type PaymentRepository interface {
-	CreatePayment(payment *models.Payment) error
-	GetPayment(paymentID string) (*models.Payment, error)
-	GetPaymentByContributorID(contributorID string) ([]*models.Payment, error)
-	UpdatePayment(payment *models.Payment) error
-	DeletePayment(paymentID string) error
-	ListPayments(campaignID string) ([]*models.Payment, error)
+	Create(payment *models.Payment) error
+	GetByReference(reference string) (*models.Payment, error)
+	GetByContributor(contributorID uint, limit, offset int) ([]models.Payment, int64, error)
+	GetByCampaign(campaignID string, limit, offset int) ([]*models.Payment, int64, error)
+	Update(payment *models.Payment) error
+	Delete(reference string) error
 }

@@ -13,7 +13,7 @@ type ContributorRepository interface {
 	RefundPayment(paymentID string) error
 
 	GetContributorsByCampaignID(campaignID string) ([]models.Contributor, error)
-	GetContributorById(contributorID uint) (models.Contributor, error)
+	GetContributorById(contributorID uint, preload bool) (models.Contributor, error)
 	GetContributorByUserHandle(userHandle uint) (models.Contributor, error)
 	GetEmailsOfActiveContributors(emails []string) ([]string, error)
 }

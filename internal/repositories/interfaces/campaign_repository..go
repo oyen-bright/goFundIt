@@ -10,5 +10,6 @@ type CampaignRepository interface {
 	Delete(campaignID string) error
 
 	GetByID(id string, preload bool) (models.Campaign, error)
+	GetByIDWithContributors(id string) (models.Campaign, error)
 	GetByCreatorHandle(handle string, preload bool) (models.Campaign, error)
 }

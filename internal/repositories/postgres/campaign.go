@@ -1,8 +1,6 @@
 package postgress
 
 import (
-	"log"
-
 	"github.com/oyen-bright/goFundIt/internal/models"
 	"github.com/oyen-bright/goFundIt/internal/repositories/interfaces"
 	"gorm.io/gorm"
@@ -29,7 +27,20 @@ func (r *campaignRepository) GetByID(id string, preload bool) (models.Campaign, 
 	if err != nil {
 		return models.Campaign{}, err
 	}
-	log.Println(len(campaign.Activities))
+	return campaign, nil
+}
+
+func (r *campaignRepository) GetByIDWithContributors(id string) (models.Campaign, error) {
+	var campaign models.Campaign
+
+	query := r.db.Where("id = ?", id)
+
+	query = query.Preload("Contributors.Activities").Preload("Contributors").Preload("CreatedBy")
+
+	err := query.First(&campaign).Error
+	if err != nil {
+		return models.Campaign{}, err
+	}
 	return campaign, nil
 }
 
