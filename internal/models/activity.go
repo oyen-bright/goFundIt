@@ -18,7 +18,7 @@ type Activity struct {
 	Cost            float64       `gorm:"not null" binding:"required" validate:"required,gt=0" json:"cost"`
 	IsApproved      bool          `gorm:"not null; default:false" json:"isApproved"`
 	Contributors    []Contributor `gorm:"many2many:activities_contributors" binding:"-" json:"contributors"`
-	Comments        []Comment     `gorm:"foreignKey:ActivityID" json:"-" binding:"-"`
+	Comments        []Comment     `gorm:"foreignKey:ActivityID;constraint:OnDelete:CASCADE" json:"-" binding:"-"`
 	CreatedByHandle string        `gorm:"not null" validate:"required" json:"-"`
 	CreatedBy       User          `gorm:"references:Handle" binding:"-" validate:"-" json:"-"`
 	CreatedAt       time.Time     `gorm:"not null" json:"-"`

@@ -18,20 +18,29 @@ const (
 
 // Campaign represents a fundraising campaign
 type Campaign struct {
-	ID              string          `gorm:"type:text;primaryKey" json:"id"`
-	Key             string          `gorm:"-" json:"key"`
-	Title           string          `gorm:"type:varchar(255);not null" validate:"required,min=4" binding:"required" json:"title"`
-	Description     string          `gorm:"type:text" binding:"required" validate:"required,min=100" json:"description"`
-	TargetAmount    float64         `gorm:"not null" validate:"required,gt=0" binding:"required,gt=0" json:"targetAmount"`
-	Images          []CampaignImage `gorm:"foreignKey:CampaignID;constraint:OnDelete:CASCADE" binding:"omitempty,dive,required" validate:"-" json:"images"`
-	Activities      []Activity      `gorm:"foreignKey:CampaignID;constraint:OnDelete:CASCADE" binding:"omitempty,dive,required" validate:"-" `
-	Contributors    []Contributor   `gorm:"foreignKey:CampaignID;constraint:OnDelete:CASCADE" binding:"required,gt=0,dive,required" validate:"required,gt=0,dive,required,contributorSum" json:"contributors"`
-	StartDate       time.Time       `gorm:"not null" validate:"required" binding:"required" json:"startDate"`
-	EndDate         time.Time       `gorm:"not null" validate:"required,gtfield=StartDate" binding:"required,gtfield=StartDate" json:"endDate"`
-	CreatedByHandle string          `gorm:"not null" validate:"required" binding:"-" json:"createdByHandle"`
-	CreatedBy       User            `gorm:"references:Handle" binding:"-" validate:"-" json:"-"`
-	CreatedAt       time.Time       `gorm:"not null" json:"-"`
-	UpdatedAt       time.Time       `json:"-"`
+	ID           string  `gorm:"type:text;primaryKey" validate:"-" binding:"-" json:"id"`
+	Key          string  `gorm:"-" validate:"-" binding:"-" json:"key"`
+	Title        string  `gorm:"type:varchar(255);not null" validate:"required,min=4" binding:"required" json:"title"`
+	Description  string  `gorm:"type:text" validate:"required,min=100" binding:"required" json:"description"`
+	TargetAmount float64 `gorm:"not null" validate:"required,gt=0" binding:"required,gt=0" json:"targetAmount"`
+
+	//Payment
+	PaymentMethod PaymentMethod `gorm:"type:varchar(10);not null" validate:"required,oneof=fiat crypto manual" binding:"required,oneof=fiat crypto manual" json:"paymentMethod"`
+	FiatCurrency  *FiatCurrency `gorm:"type:varchar(3)" validate:"required_if=PaymentMethod fiat,omitempty" binding:"required_if=PaymentMethod fiat" json:"fiatCurrency,omitempty"`
+	CryptoToken   *CryptoToken  `gorm:"type:varchar(10)" validate:"required_if=PaymentMethod crypto,omitempty" binding:"required_if=PaymentMethod crypto" json:"cryptoToken,omitempty"`
+
+	//Relations
+	Images       []CampaignImage `gorm:"foreignKey:CampaignID;constraint:OnDelete:CASCADE" validate:"-" binding:"omitempty,dive,required" json:"images"`
+	Activities   []Activity      `gorm:"foreignKey:CampaignID;constraint:OnDelete:CASCADE" validate:"-" binding:"omitempty,dive,required"`
+	Contributors []Contributor   `gorm:"foreignKey:CampaignID;constraint:OnDelete:CASCADE" validate:"required,gt=0,dive,required,contributorSum" binding:"required,gt=0,dive,required" json:"contributors"`
+	Payout       *Payout         `gorm:"foreignKey:CampaignID;constraint:OnDelete:CASCADE" validate:"-" binding:"-" json:"payout"`
+
+	StartDate       time.Time `gorm:"not null" validate:"required" binding:"required" json:"startDate"`
+	EndDate         time.Time `gorm:"not null" validate:"required,gtfield=StartDate" binding:"required,gtfield=StartDate" json:"endDate"`
+	CreatedByHandle string    `gorm:"not null" validate:"required" binding:"-" json:"createdByHandle"`
+	CreatedBy       User      `gorm:"references:Handle" validate:"-" binding:"-" json:"-"`
+	CreatedAt       time.Time `gorm:"not null" validate:"-" binding:"-" json:"-"`
+	UpdatedAt       time.Time `validate:"-" binding:"-" json:"-"`
 }
 
 // Campaign Status Methods
@@ -99,6 +108,25 @@ func (c *Campaign) GetContributorByID(ID uint) *Contributor {
 		}
 	}
 	return nil
+}
+
+// CanInitiatePayout checks if a campaignOwner can initiate a payout by checking if all the contributors has paid
+func (c *Campaign) CanInitiatePayout() bool {
+	for _, contributor := range c.Contributors {
+		if !contributor.HasPaid() {
+			return false
+		}
+	}
+	return true
+}
+
+// GetPayoutAmount returns the total amount paid by all contributors
+func (c *Campaign) GetPayoutAmount() float64 {
+	amount := 0.0
+	for _, contributor := range c.Contributors {
+		amount += *contributor.AmountPaid
+	}
+	return amount
 }
 
 // EmailIsPartOfCampaign checks if an email is associated with the campaign

@@ -16,10 +16,20 @@ type Config struct {
 	CommentHandler     *handlers.CommentHandler
 	ActivityHandler    *handlers.ActivityHandler
 	WebSocketHandler   *handlers.WebSocketHandler
+	PaymentHandler     *handlers.PaymentHandler
+	PayoutHandler      *handlers.PayoutHandler
+	PaystackKey        string
+	XAPIKey            string
 	JWT                jwt.Jwt
 }
 
 func SetupRoutes(cfg Config) {
+
+	// Webhook route
+	cfg.Router.POST("/payment/paystack/webhook", cfg.PaymentHandler.HandlePayStackWebhook, middlewares.PaystackSignature(cfg.PaystackKey))
+
+	// API Key Middleware
+	cfg.Router.Use(middlewares.APIKey(cfg.XAPIKey))
 
 	// Websocket Routes
 	ws := cfg.Router.Group("/ws")
@@ -84,6 +94,28 @@ func SetupRoutes(cfg Config) {
 		contributorGroup.PATCH("/:campaignID/:contributorID", cfg.ContributorHandler.HandleEditContributor)
 		contributorGroup.GET("/:campaignID", cfg.ContributorHandler.HandleGetContributorsByCampaignID)
 		contributorGroup.GET("/:campaignID/:contributorID", cfg.ContributorHandler.HandleGetContributorByID)
+	}
+
+	// Payment Routes
+	paymentGroup := cfg.Router.Group("/payment")
+	paymentGroup.Use(middlewares.Auth(cfg.JWT), middlewares.CampaignKey())
+	{
+		paymentGroup.POST("/contributor/:contributorID", cfg.PaymentHandler.HandleInitializePayment)
+		// Payment verification route
+		paymentGroup.POST("/verify/:reference", cfg.PaymentHandler.HandleVerifyPayment)
+	}
+
+	// Payout Routes
+	payoutGroup := cfg.Router.Group("/payout")
+	{
+		payoutGroup.GET("/bank-list", cfg.PayoutHandler.HandleGetBankList)
+		payoutGroup.POST("/verify/bank-account", cfg.PayoutHandler.HandleVerifyAccount)
+	}
+	payoutGroup.Use(middlewares.Auth(cfg.JWT), middlewares.CampaignKey())
+	{
+		payoutGroup.POST("/:campaignID", cfg.PayoutHandler.HandleInitializePayout)
+		payoutGroup.GET("/:campaignID", cfg.PayoutHandler.HandleGetPayoutByCampaignID)
+
 	}
 
 	// Suggestions Routes
