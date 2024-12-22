@@ -7,6 +7,7 @@ import (
 type CampaignService interface {
 	CreateCampaign(campaign models.Campaign, userHandle string) (models.Campaign, error)
 	GetCampaignByID(id string) (*models.Campaign, error)
+	GetCampaignByIDWithContributors(id string) (*models.Campaign, error)
 
 	CheckExistingCampaign(userHandle string) error
 	// UpdateCampaign(campaign Campaign) (Campaign, error)
