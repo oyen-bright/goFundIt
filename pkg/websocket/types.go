@@ -12,6 +12,8 @@ const (
 	EventTypeContributorUpdated  EventType = "contributor_updated"
 	EventTypeContributorDeleted  EventType = "contributor_deleted"
 	EventTypeCampaignUpdated     EventType = "campaign_updated"
+	EventTypePayoutCreated       EventType = "payout_created"
+	EventTypePayoutUpdated       EventType = "payout_updated"
 )
 
 type Message struct {
