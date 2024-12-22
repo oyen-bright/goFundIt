@@ -53,9 +53,7 @@ func (s *otpService) RequestOTP(email, name string) (models.Otp, error) {
 	}
 	otp.Email = email
 
-	if err = sendOTP(s.emailer, otp.Email, otp.Code, name); err != nil {
-		return *otp, errs.InternalServerError(err).Log(s.logger)
-	}
+	go s.sendOTP(s.emailer, otp.Email, otp.Code, name)
 
 	return *otp, nil
 }
@@ -95,7 +93,10 @@ func (s *otpService) VerifyOTP(email, code, requestId string) (models.Otp, error
 }
 
 // Sends OTP to the user via email
-func sendOTP(emailer email.Emailer, email, code, name string) error {
+func (s *otpService) sendOTP(emailer email.Emailer, email, code, name string) {
 	verificationTemplate := emailTemplates.Verification([]string{email}, name, code)
-	return emailer.SendEmailTemplate(*verificationTemplate)
+	err := emailer.SendEmailTemplate(*verificationTemplate)
+	if err != nil {
+		errs.InternalServerError(err).Log(s.logger)
+	}
 }

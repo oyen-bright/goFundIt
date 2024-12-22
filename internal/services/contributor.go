@@ -20,6 +20,20 @@ type contributorService struct {
 	logger          logger.Logger
 }
 
+// GetContributorByIDWithActivities implements interfaces.ContributorService.
+func (s *contributorService) GetContributorByIDWithActivities(contributorID uint) (models.Contributor, error) {
+	contributor, err := s.repo.GetContributorById(contributorID, true)
+
+	if err != nil {
+		if database.Error(err).IsNotfound() {
+			return models.Contributor{}, errs.NotFound("Contributor not found")
+		}
+		return models.Contributor{}, errs.InternalServerError(err).Log(s.logger)
+	}
+	return contributor, nil
+
+}
+
 func NewContributorService(repo repositories.ContributorRepository, campaignService services.CampaignService, broadcaster services.EventBroadcaster, logger logger.Logger) services.ContributorService {
 	return &contributorService{repo: repo, logger: logger, campaignService: campaignService, broadcaster: broadcaster}
 }
@@ -64,7 +78,22 @@ func (s *contributorService) AddContributorToCampaign(contributor *models.Contri
 	return nil
 }
 
-func (s *contributorService) UpdateContributor(contributor *models.Contributor, contributorID uint, userEmail string) (retrievedContributor models.Contributor, err error) {
+func (s *contributorService) UpdateContributor(contributor *models.Contributor) error {
+
+	// Update contributor
+	err := s.repo.Update(contributor)
+
+	if err != nil {
+		return errs.InternalServerError(err).Log(s.logger)
+	}
+
+	// broadcast event
+	s.broadcaster.NewEvent(contributor.CampaignID, websocket.EventTypeContributorUpdated, contributor)
+
+	return nil
+}
+
+func (s *contributorService) UpdateContributorByID(contributor *models.Contributor, contributorID uint, userEmail string) (retrievedContributor models.Contributor, err error) {
 
 	// Get contributor
 	retrievedContributor, err = s.GetContributorByID(contributorID)
@@ -129,7 +158,7 @@ func (s *contributorService) RemoveContributorFromCampaign(contributorId uint, c
 
 // GetContributors retrieves contributor by id
 func (s *contributorService) GetContributorByID(contributorID uint) (models.Contributor, error) {
-	contributor, err := s.repo.GetContributorById(contributorID)
+	contributor, err := s.repo.GetContributorById(contributorID, false)
 
 	if err != nil {
 		if database.Error(err).IsNotfound() {

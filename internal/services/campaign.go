@@ -103,3 +103,13 @@ func (s *campaignService) GetCampaignByID(id string) (*models.Campaign, error) {
 	}
 	return &campaign, nil
 }
+func (s *campaignService) GetCampaignByIDWithContributors(id string) (*models.Campaign, error) {
+	campaign, err := s.repo.GetByIDWithContributors(id)
+	if err != nil {
+		if database.Error(err).IsNotfound() {
+			return nil, errs.BadRequest("Campaign not found", nil)
+		}
+		return nil, errs.InternalServerError(err).Log(s.logger)
+	}
+	return &campaign, nil
+}

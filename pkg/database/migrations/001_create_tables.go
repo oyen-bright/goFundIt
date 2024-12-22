@@ -18,6 +18,7 @@ func Migrate(db *gorm.DB) error {
 		&models.User{},
 		&models.Payment{},
 		&models.Comment{},
+		&models.Payout{},
 	)
 	if err != nil {
 		return err
