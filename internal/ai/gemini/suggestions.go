@@ -2,12 +2,12 @@ package gemini
 
 import (
 	"encoding/json"
-	"log"
 
 	"github.com/google/generative-ai-go/genai"
 	"github.com/oyen-bright/goFundIt/internal/models"
 )
 
+// TODO;  add location ?
 func (c *geminiClient) GenerateActivitySuggestions(prompt string) ([]models.ActivitySuggestion, error) {
 	c.model.SetTemperature(0.4)
 	c.model.SetTopK(40)
@@ -59,12 +59,7 @@ func (c *geminiClient) GenerateActivitySuggestions(prompt string) ([]models.Acti
 		},
 	}
 
-	log.Println(c.context)
-	log.Println(prompt)
 	resp, err := session.SendMessage(*c.context, genai.Text(prompt))
-
-	log.Println(resp)
-	log.Println(err)
 
 	if err != nil {
 		return nil, err

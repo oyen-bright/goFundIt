@@ -21,6 +21,7 @@ type AppConfig struct {
 	EmailProvider providers.EmailProvider
 	ServerPort    string
 	GeminiKey     string
+	PaystackKey   string
 	EmailConfig   email.EmailConfig
 	DBConfig      database.Config
 	EncryptionKey []string
@@ -82,7 +83,7 @@ func parseEnvData(envData map[string]string) (*AppConfig, error) {
 		"PORT", "EMAIL_PROVIDER", "EMAIL_HOST", "EMAIL_PORT", "EMAIL_USERNAME",
 		"EMAIL_PASSWORD", "ENCRYPTION_KEYS", "POSTGRES_DB", "POSTGRES_USER",
 		"POSTGRES_PASSWORD", "POSTGRES_HOST", "POSTGRES_PORT", "X_API_KEY",
-		"JWT_SECRET", "GEMINI_KEY",
+		"JWT_SECRET", "GEMINI_KEY", "PAYSTACK_KEY",
 	}
 
 	if err := checkRequiredEnvs(envData, requiredEnvs); err != nil {
@@ -121,6 +122,7 @@ func parseEnvData(envData map[string]string) (*AppConfig, error) {
 	return &AppConfig{
 		ServerPort:    envData["PORT"],
 		GeminiKey:     envData["GEMINI_KEY"],
+		PaystackKey:   envData["PAYSTACK_KEY"],
 		EmailProvider: emailProvider,
 		EmailConfig:   emailConfig,
 		EncryptionKey: strings.Split(envData["ENCRYPTION_KEYS"], ","),

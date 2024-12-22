@@ -7,7 +7,6 @@ import (
 
 	"github.com/oyen-bright/goFundIt/internal/ai/gemini"
 	"github.com/oyen-bright/goFundIt/internal/api/handlers"
-	"github.com/oyen-bright/goFundIt/internal/api/middlewares"
 	"github.com/oyen-bright/goFundIt/internal/api/routes"
 	postgress "github.com/oyen-bright/goFundIt/internal/repositories/postgres"
 	"github.com/oyen-bright/goFundIt/internal/services"
@@ -16,6 +15,7 @@ import (
 	"github.com/oyen-bright/goFundIt/pkg/encryption"
 	"github.com/oyen-bright/goFundIt/pkg/jwt"
 	"github.com/oyen-bright/goFundIt/pkg/logger"
+	"github.com/oyen-bright/goFundIt/pkg/paystack"
 	"github.com/oyen-bright/goFundIt/pkg/websocket"
 
 	"gorm.io/gorm"
@@ -56,6 +56,9 @@ func main() {
 	go websocketHub.Run()
 	defer websocketHub.Close()
 
+	//Initialize paystack
+	paystackClient := paystack.NewClient(cfg.PaystackKey)
+
 	// Initialize Repositories
 	authRepo := postgress.NewAuthRepository(db)
 	otpRepo := postgress.NewOTPRepository(db)
@@ -63,6 +66,8 @@ func main() {
 	contributorRepo := postgress.NewContributorRepository(db)
 	activityRepo := postgress.NewActivityRepo(db)
 	commentRepo := postgress.NewCommentRepository(db)
+	paymentRepo := postgress.NewPaymentRepository(db)
+	payoutRepo := postgress.NewPayoutRepository(db)
 
 	// initialize the event broadcaster
 	eventBroadcaster := services.NewEventBroadcaster(websocketHub)
@@ -75,6 +80,8 @@ func main() {
 	activityService := services.NewActivityService(activityRepo, authService, campaignService, eventBroadcaster, logger)
 	commentService := services.NewCommentService(commentRepo, authService, activityService, eventBroadcaster, logger)
 	suggestionService := services.NewSuggestionService(aiClient, campaignService, logger)
+	paymentService := services.NewPaymentService(paymentRepo, contributorService, campaignService, paystackClient, logger)
+	payoutService := services.NewPayoutService(payoutRepo, campaignService, paystackClient, eventBroadcaster, logger)
 
 	// Initialize Handlers
 	authHandler := handlers.NewAuthHandler(authService)
@@ -83,11 +90,12 @@ func main() {
 	contributorHandler := handlers.NewContributorHandler(contributorService)
 	commentHandler := handlers.NewCommentHandler(commentService)
 	suggestionHandler := handlers.NewSuggestionHandler(suggestionService)
+	paymentHandler := handlers.NewPaymentHandler(paymentService)
+	payoutHandler := handlers.NewPayoutHandler(payoutService)
 	websocketHandler := handlers.NewWebSocketHandler(websocketHub, campaignService)
 
 	// Initialize Gin Router
 	router := gin.Default()
-	router.Use(middlewares.APIKey(cfg.XAPIKey))
 
 	// Setup Routes
 	routes.SetupRoutes(routes.Config{
@@ -99,6 +107,10 @@ func main() {
 		CommentHandler:     commentHandler,
 		SuggestionHandler:  suggestionHandler,
 		WebSocketHandler:   websocketHandler,
+		PaymentHandler:     paymentHandler,
+		PayoutHandler:      payoutHandler,
+		PaystackKey:        cfg.PaystackKey,
+		XAPIKey:            cfg.XAPIKey,
 		JWT:                jwtService,
 	})
 
