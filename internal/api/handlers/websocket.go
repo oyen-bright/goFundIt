@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"log"
 	"net/http"
 
 	gorilla "github.com/gorilla/websocket"
@@ -41,7 +40,6 @@ func (h *WebSocketHandler) HandleCampaignWebSocket(c *gin.Context) {
 
 	conn, err := upgrader.Upgrade(c.Writer, c.Request, nil)
 	if err != nil {
-		log.Println(err)
 		return
 	}
 

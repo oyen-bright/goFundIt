@@ -77,7 +77,7 @@ func (h *ContributorHandler) HandleEditContributor(c *gin.Context) {
 	}
 	contributor.Name = requestDTO.Name
 
-	updateContributor, err := h.service.UpdateContributor(&contributor, contributorId, claims.Email)
+	updateContributor, err := h.service.UpdateContributorByID(&contributor, contributorId, claims.Email)
 	if err != nil {
 		response.FromError(c, err)
 		return
