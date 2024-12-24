@@ -16,6 +16,7 @@ import (
 	"github.com/oyen-bright/goFundIt/pkg/jwt"
 	"github.com/oyen-bright/goFundIt/pkg/logger"
 	"github.com/oyen-bright/goFundIt/pkg/paystack"
+	"github.com/oyen-bright/goFundIt/pkg/storage/cloudinary"
 	"github.com/oyen-bright/goFundIt/pkg/websocket"
 
 	"gorm.io/gorm"
@@ -44,17 +45,25 @@ func main() {
 	cfg, db := initialize()
 	defer database.Close(db)
 
-	// Initialize Core Services
+	// Initialize AI Client
 	aiClient, _ := gemini.NewClient(cfg.GeminiKey)
 	defer gemini.Close(aiClient)
+
+	// Initialize Websocket Hub
+	websocketHub := websocket.NewHub()
+	go websocketHub.Run()
+	defer websocketHub.Close()
+
+	storage, err := cloudinary.NewCloudinary(cfg.CloudinaryURL)
+	if err != nil {
+		panic(err)
+	}
+
+	// Initialize Core Services
 
 	encryptor := encryption.New(cfg.EncryptionKey)
 	emailer := email.New(providers.EmailSMTP, cfg.EmailConfig)
 	jwtService := jwt.New(cfg.JWTSecret)
-
-	websocketHub := websocket.NewHub()
-	go websocketHub.Run()
-	defer websocketHub.Close()
 
 	//Initialize paystack
 	paystackClient := paystack.NewClient(cfg.PaystackKey)
@@ -80,7 +89,7 @@ func main() {
 	activityService := services.NewActivityService(activityRepo, authService, campaignService, eventBroadcaster, logger)
 	commentService := services.NewCommentService(commentRepo, authService, activityService, eventBroadcaster, logger)
 	suggestionService := services.NewSuggestionService(aiClient, campaignService, logger)
-	paymentService := services.NewPaymentService(paymentRepo, contributorService, campaignService, paystackClient, logger)
+	paymentService := services.NewPaymentService(paymentRepo, contributorService, campaignService, paystackClient, storage, eventBroadcaster, logger)
 	payoutService := services.NewPayoutService(payoutRepo, campaignService, paystackClient, eventBroadcaster, logger)
 
 	// Initialize Handlers

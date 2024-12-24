@@ -23,6 +23,7 @@ type AppConfig struct {
 	GeminiKey     string
 	PaystackKey   string
 	EmailConfig   email.EmailConfig
+	CloudinaryURL string
 	DBConfig      database.Config
 	EncryptionKey []string
 	XAPIKey       string
@@ -83,7 +84,7 @@ func parseEnvData(envData map[string]string) (*AppConfig, error) {
 		"PORT", "EMAIL_PROVIDER", "EMAIL_HOST", "EMAIL_PORT", "EMAIL_USERNAME",
 		"EMAIL_PASSWORD", "ENCRYPTION_KEYS", "POSTGRES_DB", "POSTGRES_USER",
 		"POSTGRES_PASSWORD", "POSTGRES_HOST", "POSTGRES_PORT", "X_API_KEY",
-		"JWT_SECRET", "GEMINI_KEY", "PAYSTACK_KEY",
+		"JWT_SECRET", "GEMINI_KEY", "PAYSTACK_KEY", "CLOUDINARY_URL",
 	}
 
 	if err := checkRequiredEnvs(envData, requiredEnvs); err != nil {
@@ -128,6 +129,7 @@ func parseEnvData(envData map[string]string) (*AppConfig, error) {
 		EncryptionKey: strings.Split(envData["ENCRYPTION_KEYS"], ","),
 		DBConfig:      dbConfig,
 		XAPIKey:       envData["X_API_KEY"],
+		CloudinaryURL: envData["CLOUDINARY_URL"],
 		JWTSecret:     envData["JWT_SECRET"],
 	}, nil
 }
