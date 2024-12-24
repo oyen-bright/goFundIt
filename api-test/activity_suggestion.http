@@ -1,5 +1,5 @@
 @apiKey = {{X_API_KEY}}
-@campaignId = SAQRDEMSU
+@campaignId = TRPNRUXPQ
 
 
 
@@ -13,5 +13,5 @@ POST {{baseUrl}}/suggestions/activity/
 X-API-KEY: {{apiKey}}
 
 {
-    "content": "HOliday in  nyc  Our anuall holiday isd comminh up please contribute on time an select you racbiities "
+    "content": "Trip to Lagos for a day"
 }
