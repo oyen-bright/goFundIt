@@ -76,6 +76,17 @@ func NewFiatPayout(campaignID string, amount float64, bankCode, bankName, accoun
 	}
 }
 
+// NewManualPayout creates a new manual payout instance
+func NewManualPayout(campaignID string, amount float64, recipientId string) *Payout {
+	return &Payout{
+		ID:           generatePayoutId(),
+		CampaignID:   campaignID,
+		Amount:       amount,
+		RecipientID:  recipientId,
+		PayoutMethod: PaymentMethodManual,
+	}
+}
+
 // BeforeCreate ensures ID is not null before creating a new payout
 func (p *Payout) BeforeCreate(tx *gorm.DB) (err error) {
 	if p.ID == "" {

@@ -30,7 +30,7 @@ type Contributor struct {
 	CampaignID string     `gorm:"not null;foreignKey:CampaignID;index:idx_campaign_user,unique" validate:"required" json:"campaignId"`
 	Amount     float64    `gorm:"not null" binding:"required,gte=0" validate:"gte=0,required" json:"amount"`
 	Activities []Activity `gorm:"many2many:activities_contributors" binding:"-" json:"activities"`
-	Payment    *Payment   `gorm:"foreignKey:ContributorID" json:"payment,omitempty"` // Changed this line
+	Payment    *Payment   `gorm:"foreignKey:ContributorID" json:"payment"`
 	Email      string     `gorm:"not null;foreignKey:Email;index:idx_campaign_user,unique" json:"email" binding:"-"`
 	CreatedAt  time.Time  `gorm:"not null" json:"-"`
 	UpdatedAt  time.Time  `json:"-"`
@@ -63,7 +63,8 @@ func (c *Contributor) HasPaid() bool {
 	if c.Payment == nil {
 		return false
 	}
-	return c.Payment.PaymentStatus == PaymentStatusSucceeded
+	//TODO: not accountable for all cases
+	return c.Payment.PaymentStatus == PaymentStatusSucceeded || c.Payment.PaymentStatus == PaymentStatusPendingApproval
 }
 
 // IsPending checks if the payment is still pending

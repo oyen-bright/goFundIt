@@ -2,6 +2,7 @@ package services
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 
 	"github.com/oyen-bright/goFundIt/internal/models"
@@ -37,10 +38,16 @@ func (p *paymentService) InitializeManualPayment(contributorID uint, reference s
 		return nil, errs.BadRequest("Contributor has already paid", nil)
 	}
 	// create a new manual payment
+	// TODO: payment ref
 	payment := models.NewManualPayment(contributor.ID, contributor.CampaignID, fmt.Sprintf("Manual%d", contributorID), contributor.GetAmountTotal(), nil)
 
 	// validate user
+
+	log.Println(contributor.Email, userEmail)
+
+	//TODO: contributor is also createor of campaing a
 	if contributor.Email != userEmail {
+
 		if campaign, err := p.campaignService.GetCampaignByID(contributor.CampaignID); err != nil {
 			return nil, err
 		} else if campaign.CreatedBy.Email != userEmail {
@@ -182,10 +189,13 @@ func (p *paymentService) InitializePayment(contributorID uint) (*models.Payment,
 
 	// validate payment method
 	switch campaign.PaymentMethod {
+
 	case models.PaymentMethodCrypto:
 		return nil, errs.BadRequest("Cryptocurrency payment method is not available yet", nil)
+
 	case models.PaymentMethodManual:
 		return nil, errs.BadRequest("Campaign payment method is manual", nil)
+
 	case models.PaymentMethodFiat:
 		response, err := p.paystack.InitiateTransaction(contributor.Email, string(*campaign.FiatCurrency), contributor.GetAmountTotal())
 		if err != nil {

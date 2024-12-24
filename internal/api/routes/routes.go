@@ -100,8 +100,9 @@ func SetupRoutes(cfg Config) {
 	paymentGroup := cfg.Router.Group("/payment")
 	paymentGroup.Use(middlewares.Auth(cfg.JWT), middlewares.CampaignKey())
 	{
+		//TODO: fix route name
 		paymentGroup.POST("/contributor/:contributorID", cfg.PaymentHandler.HandleInitializePayment)
-		paymentGroup.POST("/manual/:contributorID", cfg.PaymentHandler.HandleInitializeManualPayment)
+		paymentGroup.POST("manual/contributor/:contributorID", cfg.PaymentHandler.HandleInitializeManualPayment)
 		// Payment verification route
 		paymentGroup.POST("/verify/:reference", cfg.PaymentHandler.HandleVerifyPayment)
 		paymentGroup.POST("/manual/verify/:reference", cfg.PaymentHandler.HandleVerifyManualPayment)
@@ -116,6 +117,7 @@ func SetupRoutes(cfg Config) {
 	payoutGroup.Use(middlewares.Auth(cfg.JWT), middlewares.CampaignKey())
 	{
 		payoutGroup.POST("/:campaignID", cfg.PayoutHandler.HandleInitializePayout)
+		payoutGroup.POST("manual/:campaignID", cfg.PayoutHandler.HandleInitializeManualPayout)
 		payoutGroup.GET("/:campaignID", cfg.PayoutHandler.HandleGetPayoutByCampaignID)
 
 	}

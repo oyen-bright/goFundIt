@@ -66,6 +66,26 @@ func (h *PayoutHandler) HandleInitializePayout(c *gin.Context) {
 	response.Success(c, "Payout initialized successfully", payout)
 }
 
+// HandleInitializeManualPayout initializes a manual payout for a campaign
+func (h *PayoutHandler) HandleInitializeManualPayout(c *gin.Context) {
+	campaignID := GetCampaignID(c)
+	claims := getClaimsFromContext(c)
+	var req dto.PayoutRequest
+	if err := c.BindJSON(&req); err != nil {
+		response.BadRequest(c, "Invalid request", utils.ExtractValidationErrors(err))
+		return
+	}
+
+	payout, err := h.PayoutService.InitializeManualPayout(campaignID, claims.Handle)
+	if err != nil {
+		response.FromError(c, err)
+		return
+	}
+
+	response.Success(c, "Manual payout initialized successfully", payout)
+}
+
+// HandleGetPayoutByCampaignID initialize
 func (h *PayoutHandler) HandleGetPayoutByCampaignID(c *gin.Context) {
 	campaignID := GetCampaignID(c)
 

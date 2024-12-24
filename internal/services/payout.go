@@ -33,6 +33,47 @@ func NewPayoutService(payoutRepo interfaces.PayoutRepository, campaignService se
 		logger:          logger}
 }
 
+// InitializeManualPayout implements interfaces.PayoutService.
+func (p *payoutService) InitializeManualPayout(campaignID string, userHandle string) (*models.Payout, error) {
+	// Validate the campaign and user
+	campaign, err := p.campaignService.GetCampaignByIDWithContributors(campaignID)
+	if err != nil {
+		return nil, err
+	}
+	if campaign.CreatedBy.Handle != userHandle {
+		return nil, errs.BadRequest("You are not authorized to perform this action", nil)
+	}
+
+	// Validate payout status
+	if campaign.Payout != nil {
+		if campaign.Payout.Status == models.PayoutStatusPending {
+			return nil, errs.BadRequest("You have a pending payout", nil)
+		}
+
+		if campaign.Payout.Status == models.PayoutStatusCompleted {
+			return nil, errs.BadRequest("You have already completed a payout", nil)
+		}
+	}
+	if !campaign.CanInitiatePayout() {
+		return nil, errs.BadRequest("Cannot initiate payout: Some contributors haven't completed their payments. Please ensure all contributors have paid or remove unpaid contributors before proceeding.", nil)
+	}
+
+	// Process Payout
+	payout := models.NewManualPayout(campaignID, campaign.GetPayoutAmount(), "")
+	payout.MarkPayoutCompleted()
+
+	// Create Payout
+	if err := p.repo.Create(payout); err != nil {
+		return nil, err
+	}
+
+	// Broadcast Payout
+	p.broadCaster.NewEvent(campaignID, websocket.EventTypePayoutUpdated, payout)
+
+	return payout, nil
+
+}
+
 // InitializePayout implements interfaces.PayoutService.
 func (p *payoutService) InitializePayout(campaignID string, userHandle string, req dto.PayoutRequest) (*models.Payout, error) {
 	// Validate the campaign and user
@@ -61,9 +102,12 @@ func (p *payoutService) InitializePayout(campaignID string, userHandle string, r
 	// Process Payout
 	var payout models.Payout
 	switch campaign.PaymentMethod {
+
+	case models.PaymentMethodCrypto:
+		return nil, errs.BadRequest("Cryptocurrency payout  is not available yet", nil)
+
 	case models.PaymentMethodManual:
-		//TODO: Implement Manual Payout
-		return nil, errs.BadRequest("Payout method not available now ", nil)
+		return nil, errs.BadRequest("Campaign payment method is manual", nil)
 
 	case models.PaymentMethodFiat:
 		// Create Recipient
@@ -79,9 +123,6 @@ func (p *payoutService) InitializePayout(campaignID string, userHandle string, r
 		payout.MarkPayoutProcessing()
 		payout = *models.NewFiatPayout(campaignID, campaign.GetPayoutAmount(), req.BankCode, req.BankName, req.AccountName, req.AccountNumber, string(*campaign.FiatCurrency), res.Data.RecipientCode)
 
-	case models.PaymentMethodCrypto:
-		//TODO: Implement Crypto Payout
-		return nil, errs.BadRequest("Payout method not available now ", nil)
 	}
 
 	// Create Payout
@@ -149,10 +190,8 @@ func (p *payoutService) processPayoutTransfer(payout models.Payout) {
 		p.processFiatTransfer(payout)
 		return
 	case models.PaymentMethodCrypto:
-		//TODO: Implement Crypto Payout
 		return
 	case models.PaymentMethodManual:
-		// TODO: Implement Manual Payout
 		return
 	}
 
