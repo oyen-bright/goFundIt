@@ -29,10 +29,8 @@ func (r *contributorRepository) UpdateName(contributorID uint, name string) erro
 func (r *contributorRepository) Update(contribution *models.Contributor) error {
 	//TODO:use gorm struct tag to annotate the fields to be updated
 	return r.db.Model(&models.Contributor{}).Where("id = ?", contribution.ID).Updates(map[string]interface{}{
-		"amount":         contribution.Amount,
-		"name":           contribution.Name,
-		"amount_paid":    contribution.AmountPaid,
-		"payment_status": contribution.PaymentStatus,
+		"amount": contribution.Amount,
+		"name":   contribution.Name,
 	}).Error
 }
 
@@ -62,7 +60,7 @@ func (r *contributorRepository) GetContributorById(contributorID uint, preload b
 
 	if preload {
 		var contributor models.Contributor
-		err := r.db.Preload("Activities").First(&contributor, contributorID).Error
+		err := r.db.Preload("Activities").Preload("Payment").First(&contributor, contributorID).Error
 		return contributor, err
 	}
 	err := r.db.First(&contributor, contributorID).Error

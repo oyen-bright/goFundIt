@@ -124,7 +124,9 @@ func (c *Campaign) CanInitiatePayout() bool {
 func (c *Campaign) GetPayoutAmount() float64 {
 	amount := 0.0
 	for _, contributor := range c.Contributors {
-		amount += *contributor.AmountPaid
+		if contributor.HasPaid() {
+			amount += contributor.Payment.Amount
+		}
 	}
 	return amount
 }

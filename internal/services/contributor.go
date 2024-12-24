@@ -20,20 +20,6 @@ type contributorService struct {
 	logger          logger.Logger
 }
 
-// GetContributorByIDWithActivities implements interfaces.ContributorService.
-func (s *contributorService) GetContributorByIDWithActivities(contributorID uint) (models.Contributor, error) {
-	contributor, err := s.repo.GetContributorById(contributorID, true)
-
-	if err != nil {
-		if database.Error(err).IsNotfound() {
-			return models.Contributor{}, errs.NotFound("Contributor not found")
-		}
-		return models.Contributor{}, errs.InternalServerError(err).Log(s.logger)
-	}
-	return contributor, nil
-
-}
-
 func NewContributorService(repo repositories.ContributorRepository, campaignService services.CampaignService, broadcaster services.EventBroadcaster, logger logger.Logger) services.ContributorService {
 	return &contributorService{repo: repo, logger: logger, campaignService: campaignService, broadcaster: broadcaster}
 }

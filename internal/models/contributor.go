@@ -11,17 +11,29 @@ import (
 // Contributor represents a user who contributes funds to a campaign
 // TODO: use DTO to bind the email and name
 // TODO: consider required the userEmail via binding to make UpdateUserEmail() redundant
+// type Contributor struct {
+// 	ID            uint          `gorm:"primaryKey" json:"id"`
+// 	Name          string        `gorm:"type:varchar(255);default:null;null" validate:"omitempty" binding:"omitempty,gte=3" json:"name"`
+// 	CampaignID    string        `gorm:"not null;foreignKey:CampaignID;index:idx_campaign_user,unique" validate:"required" json:"campaignId"`
+// 	Amount        float64       `gorm:"not null" binding:"required,gte=0" validate:"gte=0,required" json:"amount"`
+// 	AmountPaid    *float64      `gorm:"type:decimal(10,2);default:null" binding:"-" json:"amountPaid,omitempty"`
+// 	Activities    []Activity    `gorm:"many2many:activities_contributors" binding:"-" json:"activities"`
+// 	PaymentStatus PaymentStatus `gorm:"not null;default:pending" json:"paymentStatus" binding:"-"`
+// 	Email         string        `gorm:"not null;foreignKey:Email;index:idx_campaign_user,unique" json:"email" binding:"-"`
+// 	CreatedAt     time.Time     `gorm:"not null" json:"-"`
+// 	UpdatedAt     time.Time     `json:"-"`
+// }
+
 type Contributor struct {
-	ID            uint       `gorm:"primaryKey" json:"id"`
-	Name          string     `gorm:"type:varchar(255);default:null;null" validate:"omitempty" binding:"omitempty,gte=3" json:"name"`
-	CampaignID    string     `gorm:"not null;foreignKey:CampaignID;index:idx_campaign_user,unique" validate:"required" json:"campaignId"`
-	Amount        float64    `gorm:"not null" binding:"required,gte=0" validate:"gte=0,required" json:"amount"`
-	AmountPaid    *float64   `gorm:"type:decimal(10,2);default:null" binding:"-" json:"amountPaid,omitempty"`
-	Activities    []Activity `gorm:"many2many:activities_contributors" binding:"-" json:"activities"`
-	PaymentStatus string     `gorm:"not null;default:pending" json:"paymentStatus" binding:"-"`
-	Email         string     `gorm:"not null;foreignKey:Email;index:idx_campaign_user,unique" json:"email" binding:"-"`
-	CreatedAt     time.Time  `gorm:"not null" json:"-"`
-	UpdatedAt     time.Time  `json:"-"`
+	ID         uint       `gorm:"primaryKey" json:"id"`
+	Name       string     `gorm:"type:varchar(255);default:null;null" validate:"omitempty" binding:"omitempty,gte=3" json:"name"`
+	CampaignID string     `gorm:"not null;foreignKey:CampaignID;index:idx_campaign_user,unique" validate:"required" json:"campaignId"`
+	Amount     float64    `gorm:"not null" binding:"required,gte=0" validate:"gte=0,required" json:"amount"`
+	Activities []Activity `gorm:"many2many:activities_contributors" binding:"-" json:"activities"`
+	Payment    *Payment   `gorm:"foreignKey:ContributorID" json:"payment,omitempty"` // Changed this line
+	Email      string     `gorm:"not null;foreignKey:Email;index:idx_campaign_user,unique" json:"email" binding:"-"`
+	CreatedAt  time.Time  `gorm:"not null" json:"-"`
+	UpdatedAt  time.Time  `json:"-"`
 }
 
 // Constructor
@@ -48,28 +60,26 @@ func (c *Contributor) GetAmountTotal() float64 {
 
 // HasPaid checks if the payment has been successfully processed
 func (c *Contributor) HasPaid() bool {
-	return c.PaymentStatus == string(PaymentStatusSucceeded)
+	if c.Payment == nil {
+		return false
+	}
+	return c.Payment.PaymentStatus == PaymentStatusSucceeded
 }
 
 // IsPending checks if the payment is still pending
 func (c *Contributor) IsPending() bool {
-	return c.PaymentStatus == string(PaymentStatusPending)
+	if c.Payment == nil {
+		return false
+	}
+	return c.Payment.PaymentStatus == PaymentStatusPending
 }
 
 // HasFailed checks if the payment has failed
 func (c *Contributor) HasFailed() bool {
-	return c.PaymentStatus == string(PaymentStatusFailed)
-}
-
-// SetPaymentSucceeded sets the payment status to succeeded
-func (c *Contributor) SetPaymentSucceeded(amountPaid float64) {
-	c.AmountPaid = &amountPaid
-	c.PaymentStatus = string(PaymentStatusSucceeded)
-}
-
-// SetPaymentFailed sets the payment status to failed
-func (c *Contributor) SetPaymentFailed() {
-	c.PaymentStatus = string(PaymentStatusFailed)
+	if c.Payment == nil {
+		return false
+	}
+	return c.Payment.PaymentStatus == PaymentStatusFailed
 }
 
 // Update Methods

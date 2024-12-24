@@ -1,6 +1,9 @@
 package handlers
 
 import (
+	"io"
+	"mime/multipart"
+	"os"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
@@ -40,4 +43,28 @@ func parseContributorID(c *gin.Context) (uint, error) {
 		return 0, err
 	}
 	return uint(id), nil
+}
+
+// CreateTempFileFromMultipart creates a temporary file from multipart form data
+func createTempFileFromMultipart(file *multipart.FileHeader) (*os.File, error) {
+	tempFile, err := os.CreateTemp("", "upload-*.png")
+	if err != nil {
+		return nil, err
+	}
+
+	src, err := file.Open()
+	if err != nil {
+		return nil, err
+	}
+	defer src.Close()
+
+	if _, err = io.Copy(tempFile, src); err != nil {
+		return nil, err
+	}
+
+	if _, err = tempFile.Seek(0, 0); err != nil {
+		return nil, err
+	}
+
+	return tempFile, nil
 }

@@ -31,6 +31,7 @@ func (h *PayoutHandler) HandleGetBankList(c *gin.Context) {
 
 // VerifyAccount verifies an account number and bank code
 func (h *PayoutHandler) HandleVerifyAccount(c *gin.Context) {
+
 	var req dto.VerifyAccountRequest
 	if err := c.BindJSON(&req); err != nil {
 		response.BadRequest(c, "Invalid request", utils.ExtractValidationErrors(err))

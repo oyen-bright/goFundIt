@@ -11,6 +11,8 @@ import (
 	"github.com/oyen-bright/goFundIt/pkg/errs"
 	"github.com/oyen-bright/goFundIt/pkg/logger"
 	"github.com/oyen-bright/goFundIt/pkg/paystack"
+	"github.com/oyen-bright/goFundIt/pkg/storage"
+	"github.com/oyen-bright/goFundIt/pkg/websocket"
 )
 
 type paymentService struct {
@@ -18,10 +20,64 @@ type paymentService struct {
 	paystack           *paystack.Client
 	campaignService    services.CampaignService
 	contributorService services.ContributorService
+	broadcaster        services.EventBroadcaster
+	storage            storage.Storage
 	logger             logger.Logger
 }
 
-// VerifyPayment implements interfaces.PaymentService.
+func (p *paymentService) InitializeManualPayment(contributorID uint, reference string, userEmail string) (*models.Payment, error) {
+
+	// validate contributor
+	contributor, err := p.contributorService.GetContributorByID(contributorID)
+	if err != nil {
+		return nil, err
+	}
+
+	if contributor.HasPaid() {
+		return nil, errs.BadRequest("Contributor has already paid", nil)
+	}
+	// create a new manual payment
+	payment := models.NewManualPayment(contributor.ID, contributor.CampaignID, fmt.Sprintf("Manual%d", contributorID), contributor.GetAmountTotal(), nil)
+
+	// validate user
+	if contributor.Email != userEmail {
+		if campaign, err := p.campaignService.GetCampaignByID(contributor.CampaignID); err != nil {
+			return nil, err
+		} else if campaign.CreatedBy.Email != userEmail {
+			return nil, errs.BadRequest("You are not authorized to perform this action", nil)
+		} else {
+			payment.SetPaymentStatusToSuccess()
+		}
+	} else {
+		if reference == "" {
+			return nil, errs.BadRequest("Reference is required", nil)
+		}
+	}
+
+	// Upload and update reference to payment proof
+	url, id, err := p.storage.UploadFile(reference, "payment/reference")
+	if err != nil {
+		return nil, errs.InternalServerError(err).Log(p.logger)
+	}
+
+	payment.UpdateManualPaymentProof(&models.ManualPaymentProof{
+		DocumentURL: url,
+		DocumentID:  id,
+	})
+
+	// Save Payment
+	err = p.repo.Create(payment)
+	if err != nil {
+		return nil, errs.InternalServerError(err).Log(p.logger)
+	}
+	contributor.Payment = payment
+	// Broadcast event
+	p.broadcaster.NewEvent(contributor.CampaignID, websocket.EventTypeContributorUpdated, contributor)
+
+	return payment, nil
+
+}
+
 func (p *paymentService) VerifyPayment(reference string) error {
 	// Get the payment
 	payment, err := p.repo.GetByReference(reference)
@@ -31,6 +87,9 @@ func (p *paymentService) VerifyPayment(reference string) error {
 		}
 		return errs.InternalServerError(err).Log(p.logger)
 	}
+
+	// Check if the payment has already been verified
+	// check if its valid payment method
 	// Verify the payment
 	res, err := p.paystack.VerifyTransaction(reference)
 	if err != nil {
@@ -49,14 +108,10 @@ func (p *paymentService) VerifyPayment(reference string) error {
 			return errs.InternalServerError(err).Log(p.logger)
 		}
 
-		// Update the contributor status
+		// Update the contributor
 		contributor := payment.Contributor
-		//TODO: amount paid "amount": 2000,   "amountPaid": 210000, should be 2100
-		contributor.SetPaymentSucceeded(float64(res.Data.Amount))
-		err = p.contributorService.UpdateContributor(&contributor)
-		if err != nil {
-			return errs.InternalServerError(err).Log(p.logger)
-		}
+		contributor.Payment = payment
+		p.broadcaster.NewEvent(contributor.CampaignID, websocket.EventTypeContributorUpdated, contributor)
 		return nil
 
 	}
@@ -68,50 +123,46 @@ func (p *paymentService) VerifyPayment(reference string) error {
 
 }
 
-// HandlePaystackWebhook implements interfaces.PaymentService.
-func (p *paymentService) HandlePaystackWebhook(event paystack.PaystackWebhookEvent) {
-	// validate payment
-	payment, err := p.repo.GetByReference(event.Data.Reference)
-	if err != nil {
-		errs.InternalServerError(err).Log(p.logger)
-		return
-	}
-	contributor := payment.Contributor
-	// validate event type
-	switch event.Event {
-	// Handle the charge success event
-	case paystack.EventChargeSuccess:
-		contributor.SetPaymentSucceeded(event.Data.Amount)
-		payment.SetPaymentStatusToSuccess()
-		err = p.contributorService.UpdateContributor(&contributor)
-		if err != nil {
-			errs.InternalServerError(err).Log(p.logger)
-		}
-		return
-		// Handle the charge failed event
-	case paystack.EventChargeFailed:
-		contributor.SetPaymentFailed()
-		payment.SetPaymentStatusToFailed()
-		err = p.contributorService.UpdateContributor(&contributor)
-		if err != nil {
-			errs.InternalServerError(err).Log(p.logger)
-			return
-		}
-		return
+// VerifyManualPayment implements interfaces.PaymentService.
+func (p *paymentService) VerifyManualPayment(reference string, userHandle string) error {
 
+	// Validate reference
+	payment, err := p.repo.GetByReference(reference)
+	if err != nil {
+		if database.Error(err).IsNotfound() {
+			return errs.NotFound("Payment not found")
+		}
+		return errs.InternalServerError(err).Log(p.logger)
 	}
-	// update the payment status
+
+	// Validate user and campaign creator
+	campaign, err := p.campaignService.GetCampaignByID(payment.CampaignID)
+	if err != nil {
+		return err
+	}
+	if campaign.CreatedBy.Handle != userHandle {
+		return errs.BadRequest("Unauthorized: Only campaign creator can verify manual payments", nil)
+	}
+
+	// Update payment status
+	payment.SetPaymentStatusToSuccess()
 	err = p.repo.Update(payment)
 	if err != nil {
-		errs.InternalServerError(err).Log(p.logger)
+		return errs.InternalServerError(err).Log(p.logger)
 	}
+	// Update contributor and broadcast event
+	contributor := payment.Contributor
+	contributor.Payment = payment
+	p.broadcaster.NewEvent(contributor.CampaignID, websocket.EventTypeContributorUpdated, contributor)
+	return nil
+
 }
 
 // InitializePayment implements interfaces.PaymentService.
 func (p *paymentService) InitializePayment(contributorID uint) (*models.Payment, error) {
 
 	// Validate the contributor
-	contributor, err := p.contributorService.GetContributorByIDWithActivities(contributorID)
+	contributor, err := p.contributorService.GetContributorByID(contributorID)
 	if err != nil {
 		return nil, err
 	}
@@ -129,25 +180,27 @@ func (p *paymentService) InitializePayment(contributorID uint) (*models.Payment,
 		return nil, errs.BadRequest("Campaign has ended", nil)
 	}
 
-	if campaign.PaymentMethod == models.PaymentMethodManual {
+	// validate payment method
+	switch campaign.PaymentMethod {
+	case models.PaymentMethodCrypto:
+		return nil, errs.BadRequest("Cryptocurrency payment method is not available yet", nil)
+	case models.PaymentMethodManual:
 		return nil, errs.BadRequest("Campaign payment method is manual", nil)
-	}
-
-	// Create a payment
-	if campaign.PaymentMethod == models.PaymentMethodFiat {
+	case models.PaymentMethodFiat:
 		response, err := p.paystack.InitiateTransaction(contributor.Email, string(*campaign.FiatCurrency), contributor.GetAmountTotal())
 		if err != nil {
 			return nil, errs.InternalServerError(err).Log(p.logger)
 		}
+
 		payment := models.NewFiatPayment(contributor.ID, campaign.ID, response.Data.Reference, contributor.GetAmountTotal(), response.Data.AuthorizationURL)
 		// Save the payment
-
 		err = p.repo.Create(payment)
 
 		if err != nil {
 			return nil, errs.InternalServerError(err).Log(p.logger)
 		}
 		return payment, nil
+
 	}
 
 	return nil, errs.BadRequest("Invalid payment method", nil)
@@ -173,12 +226,52 @@ func (p *paymentService) GetPaymentsByCampaign(campaignID string, limit int, off
 func (p *paymentService) GetPaymentsByContributor(contributorID uint, limit int, offset int) ([]models.Payment, int64, error) {
 	panic("unimplemented")
 }
-func NewPaymentService(repo repos.PaymentRepository, contributorService services.ContributorService, campaignService services.CampaignService, paystack *paystack.Client, logger logger.Logger) services.PaymentService {
+func NewPaymentService(repo repos.PaymentRepository, contributorService services.ContributorService, campaignService services.CampaignService, paystack *paystack.Client, storage storage.Storage, broadcaster services.EventBroadcaster, logger logger.Logger) services.PaymentService {
 	return &paymentService{
 		repo:               repo,
 		campaignService:    campaignService,
 		logger:             logger,
 		paystack:           paystack,
+		storage:            storage,
+		broadcaster:        broadcaster,
 		contributorService: contributorService,
+	}
+}
+
+// TODO: Cannot test on localHost
+// HandlePaystackWebhook implements interfaces.PaymentService.
+func (p *paymentService) ProcessPaystackWebhook(event paystack.PaystackWebhookEvent) {
+	// validate payment
+	payment, err := p.repo.GetByReference(event.Data.Reference)
+	if err != nil {
+		errs.InternalServerError(err).Log(p.logger)
+		return
+	}
+	contributor := payment.Contributor
+	// validate event type
+	switch event.Event {
+	// Handle the charge success event
+	case paystack.EventChargeSuccess:
+		payment.SetPaymentStatusToSuccess()
+		err = p.contributorService.UpdateContributor(&contributor)
+		if err != nil {
+			errs.InternalServerError(err).Log(p.logger)
+		}
+		return
+		// Handle the charge failed event
+	case paystack.EventChargeFailed:
+		payment.SetPaymentStatusToFailed()
+		err = p.contributorService.UpdateContributor(&contributor)
+		if err != nil {
+			errs.InternalServerError(err).Log(p.logger)
+			return
+		}
+		return
+
+	}
+	// update the payment status
+	err = p.repo.Update(payment)
+	if err != nil {
+		errs.InternalServerError(err).Log(p.logger)
 	}
 }

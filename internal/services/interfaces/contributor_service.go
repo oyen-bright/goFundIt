@@ -11,7 +11,6 @@ type ContributorService interface {
 	GetContributorsByCampaignID(campaignID string) ([]models.Contributor, error)
 	RemoveContributorFromCampaign(contributorId uint, campaignId, userHandle string) error
 	GetContributorByID(contributorID uint) (models.Contributor, error)
-	GetContributorByIDWithActivities(contributorID uint) (models.Contributor, error)
 	// GetEmailsOfActiveContributors(emails []string) ([]string, error)
 	// GetContributorByUserHandle(userHandle uint) (models.Contributor, error)
 	// ContributeToCampaign(userID uint, campaignID string, amount float64) error

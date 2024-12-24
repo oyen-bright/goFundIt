@@ -101,8 +101,10 @@ func SetupRoutes(cfg Config) {
 	paymentGroup.Use(middlewares.Auth(cfg.JWT), middlewares.CampaignKey())
 	{
 		paymentGroup.POST("/contributor/:contributorID", cfg.PaymentHandler.HandleInitializePayment)
+		paymentGroup.POST("/manual/:contributorID", cfg.PaymentHandler.HandleInitializeManualPayment)
 		// Payment verification route
 		paymentGroup.POST("/verify/:reference", cfg.PaymentHandler.HandleVerifyPayment)
+		paymentGroup.POST("/manual/verify/:reference", cfg.PaymentHandler.HandleVerifyManualPayment)
 	}
 
 	// Payout Routes

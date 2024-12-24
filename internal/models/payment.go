@@ -8,9 +8,10 @@ type PaymentStatus string
 
 // Payment status constants
 const (
-	PaymentStatusPending   PaymentStatus = "pending"
-	PaymentStatusSucceeded PaymentStatus = "succeeded"
-	PaymentStatusFailed    PaymentStatus = "failed"
+	PaymentStatusPending         PaymentStatus = "pending"
+	PaymentStatusSucceeded       PaymentStatus = "succeeded"
+	PaymentStatusFailed          PaymentStatus = "failed"
+	PaymentStatusPendingApproval PaymentStatus = "pending_approval"
 )
 
 type PaymentMethod string
@@ -39,15 +40,16 @@ const (
 
 // Payment status constants
 type Payment struct {
-	Reference       string        `gorm:"primaryKey;size:255" json:"reference"`
-	ContributorID   uint          `gorm:"not null" json:"contributorId"`
-	CampaignID      string        `gorm:"not null" json:"campaignId"`
-	Amount          float64       `gorm:"not null;type:numeric(10,2)" json:"amount"`
-	PaymentMethod   PaymentMethod `gorm:"not null;size:50" json:"paymentMethod"`
-	PaymentStatus   PaymentStatus `gorm:"not null;size:50;default:'pending'" json:"paymentStatus"`
-	GatewayResponse *string       `gorm:"type:jsonb" json:"gatewayResponse,omitempty"`
-	CreatedAt       time.Time     `gorm:"default:CURRENT_TIMESTAMP;index" json:"createdAt"`
-	UpdatedAt       time.Time     `gorm:"default:CURRENT_TIMESTAMP;index" json:"updatedAt"`
+	Reference       string              `gorm:"primaryKey;size:255" json:"reference"`
+	ContributorID   uint                `gorm:"not null" json:"contributorId"`
+	CampaignID      string              `gorm:"not null" json:"campaignId"`
+	Amount          float64             `gorm:"not null;type:numeric(10,2)" json:"amount"`
+	PaymentMethod   PaymentMethod       `gorm:"not null;size:50" json:"paymentMethod"`
+	PaymentStatus   PaymentStatus       `gorm:"not null;size:50;default:'pending'" json:"paymentStatus"`
+	GatewayResponse *string             `gorm:"type:jsonb" json:"gatewayResponse,omitempty"`
+	CreatedAt       time.Time           `gorm:"default:CURRENT_TIMESTAMP;index" json:"createdAt"`
+	UpdatedAt       time.Time           `gorm:"default:CURRENT_TIMESTAMP;index" json:"-"`
+	PaymentProof    *ManualPaymentProof `gorm:"embedded" json:"paymentProof,omitempty"`
 
 	// Relations
 	Contributor Contributor `gorm:"foreignKey:ContributorID;references:ID" json:"-"`
@@ -55,6 +57,12 @@ type Payment struct {
 
 	//PaymentURL
 	AuthorizationURL string `gorm:"-" json:"authorization_url"`
+}
+
+// ManualPaymentProof represents proof of payment for manual payments
+type ManualPaymentProof struct {
+	DocumentID  string `json:"-"`
+	DocumentURL string `json:"url"`
 }
 
 // Constructor
@@ -70,6 +78,18 @@ func NewPayment(contributorID uint, campaignID, reference string, amount float64
 		PaymentStatus:    PaymentStatusPending,
 		GatewayResponse:  &GatewayResponse,
 		AuthorizationURL: authorizationURL,
+	}
+}
+
+func NewManualPayment(contributorID uint, campaignID, reference string, amount float64, paymentProof *ManualPaymentProof) *Payment {
+	return &Payment{
+		ContributorID: contributorID,
+		CampaignID:    campaignID,
+		Reference:     reference,
+		Amount:        amount,
+		PaymentProof:  paymentProof,
+		PaymentMethod: PaymentMethodManual,
+		PaymentStatus: PaymentStatusPendingApproval,
 	}
 }
 
@@ -104,4 +124,10 @@ func (p *Payment) GetPaymentLink() interface{} {
 		"paymentLink":   p.AuthorizationURL,
 		"paymentStatus": p.PaymentStatus,
 	}
+}
+
+// UpdateManualPaymentProof updates the payment proof for manual payments
+func (p *Payment) UpdateManualPaymentProof(proof *ManualPaymentProof) {
+	p.PaymentProof = proof
+
 }
