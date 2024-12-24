@@ -8,7 +8,6 @@ import (
 	"github.com/oyen-bright/goFundIt/config/environment"
 	"github.com/oyen-bright/goFundIt/config/providers"
 	"github.com/oyen-bright/goFundIt/pkg/encryption"
-	"github.com/oyen-bright/goFundIt/pkg/encryption/model"
 )
 
 var appConfig *config.AppConfig
@@ -64,7 +63,7 @@ func TestEncryptDecrypt(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			// Encrypt the data
-			encryptedData, err := encryptor.Encrypt(model.Data{Data: tt.data, Key: tt.email})
+			encryptedData, err := encryptor.Encrypt(encryption.Data{Data: tt.data, Key: tt.email})
 			if (err != nil) != tt.expectError {
 				t.Fatalf("Encrypt() error = %v, expectError = %v", err, tt.expectError)
 			}
@@ -75,7 +74,7 @@ func TestEncryptDecrypt(t *testing.T) {
 			}
 
 			// Decrypt the data
-			decryptedData, err := encryptor.Decrypt(model.Data{Data: encryptedData, Key: tt.email})
+			decryptedData, err := encryptor.Decrypt(encryption.Data{Data: encryptedData, Key: tt.email})
 			if err != nil {
 				t.Fatalf("Failed to decrypt data: %v", err)
 			}
@@ -94,7 +93,7 @@ func TestMissingSecretKey(t *testing.T) {
 	data := "Sensitive campaign data"
 	email := "test@example.com"
 
-	_, err := encryptor.Encrypt(model.Data{Data: data, Key: email})
+	_, err := encryptor.Encrypt(encryption.Data{Data: data, Key: email})
 	if err == nil {
 		t.Fatalf("Expected error for missing secret key, but got none")
 	}
@@ -109,7 +108,7 @@ func TestDecryptWithWrongKey(t *testing.T) {
 	encryptor.Keys = originalKey
 
 	// Encrypt with the original key
-	encryptedData, err := encryptor.Encrypt(model.Data{Data: data, Key: email})
+	encryptedData, err := encryptor.Encrypt(encryption.Data{Data: data, Key: email})
 	if err != nil {
 		t.Fatalf("Failed to encrypt data: %v", err)
 	}
@@ -117,7 +116,7 @@ func TestDecryptWithWrongKey(t *testing.T) {
 	encryptor.Keys = wrongKey
 
 	// Try to decrypt with the wrong key
-	_, err = encryptor.Decrypt(model.Data{Data: encryptedData, Key: email})
+	_, err = encryptor.Decrypt(encryption.Data{Data: encryptedData, Key: email})
 	if err == nil {
 		t.Fatalf("Expected error for decrypting with the wrong key, but got none")
 	}

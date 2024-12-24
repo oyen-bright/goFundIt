@@ -3,8 +3,6 @@ package encryption
 import (
 	"errors"
 	"reflect"
-
-	"github.com/oyen-bright/goFundIt/pkg/encryption/model"
 )
 
 type Encryptor struct {
@@ -15,7 +13,7 @@ func New(key []string) *Encryptor {
 	return &Encryptor{Keys: key}
 }
 
-func (e *Encryptor) Encrypt(data model.Data) (string, error) {
+func (e *Encryptor) Encrypt(data Data) (string, error) {
 	// Check if the secret key is missing
 	if len(e.Keys) == 0 {
 		return "", errors.New("missing secret key")
@@ -44,7 +42,7 @@ func (e *Encryptor) EncryptStruct(data interface{}, key string) (interface{}, er
 		if tag, ok := fieldType.Tag.Lookup("encrypt"); ok && tag == "true" {
 
 			//prepare the data to be encrypted
-			modelData := model.Data{
+			modelData := Data{
 				Key:  key,
 				Data: field.Interface().(string),
 			}
@@ -67,7 +65,7 @@ func (e *Encryptor) EncryptStruct(data interface{}, key string) (interface{}, er
 	return data, nil
 }
 
-func (e *Encryptor) Decrypt(data model.Data) (string, error) {
+func (e *Encryptor) Decrypt(data Data) (string, error) {
 
 	var plaintext *string
 
@@ -113,7 +111,7 @@ func (e *Encryptor) DecryptStruct(data interface{}, key string) (interface{}, er
 
 		// Check if the field has the "encrypt" tag set to "true"
 		if tag, ok := fieldType.Tag.Lookup("encrypt"); ok && tag == "true" {
-			modelData := model.Data{
+			modelData := Data{
 				Key:  key,
 				Data: field.Interface().(string),
 			}
