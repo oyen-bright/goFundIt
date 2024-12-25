@@ -8,12 +8,21 @@ import (
 	"gorm.io/gorm"
 )
 
+//TODO implement for mobile
+// UserFCMToken{
+//         Token:      req.Token,
+//         UserHandle: userHandle,
+//         Platform:   req.Platform,
+//         CreatedAt:  time.Now(),
+//     }
+
 type User struct {
 	ID            uint          `gorm:"primaryKey" json:"-"`
 	Email         string        `gorm:"uniqueIndex;not null" encrypt:"true" binding:"required,email,lowercase"  validate:"email"`
 	Handle        string        `gorm:"uniqueIndex;not null"`
-	Name          string        `gorm:"not null" encrypt:"true"`
+	Name          *string       `gorm:"" encrypt:"true"`
 	Verified      bool          `gorm:"not null" json:"-"`
+	FCMToken      *string       `gorm:"" json:"-"`
 	Contributions []Contributor `gorm:"foreignKey:Email;references:Email" json:"-"`
 	CreatedAt     time.Time     `gorm:"not null" json:"-"`
 	UpdatedAt     time.Time     `json:"-"`
@@ -21,7 +30,7 @@ type User struct {
 
 func NewUser(name, email string, verified bool) *User {
 	return &User{
-		Name:     name,
+		Name:     &name,
 		Email:    email,
 		Handle:   getHandle(email),
 		Verified: verified,
@@ -52,6 +61,10 @@ func (u *User) IsVerified() bool {
 
 func (u *User) Verify() {
 	u.Verified = true
+}
+
+func (u *User) UpdateFCMToken(token string) {
+	u.FCMToken = &token
 }
 
 func (u *User) Encrypt(e encryption.Encryptor) error {

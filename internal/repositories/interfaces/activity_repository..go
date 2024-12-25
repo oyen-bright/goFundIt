@@ -8,10 +8,10 @@ type ActivityRepository interface {
 	Create(activity *models.Activity) (models.Activity, error)
 	Update(activity *models.Activity) error
 	Delete(activity *models.Activity) error
-	GetActivityByID(activityID uint) (models.Activity, error)
-	GetActivitiesByCampaignID(campaignID string) ([]models.Activity, error)
-	GetActivityParticipants(activityID uint) ([]models.Contributor, error)
-	UpdateActivity(activity *models.Activity) error
-	AddContributorToActivity(activityID uint, contributorID uint) error
-	RemoveContributorFromActivity(activityID uint, contributorID uint) error
+	GetByID(activityID uint) (models.Activity, error)
+	GetByCampaignID(campaignID string) ([]models.Activity, error)
+	GetParticipants(activityID uint) ([]models.Contributor, error)
+	Save(activity *models.Activity) error
+	AddContributor(activityID uint, contributorID uint) error
+	RemoveContributor(activityID uint, contributorID uint) error
 }

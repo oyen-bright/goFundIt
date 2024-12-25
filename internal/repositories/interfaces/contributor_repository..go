@@ -9,8 +9,6 @@ type ContributorRepository interface {
 	Update(contribution *models.Contributor) error
 	UpdateName(contributorID uint, name string) error
 	Delete(contribution *models.Contributor) error
-	ProcessPayment(paymentID string) error
-	RefundPayment(paymentID string) error
 
 	GetContributorsByCampaignID(campaignID string) ([]models.Contributor, error)
 	GetContributorById(contributorID uint, preload bool) (models.Contributor, error)

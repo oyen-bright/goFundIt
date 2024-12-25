@@ -41,7 +41,7 @@ func (r *activityRepository) Delete(activity *models.Activity) error {
 }
 
 // GetActivityByID retrieves a single activity by its ID with contributors
-func (r *activityRepository) GetActivityByID(activityID uint) (models.Activity, error) {
+func (r *activityRepository) GetByID(activityID uint) (models.Activity, error) {
 	var activity models.Activity
 	err := r.db.Preload("Contributors").First(&activity, activityID).Error
 
@@ -50,14 +50,14 @@ func (r *activityRepository) GetActivityByID(activityID uint) (models.Activity, 
 }
 
 // RemoveContributorFromActivity removes a contributor from an activity
-func (r *activityRepository) RemoveContributorFromActivity(activityID uint, contributorID uint) error {
+func (r *activityRepository) RemoveContributor(activityID uint, contributorID uint) error {
 	return r.db.Table("activities_contributors").
 		Where("activity_id = ? AND contributor_id = ?", activityID, contributorID).
 		Delete(nil).Error
 }
 
 // AddContributorToActivity adds a contributor to an activity
-func (r *activityRepository) AddContributorToActivity(activityID uint, contributorID uint) error {
+func (r *activityRepository) AddContributor(activityID uint, contributorID uint) error {
 	return r.db.Table("activities_contributors").Create(map[string]interface{}{
 		"activity_id":    activityID,
 		"contributor_id": contributorID,
@@ -65,14 +65,14 @@ func (r *activityRepository) AddContributorToActivity(activityID uint, contribut
 }
 
 // GetActivitiesByCampaignID fetches all activities for a specific campaign
-func (r *activityRepository) GetActivitiesByCampaignID(campaignID string) ([]models.Activity, error) {
+func (r *activityRepository) GetByCampaignID(campaignID string) ([]models.Activity, error) {
 	var activities []models.Activity
 	err := r.db.Preload("Contributors").Where("campaign_id = ?", campaignID).Find(&activities).Error
 	return activities, err
 }
 
 // UpdateActivity saves changes to an existing activity
-func (r *activityRepository) UpdateActivity(activity *models.Activity) error {
+func (r *activityRepository) Save(activity *models.Activity) error {
 	return r.db.Save(activity).Error
 }
 
@@ -82,7 +82,7 @@ func (r *activityRepository) DeleteActivity(activityID uint) error {
 }
 
 // GetActivityParticipants retrieves all contributors for a specific activity
-func (r *activityRepository) GetActivityParticipants(activityID uint) ([]models.Contributor, error) {
+func (r *activityRepository) GetParticipants(activityID uint) ([]models.Contributor, error) {
 	var participants []models.Contributor
 	err := r.db.Table("contributors").
 		Joins("JOIN activities_contributors ON activities_contributors.contributor_id = contributors.id").
