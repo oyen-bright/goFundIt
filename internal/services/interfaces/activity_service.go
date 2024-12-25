@@ -13,4 +13,5 @@ type ActivityService interface {
 	OptInContributor(campaignID, userEmail string, activityID, contributorID uint) error
 	OptOutContributor(campaignID, userEmail string, activityID, contributorID uint) error
 	GetParticipants(activityID uint, campaignId string) ([]models.Contributor, error)
+	ApproveActivity(activityID uint, userHandle string) (*models.Activity, error)
 }

@@ -5,7 +5,6 @@ import (
 	"testing"
 
 	"github.com/oyen-bright/goFundIt/pkg/email"
-	"github.com/oyen-bright/goFundIt/pkg/email/models"
 )
 
 var emailCfg *email.EmailConfig
@@ -24,7 +23,7 @@ func TestMain(m *testing.M) {
 
 func TestSendEmail(t *testing.T) {
 	sender := email.NewMockEmailer()
-	email := models.Email{
+	email := email.Email{
 		To:      []string{"test@gmail.com"},
 		Subject: "Test email",
 		Body:    "This is a test email",
@@ -37,7 +36,7 @@ func TestSendEmail(t *testing.T) {
 
 func TestSendEmailTemplate(t *testing.T) {
 	sender := email.NewMockEmailer()
-	template := models.EmailTemplate{
+	template := email.EmailTemplate{
 		To:      []string{"test@gmail.com"},
 		Subject: "Test template email",
 		Data:    map[string]interface{}{"Name": "Test User"},
@@ -51,7 +50,7 @@ func TestSendEmailTemplate(t *testing.T) {
 
 func TestSendOTPEmail(t *testing.T) {
 	sender := email.NewMockEmailer()
-	otpEmail := models.Email{
+	otpEmail := email.Email{
 		To:      []string{"test@gmail.com"},
 		Subject: "Your OTP Code",
 		Body:    "Your OTP code is 123456",

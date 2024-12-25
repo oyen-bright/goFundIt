@@ -15,4 +15,7 @@ type AuthService interface {
 	GetUserByEmail(email string) (models.User, error)
 	// DeleteUser(handle string) error
 	GenerateToken(models.User) (string, error)
+	GetAllUser() ([]models.User, error)
+	SaveFCMToken(handle string, token string) error
+	RemoveFCMToken(handle string, token string) error
 }

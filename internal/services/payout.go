@@ -16,21 +16,23 @@ import (
 )
 
 type payoutService struct {
-	repo            interfaces.PayoutRepository
-	campaignService services.CampaignService
-	paystack        *paystack.Client
-	broadCaster     services.EventBroadcaster
-	logger          logger.Logger
+	repo                interfaces.PayoutRepository
+	campaignService     services.CampaignService
+	notificationService services.NotificationService
+	paystack            *paystack.Client
+	broadCaster         services.EventBroadcaster
+	logger              logger.Logger
 }
 
 // NewPayoutService creates a new instance of the payout service
-func NewPayoutService(payoutRepo interfaces.PayoutRepository, campaignService services.CampaignService, paystack *paystack.Client, broadCaster services.EventBroadcaster, logger logger.Logger) services.PayoutService {
+func NewPayoutService(payoutRepo interfaces.PayoutRepository, campaignService services.CampaignService, notificationService services.NotificationService, paystack *paystack.Client, broadCaster services.EventBroadcaster, logger logger.Logger) services.PayoutService {
 	return &payoutService{
-		broadCaster:     broadCaster,
-		campaignService: campaignService,
-		repo:            payoutRepo,
-		paystack:        paystack,
-		logger:          logger}
+		broadCaster:         broadCaster,
+		campaignService:     campaignService,
+		notificationService: notificationService,
+		repo:                payoutRepo,
+		paystack:            paystack,
+		logger:              logger}
 }
 
 // InitializeManualPayout implements interfaces.PayoutService.
@@ -69,6 +71,8 @@ func (p *payoutService) InitializeManualPayout(campaignID string, userHandle str
 
 	// Broadcast Payout
 	p.broadCaster.NewEvent(campaignID, websocket.EventTypePayoutUpdated, payout)
+
+	go p.notificationService.NotifyPayoutCollected(campaign)
 
 	return payout, nil
 

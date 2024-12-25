@@ -17,13 +17,27 @@ import (
 )
 
 type paymentService struct {
-	repo               repos.PaymentRepository
-	paystack           *paystack.Client
-	campaignService    services.CampaignService
-	contributorService services.ContributorService
-	broadcaster        services.EventBroadcaster
-	storage            storage.Storage
-	logger             logger.Logger
+	repo                repos.PaymentRepository
+	paystack            *paystack.Client
+	campaignService     services.CampaignService
+	contributorService  services.ContributorService
+	notificationService services.NotificationService
+	broadcaster         services.EventBroadcaster
+	storage             storage.Storage
+	logger              logger.Logger
+}
+
+func NewPaymentService(repo repos.PaymentRepository, contributorService services.ContributorService, campaignService services.CampaignService, notificationService services.NotificationService, paystack *paystack.Client, storage storage.Storage, broadcaster services.EventBroadcaster, logger logger.Logger) services.PaymentService {
+	return &paymentService{
+		repo:                repo,
+		campaignService:     campaignService,
+		logger:              logger,
+		paystack:            paystack,
+		notificationService: notificationService,
+		storage:             storage,
+		broadcaster:         broadcaster,
+		contributorService:  contributorService,
+	}
 }
 
 func (p *paymentService) InitializeManualPayment(contributorID uint, reference string, userEmail string) (*models.Payment, error) {
@@ -119,6 +133,8 @@ func (p *paymentService) VerifyPayment(reference string) error {
 		contributor := payment.Contributor
 		contributor.Payment = payment
 		p.broadcaster.NewEvent(contributor.CampaignID, websocket.EventTypeContributorUpdated, contributor)
+
+		go p.notificationService.NotifyPaymentReceived(&contributor, &payment.Campaign)
 		return nil
 
 	}
@@ -161,6 +177,8 @@ func (p *paymentService) VerifyManualPayment(reference string, userHandle string
 	contributor := payment.Contributor
 	contributor.Payment = payment
 	p.broadcaster.NewEvent(contributor.CampaignID, websocket.EventTypeContributorUpdated, contributor)
+	go p.notificationService.NotifyPaymentReceived(&contributor, &payment.Campaign)
+
 	return nil
 
 }
@@ -217,37 +235,7 @@ func (p *paymentService) InitializePayment(contributorID uint) (*models.Payment,
 
 }
 
-// DeletePayment implements interfaces.PaymentService.
-func (p *paymentService) DeletePayment(payment models.Payment) error {
-	panic("unimplemented")
-}
-
-// GetPaymentByReference implements interfaces.PaymentService.
-func (p *paymentService) GetPaymentByReference(reference string) (*models.Payment, error) {
-	panic("unimplemented")
-}
-
-// GetPaymentsByCampaign implements interfaces.PaymentService.
-func (p *paymentService) GetPaymentsByCampaign(campaignID string, limit int, offset int) ([]*models.Payment, int64, error) {
-	panic("unimplemented")
-}
-
-// GetPaymentsByContributor implements interfaces.PaymentService.
-func (p *paymentService) GetPaymentsByContributor(contributorID uint, limit int, offset int) ([]models.Payment, int64, error) {
-	panic("unimplemented")
-}
-func NewPaymentService(repo repos.PaymentRepository, contributorService services.ContributorService, campaignService services.CampaignService, paystack *paystack.Client, storage storage.Storage, broadcaster services.EventBroadcaster, logger logger.Logger) services.PaymentService {
-	return &paymentService{
-		repo:               repo,
-		campaignService:    campaignService,
-		logger:             logger,
-		paystack:           paystack,
-		storage:            storage,
-		broadcaster:        broadcaster,
-		contributorService: contributorService,
-	}
-}
-
+// TOOD: add notification
 // TODO: Cannot test on localHost
 // HandlePaystackWebhook implements interfaces.PaymentService.
 func (p *paymentService) ProcessPaystackWebhook(event paystack.PaystackWebhookEvent) {
@@ -284,4 +272,24 @@ func (p *paymentService) ProcessPaystackWebhook(event paystack.PaystackWebhookEv
 	if err != nil {
 		errs.InternalServerError(err).Log(p.logger)
 	}
+}
+
+// DeletePayment implements interfaces.PaymentService.
+func (p *paymentService) DeletePayment(payment models.Payment) error {
+	panic("unimplemented")
+}
+
+// GetPaymentByReference implements interfaces.PaymentService.
+func (p *paymentService) GetPaymentByReference(reference string) (*models.Payment, error) {
+	panic("unimplemented")
+}
+
+// GetPaymentsByCampaign implements interfaces.PaymentService.
+func (p *paymentService) GetPaymentsByCampaign(campaignID string, limit int, offset int) ([]*models.Payment, int64, error) {
+	panic("unimplemented")
+}
+
+// GetPaymentsByContributor implements interfaces.PaymentService.
+func (p *paymentService) GetPaymentsByContributor(contributorID uint, limit int, offset int) ([]models.Payment, int64, error) {
+	panic("unimplemented")
 }
