@@ -3,6 +3,7 @@ package services
 import (
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/oyen-bright/goFundIt/internal/models"
 	repositories "github.com/oyen-bright/goFundIt/internal/repositories/interfaces"
@@ -159,6 +160,15 @@ func (s *campaignService) GetActiveCampaigns() ([]models.Campaign, error) {
 // GetNearEndCampaigns fetches all campaigns that are near end
 func (s *campaignService) GetNearEndCampaigns() ([]models.Campaign, error) {
 	campaigns, err := s.repo.GetNearEndCampaigns()
+	if err != nil {
+		return nil, errs.InternalServerError(err).Log(s.logger)
+	}
+	return campaigns, nil
+}
+
+// GetCampaignsForAnalytics
+func (s *campaignService) GetCampaignsForAnalytics(yesterday time.Time, today time.Time) ([]models.Campaign, error) {
+	campaigns, err := s.repo.GetAllForAnalytics(yesterday, today)
 	if err != nil {
 		return nil, errs.InternalServerError(err).Log(s.logger)
 	}

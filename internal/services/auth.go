@@ -1,6 +1,8 @@
 package services
 
 import (
+	"time"
+
 	"github.com/oyen-bright/goFundIt/internal/models"
 	repositories "github.com/oyen-bright/goFundIt/internal/repositories/interfaces"
 	services "github.com/oyen-bright/goFundIt/internal/services/interfaces"
@@ -244,4 +246,13 @@ func (s *authService) RemoveFCMToken(handle string, token string) error {
 	}
 
 	return nil
+}
+
+// GetUsersByCreatedDateRange implements interfaces.AuthService.
+func (s *authService) GetUsersByCreatedDateRange(from time.Time, to time.Time) ([]models.User, error) {
+	users, err := s.authRepo.GetByCreatedDateRange(from, to)
+	if err != nil {
+		return nil, errs.InternalServerError(err).Log(s.logger)
+	}
+	return users, nil
 }
