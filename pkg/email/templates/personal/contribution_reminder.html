@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="css/styles.css">
+    <title>Contribution Reminder</title>
+</head>
+
+<body>
+    <div class="container">
+        <h1>Contribution Reminder</h1>
+        <p>Hi {{.Contributor.Name}},</p>
+        <p>This is a reminder to contribute to the campaign: <strong>{{.Campaign.Title}}</strong></p>
+        <p>The deadline for your contribution is: <strong>{{.DueDate.Format "January 2, 2006"}}</strong></p>
+        <a href="#" class="button">Contribute Now</a>
+        <div class="footer">
+            <p>Thank you for supporting GoFundIt!</p>
+        </div>
+    </div>
+</body>
+
+</html>

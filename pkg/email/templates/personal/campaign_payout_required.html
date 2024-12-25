@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="css/styles.css">
+    <title>Campaign Payout Required</title>
+</head>
+
+<body>
+    <div class="container">
+        <h2>Campaign Payout Required</h2>
+
+        <p>Dear Campaign Owner,</p>
+
+        <p>Your campaign has ended, and the funds are ready for payout. Please collect your payout as soon as possible.
+        </p>
+
+        <div class="code">
+            Amount Available: ${{.payoutAmount}}
+        </div>
+
+        <p><strong>Important Dates:</strong></p>
+        <ul>
+            <li>Campaign End Date: {{.endDate}}</li>
+            <li>Cleanup Date: {{.cleanupDate}}</li>
+        </ul>
+
+        <p class="warning">⚠️ Important: Your campaign data will be archived on {{.cleanupDate}} if the payout is not
+            collected.</p>
+
+        <p>To collect your payout:</p>
+        <ol>
+            <li>Log in to your GoFund It account</li>
+            <li>Navigate to your campaign dashboard</li>
+            <li>Click on "Collect Payout"</li>
+            <li>Follow the verification steps</li>
+        </ol>
+
+        <a href="https://gofundit.com/campaigns/{{.campaignId}}/payout" class="button">
+            Collect Payout Now
+        </a>
+
+        <div class="footer">
+            <p>Need help? Contact our support team</p>
+            <p>Campaign ID: {{.campaignId}}</p>
+        </div>
+    </div>
+</body>
+
+</html>

@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../css/styles.css">
+    <title>New Activity Added</title>
+</head>
+
+<body>
+    <div class="container">
+        <h1>New Activity Added!</h1>
+        <p>A new activity has been added to the campaign: <strong>{{.Campaign.Title}}</strong></p>
+        <h3>Activity Details:</h3>
+        <p>Title: <strong>{{.Activity.Title}}</strong></p>
+        <p>Subtitle: <strong>{{.Activity.Subtitle}}</strong></p>
+        <p>Cost: <strong>{{.Activity.Cost}}</strong></p>
+        <a href="#" class="button">View Activity</a>
+        <div class="footer">
+            <p>Thank you for using GoFundIt!</p>
+        </div>
+    </div>
+</body>
+
+</html>

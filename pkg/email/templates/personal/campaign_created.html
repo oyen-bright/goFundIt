@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="css/styles.css">
+    <title>Campaign Created</title>
+</head>
+
+<body>
+    <div class="container">
+        <h1>Campaign Created Successfully!</h1>
+        <p>Congratulations on starting your campaign: <strong>{{.Title}}</strong></p>
+        <p>{{.Description}}</p>
+        <h3>Key Details:</h3>
+        <p>Campaign ID: <strong>{{.ID}}</strong></p>
+        <p>Campaign Key: <strong>{{.Key}}</strong></p>
+        <p>Please save the campaign key as it is required to access and manage your campaign. All information is
+            encrypted, and we do not have access to the key. If lost, campaign information cannot be recovered.</p>
+        <h3>Some Contributors:</h3>
+        <ul>
+            {{range .Contributors}}
+            <li>{{.Name}} - {{.Email}}</li>
+            {{end}}
+        </ul>
+        <h3>Some Activities:</h3>
+        <ul>
+            {{range .Activities}}
+            <li>{{.Title}} - {{.Subtitle}}</li>
+            {{end}}
+        </ul>
+        <a href="#" class="button">View Your Campaign</a>
+        <div class="footer">
+            <p>Thank you for using GoFundIt!</p>
+        </div>
+    </div>
+</body>
+
+</html>

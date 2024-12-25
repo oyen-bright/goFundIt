@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../css/styles.css">
+    <title>Activity Approved</title>
+</head>
+
+<body>
+    <div class="container">
+        <h1>Activity Approved!</h1>
+        <p>The following activity in the campaign <strong>{{.Campaign.Title}}</strong> has been approved:</p>
+        <h3>Activity Details:</h3>
+        <p>Title: <strong>{{.Activity.Title}}</strong></p>
+        <p>Subtitle: <strong>{{.Activity.Subtitle}}</strong></p>
+        <p>Cost: <strong>{{.Activity.Cost}}</strong></p>
+        <p>Approved by: <strong>{{.ApprovedBy}}</strong></p>
+        <p>Approval Time: <strong>{{.ApprovalTime.Format "January 2, 2006, 15:04"}}</strong></p>
+        <a href="#" class="button">View Activity</a>
+        <div class="footer">
+            <p>Thank you for using GoFundIt!</p>
+        </div>
+    </div>
+</body>
+
+</html>

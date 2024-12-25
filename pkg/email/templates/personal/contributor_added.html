@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="css/styles.css">
+    <title>Contributor Added</title>
+</head>
+
+<body>
+    <div class="container">
+        <h1>Welcome to the Campaign!</h1>
+        <p>Hi {{.Name}},</p>
+        <p>You have been added as a contributor to the campaign: <strong>{{.Campaign.Title}}</strong></p>
+        <p>Campaign ID: <strong>{{.Campaign.ID}}</strong></p>
+        <p>Campaign Key: <strong>{{.Campaign.Key}}</strong></p>
+        <p>Please save the campaign key as it is required to access and manage your contributions. All information is
+            encrypted, and we do not have access to the key. If lost, campaign information cannot be recovered.</p>
+        <a href="#" class="button">View Campaign</a>
+        <div class="footer">
+            <p>Thank you for contributing to GoFundIt!</p>
+        </div>
+    </div>
+</body>
+
+</html>

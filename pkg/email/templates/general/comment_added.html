@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="css/styles.css">
+    <title>New Comment on Activity</title>
+</head>
+
+<body>
+    <div class="container">
+        <h1>New Comment on Activity</h1>
+        <p>A new comment has been added to the activity: <strong>{{.Activity.Title}}</strong> in the campaign:
+            <strong>{{.Campaign.Title}}</strong>
+        </p>
+        <h3>Comment Details:</h3>
+        <p>Commenter: <strong>{{.Comment.CreatedBy.Handle}}</strong></p>
+        <p>Content: <strong>{{.Comment.Content}}</strong></p>
+        <a href="#" class="button">View Comment</a>
+        <div class="footer">
+            <p>Thank you for using GoFundIt!</p>
+        </div>
+    </div>
+</body>
+
+</html>

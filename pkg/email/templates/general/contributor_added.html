@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="css/styles.css">
+    <title>New Contributor Added</title>
+</head>
+
+<body>
+    <div class="container">
+        <h1>New Contributor Added!</h1>
+        <p>A new contributor has joined the campaign: <strong>{{.Campaign.Title}}</strong></p>
+        <h3>Contributor Details:</h3>
+        <p>Name: <strong>{{.Contributor.Name}}</strong></p>
+        <p>Email: <strong>{{.Contributor.Email}}</strong></p>
+        <p>Amount Contributed: <strong>{{.Contributor.Amount}}</strong></p>
+        <a href="#" class="button">View Campaign</a>
+        <div class="footer">
+            <p>Thank you for using GoFundIt!</p>
+        </div>
+    </div>
+</body>
+
+</html>

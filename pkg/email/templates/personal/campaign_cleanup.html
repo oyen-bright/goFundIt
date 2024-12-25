@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="css/styles.css">
+    <title>Campaign Data Export</title>
+</head>
+
+<body>
+    <div class="container">
+        <h2>Campaign Data Export</h2>
+        <p>Dear Campaign Owner,</p>
+
+        <p>Your campaign "{{.CampaignName}}" which ended on {{.EndDate}} has been archived from our system.</p>
+
+        <p>As part of our data retention policy, we have exported all your campaign data and attached it to this email.
+            The attached JSON file contains a complete record of your campaign, including:</p>
+
+        <ul>
+            <li>Campaign details and statistics</li>
+            <li>Contributor information</li>
+            <li>Payment records</li>
+            <li>Activity history</li>
+        </ul>
+
+        <p>Campaign Summary:</p>
+        <ul>
+            <li>Total Amount Contributed: {{.TotalAmount}}</li>
+        </ul>
+
+        <p>The attached JSON file contains all the detailed information about your campaign.
+            We recommend keeping this file for your records.</p>
+
+        <p>Thank you for using our platform!</p>
+
+        <p>Best regards,<br>
+            The GoFundIt Team</p>
+    </div>
+</body>
+
+</html>

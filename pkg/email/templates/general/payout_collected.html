@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="css/styles.css">
+    <title>Payout Collected Notification</title>
+</head>
+
+<body>
+    <div class="container">
+        <h2>Campaign Payout Collected</h2>
+
+        <p>Dear Contributor,</p>
+
+        <p>We're writing to inform you that the campaign owner has successfully collected the payout for:</p>
+
+        <div class="code">
+            {{.campaignTitle}}
+        </div>
+
+        <p><strong>Payout Details:</strong></p>
+        <ul>
+            <li>Campaign Owner: {{.ownerName}}</li>
+            <li>Total Amount Collected: ${{.payoutAmount}}</li>
+            <li>Collection Date: {{.payoutDate}}</li>
+        </ul>
+
+        <p>This marks the successful completion of the campaign funding process. Thank you for your contribution!</p>
+
+        <div class="footer">
+            <p>This is an automated notification from GoFund It</p>
+            <p>© {{.currentYear}} GoFund It. All rights reserved.</p>
+        </div>
+    </div>
+</body>
+
+</html>

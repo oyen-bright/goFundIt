@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="css/styles.css">
+    <title>Deadline Reminder</title>
+</head>
+
+<body>
+    <div class="container">
+        <h1>Deadline Reminder</h1>
+        <p>Hi {{.Campaign.CreatedByHandle}},</p>
+        <p>This is a reminder that the campaign <strong>{{.Title}}</strong> is approaching its deadline.</p>
+        <p>Deadline: <strong>{{.Deadline.Format "January 2, 2006"}}</strong></p>
+        <a href="#" class="button">View Campaign</a>
+        <div class="footer">
+            <p>Thank you for using GoFundIt!</p>
+        </div>
+    </div>
+</body>
+
+</html>

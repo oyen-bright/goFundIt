@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="css/styles.css">
+    <title>Payment Received</title>
+</head>
+
+<body>
+    <div class="container">
+        <h1>Payment Received</h1>
+        <p>Hi {{.Contributor.Name}},</p>
+        <p>We have received your payment of <strong>{{.Amount}}</strong> for the campaign:
+            <strong>{{.Campaign.Title}}</strong>
+        </p>
+        <a href="#" class="button">View Campaign</a>
+        <div class="footer">
+            <p>Thank you for using GoFundIt!</p>
+        </div>
+    </div>
+</body>
+
+</html>

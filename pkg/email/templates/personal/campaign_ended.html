@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="css/styles.css">
+    <title>Campaign Ended Notification</title>
+</head>
+
+<body>
+    <div class="container">
+        <h2>Campaign Has Ended</h2>
+
+        <p>Dear Contributor,</p>
+
+        <p>The campaign "<strong>{{.campaignTitle}}</strong>" has officially ended on {{.endDate}}.</p>
+
+        <div class="code">
+            Your Contribution: ${{.contribution}}
+        </div>
+
+        <p><strong>Campaign Summary:</strong></p>
+        <ul>
+            <li>Total Amount Raised: ${{.totalRaised}}</li>
+            <li>End Date: {{.endDate}}</li>
+        </ul>
+
+        <p>Thank you for being part of this campaign! Your contribution has helped make this campaign possible.</p>
+
+        <p>What happens next:</p>
+        <ol>
+            <li>The campaign owner will be notified to collect the funds</li>
+            <li>You'll receive a notification once the payout has been processed</li>
+            <li>Campaign data will be archived for record-keeping</li>
+        </ol>
+
+        <p>We appreciate your participation in our platform!</p>
+
+        <div class="footer">
+            <p>This is an automated notification from GoFund It</p>
+            <p>© {{.currentYear}} GoFund It. All rights reserved.</p>
+        </div>
+    </div>
+</body>
+
+</html>
