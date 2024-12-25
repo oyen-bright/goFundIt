@@ -1,6 +1,8 @@
 package postgress
 
 import (
+	"time"
+
 	"github.com/oyen-bright/goFundIt/internal/models"
 	"github.com/oyen-bright/goFundIt/internal/repositories/interfaces"
 	"gorm.io/gorm"
@@ -93,4 +95,14 @@ func (r *authRepository) GetAll() ([]models.User, error) {
 	}
 	return users, nil
 
+}
+
+// GetUsersForAnalytics implements interfaces.AuthRepository.
+func (r *authRepository) GetByCreatedDateRange(from time.Time, to time.Time) ([]models.User, error) {
+	var users []models.User
+	err := r.db.Where("created_at BETWEEN ? AND ?", from, to).Find(&users).Error
+	if err != nil {
+		return nil, err
+	}
+	return users, nil
 }
