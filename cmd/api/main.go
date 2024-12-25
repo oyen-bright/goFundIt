@@ -13,6 +13,7 @@ import (
 	"github.com/oyen-bright/goFundIt/pkg/database"
 	"github.com/oyen-bright/goFundIt/pkg/email"
 	"github.com/oyen-bright/goFundIt/pkg/encryption"
+	"github.com/oyen-bright/goFundIt/pkg/fcm"
 	"github.com/oyen-bright/goFundIt/pkg/jwt"
 	"github.com/oyen-bright/goFundIt/pkg/logger"
 	"github.com/oyen-bright/goFundIt/pkg/paystack"
@@ -59,6 +60,9 @@ func main() {
 		panic(err)
 	}
 
+	//TODO: Initialize FCM Client
+	fcmClient, err := fcm.New("")
+
 	// Initialize Core Services
 
 	encryptor := encryption.New(cfg.EncryptionKey)
@@ -84,13 +88,20 @@ func main() {
 	// Initialize Services
 	otpService := services.NewOTPService(otpRepo, emailer, *encryptor, logger)
 	authService := services.NewAuthService(authRepo, otpService, *encryptor, jwtService, logger)
-	campaignService := services.NewCampaignService(campaignRepo, authService, eventBroadcaster, logger)
-	contributorService := services.NewContributorService(contributorRepo, campaignService, eventBroadcaster, logger)
-	activityService := services.NewActivityService(activityRepo, authService, campaignService, eventBroadcaster, logger)
-	commentService := services.NewCommentService(commentRepo, authService, activityService, eventBroadcaster, logger)
+	notificationService := services.NewNotificationService(emailer, authService, fcmClient, logger)
+	campaignService := services.NewCampaignService(campaignRepo, authService, notificationService, eventBroadcaster, logger)
+	contributorService := services.NewContributorService(contributorRepo, campaignService, notificationService, eventBroadcaster, logger)
+	activityService := services.NewActivityService(activityRepo, authService, campaignService, eventBroadcaster, notificationService, logger)
+	commentService := services.NewCommentService(commentRepo, authService, activityService, notificationService, eventBroadcaster, logger)
 	suggestionService := services.NewSuggestionService(aiClient, campaignService, logger)
-	paymentService := services.NewPaymentService(paymentRepo, contributorService, campaignService, paystackClient, storage, eventBroadcaster, logger)
-	payoutService := services.NewPayoutService(payoutRepo, campaignService, paystackClient, eventBroadcaster, logger)
+	paymentService := services.NewPaymentService(paymentRepo, contributorService, campaignService, notificationService, paystackClient, storage, eventBroadcaster, logger)
+	payoutService := services.NewPayoutService(payoutRepo, campaignService, notificationService, paystackClient, eventBroadcaster, logger)
+
+	cronService := services.NewCronService(campaignService, notificationService, logger)
+	if err := cronService.StartCronJobs(); err != nil {
+		panic(err)
+	}
+	defer cronService.StopCronJobs()
 
 	// Initialize Handlers
 	authHandler := handlers.NewAuthHandler(authService)

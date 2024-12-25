@@ -45,6 +45,15 @@ func SetupRoutes(cfg Config) {
 		authGroup.POST("/verify", cfg.AuthHandler.HandleVerifyAuth)
 	}
 
+	// FCM Routes
+	fcmGroup := cfg.Router.Group("/fcm")
+	fcmGroup.Use(middlewares.Auth(cfg.JWT))
+	{
+		fcmGroup.POST("/save-token", cfg.AuthHandler.HandleSaveFCMToken)
+		//TODO: Implement the route handler
+		// fcmGroup.DELETE("/remove-token", cfg.AuthHandler.HandleRemoveToken)
+	}
+
 	// Campaign Routes
 	campaignGroup := cfg.Router.Group("/campaign")
 	campaignGroup.Use(middlewares.Auth(cfg.JWT))
@@ -67,6 +76,8 @@ func SetupRoutes(cfg Config) {
 		activityGroup.POST("/:campaignID", cfg.ActivityHandler.HandleCreateActivity)
 		activityGroup.PATCH("/:campaignID/:activityID", cfg.ActivityHandler.HandleUpdateActivity)
 		activityGroup.DELETE("/:campaignID/:activityID", cfg.ActivityHandler.HandleDeleteActivityByID)
+
+		activityGroup.POST("/:campaignID/:activityID/approve", cfg.ActivityHandler.HandleApproveActivity)
 
 		participation := activityGroup.Group("/:campaignID/:activityID/participants")
 		{

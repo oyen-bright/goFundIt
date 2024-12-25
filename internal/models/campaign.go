@@ -43,7 +43,25 @@ type Campaign struct {
 	UpdatedAt       time.Time `validate:"-" binding:"-" json:"-"`
 }
 
-// Campaign Status Methods
+// Campaign Methods
+
+// CanCleanUp check if the campaign can be cleaned up
+func (c *Campaign) CanCleanUp() bool {
+	hasPayout := c.Payout != nil && c.Payout.Status == PayoutStatusCompleted
+	hasPaidContributions := false
+
+	for _, contributor := range c.Contributors {
+		if contributor.HasPaid() {
+			if !hasPayout {
+				return false
+			}
+			hasPaidContributions = true
+			break
+		}
+	}
+
+	return !hasPaidContributions || hasPayout
+}
 
 // HasEnded checks if the campaign has ended based on current time
 func (c *Campaign) HasEnded() bool {

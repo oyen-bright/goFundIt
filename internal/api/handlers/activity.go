@@ -69,6 +69,25 @@ func (a *ActivityHandler) HandleGetActivityByID(c *gin.Context) {
 	response.Success(c, "Activity fetched successfully", activity)
 }
 
+// HandleApproveActivity handles activity approval
+func (a *ActivityHandler) HandleApproveActivity(c *gin.Context) {
+	userHandle := getClaimsFromContext(c).Handle
+
+	activityID, err := parseActivityID(c)
+	if err != nil {
+		response.BadRequest(c, "Invalid Activity ID", nil)
+		return
+	}
+
+	activity, err := a.service.ApproveActivity(activityID, userHandle)
+	if err != nil {
+		response.FromError(c, err)
+		return
+	}
+
+	response.Success(c, "Activity approved successfully", activity)
+}
+
 // HandleUpdateActivity handles updating an existing activity
 func (a *ActivityHandler) HandleUpdateActivity(c *gin.Context) {
 	var activity models.Activity

@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"github.com/gin-gonic/gin"
+	dto "github.com/oyen-bright/goFundIt/internal/api/dto/user"
 	"github.com/oyen-bright/goFundIt/internal/models"
 	services "github.com/oyen-bright/goFundIt/internal/services/interfaces"
 	"github.com/oyen-bright/goFundIt/pkg/response"
@@ -29,7 +30,7 @@ func (a *AuthHandler) HandleAuth(context *gin.Context) {
 		return
 	}
 
-	otp, err := a.service.RequestAuth(user.Email, user.Name)
+	otp, err := a.service.RequestAuth(user.Email, *user.Name)
 	if err != nil {
 		response.FromError(context, err)
 		return
@@ -62,4 +63,26 @@ func (a *AuthHandler) HandleVerifyAuth(context *gin.Context) {
 		"token": token,
 	})
 
+}
+
+// HandleSaveFCMToken saves the FCM token for a user
+func (a *AuthHandler) HandleSaveFCMToken(c *gin.Context) {
+	userHandle := getClaimsFromContext(c).Handle
+
+	var req dto.FCMUpdateRequest
+
+	//Validate Request
+	if err := c.BindJSON(&req); err != nil {
+		response.BadRequest(c, "Invalid inputs, please check and try again", utils.ExtractValidationErrors(err))
+		return
+	}
+
+	//Save FCM Token
+	err := a.service.SaveFCMToken(userHandle, req.FCMToken)
+	if err != nil {
+		response.FromError(c, err)
+		return
+	}
+
+	response.Success(c, "FCM token saved", nil)
 }

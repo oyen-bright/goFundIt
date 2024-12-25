@@ -43,8 +43,8 @@ type Payout struct {
 	FailureReason *string        `gorm:"size:255" json:"failureReason"`
 	ProcessedAt   *string        `gorm:"size:255" json:"processedAt"`
 	CompletedAt   *string        `gorm:"size:255" json:"completedAt"`
-	CreatedAt     string         `gorm:"default:CURRENT_TIMESTAMP;index" json:"-"`
-	UpdatedAt     string         `gorm:"default:CURRENT_TIMESTAMP;index" json:"-"`
+	CreatedAt     time.Time      `gorm:"default:CURRENT_TIMESTAMP;index" json:"-"`
+	UpdatedAt     time.Time      `gorm:"default:CURRENT_TIMESTAMP;index" json:"-"`
 }
 
 // NewPayout creates a new payout instance

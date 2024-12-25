@@ -10,6 +10,7 @@ import (
 
 // Contributor represents a user who contributes funds to a campaign
 // TODO: use DTO to bind the email and name
+// TODO: add notification settings - allow contributor to opt-in for notifications or not
 // TODO: consider required the userEmail via binding to make UpdateUserEmail() redundant
 // type Contributor struct {
 // 	ID            uint          `gorm:"primaryKey" json:"id"`
@@ -30,7 +31,7 @@ type Contributor struct {
 	CampaignID string     `gorm:"not null;foreignKey:CampaignID;index:idx_campaign_user,unique" validate:"required" json:"campaignId"`
 	Amount     float64    `gorm:"not null" binding:"required,gte=0" validate:"gte=0,required" json:"amount"`
 	Activities []Activity `gorm:"many2many:activities_contributors" binding:"-" json:"activities"`
-	Payment    *Payment   `gorm:"foreignKey:ContributorID" json:"payment"`
+	Payment    *Payment   `gorm:"foreignKey:ContributorID:constraint:OnDelete:CASCADE" json:"payment"`
 	Email      string     `gorm:"not null;foreignKey:Email;index:idx_campaign_user,unique" json:"email" binding:"-"`
 	CreatedAt  time.Time  `gorm:"not null" json:"-"`
 	UpdatedAt  time.Time  `json:"-"`
