@@ -84,3 +84,13 @@ func (r *authRepository) FindExistingAndNonExistingUsers(emails []string) (exist
 
 	return existingUsers, nonExisting, nil
 }
+
+func (r *authRepository) GetAll() ([]models.User, error) {
+	var users []models.User
+	err := r.db.Find(&users).Error
+	if err != nil {
+		return nil, err
+	}
+	return users, nil
+
+}

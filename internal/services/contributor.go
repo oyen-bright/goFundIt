@@ -13,15 +13,16 @@ import (
 )
 
 type contributorService struct {
-	repo            repositories.ContributorRepository
-	campaignService services.CampaignService
-	authService     services.AuthService
-	broadcaster     services.EventBroadcaster
-	logger          logger.Logger
+	repo                repositories.ContributorRepository
+	campaignService     services.CampaignService
+	authService         services.AuthService
+	notificationService services.NotificationService
+	broadcaster         services.EventBroadcaster
+	logger              logger.Logger
 }
 
-func NewContributorService(repo repositories.ContributorRepository, campaignService services.CampaignService, broadcaster services.EventBroadcaster, logger logger.Logger) services.ContributorService {
-	return &contributorService{repo: repo, logger: logger, campaignService: campaignService, broadcaster: broadcaster}
+func NewContributorService(repo repositories.ContributorRepository, campaignService services.CampaignService, notificationService services.NotificationService, broadcaster services.EventBroadcaster, logger logger.Logger) services.ContributorService {
+	return &contributorService{repo: repo, logger: logger, campaignService: campaignService, broadcaster: broadcaster, notificationService: notificationService}
 }
 
 // AddContributorToCampaign adds a contributor to a campaign
@@ -60,6 +61,8 @@ func (s *contributorService) AddContributorToCampaign(contributor *models.Contri
 
 	// broadcast event
 	s.broadcaster.NewEvent(campaign.ID, websocket.EventTypeContributionCreated, contributor)
+	// send notification
+	go s.notificationService.NotifyContributorAdded(contributor, campaign)
 
 	return nil
 }

@@ -29,7 +29,7 @@ func setupTestDB(t *testing.T) *gorm.DB {
 func createTestUser(email, name, handle string) *models.User {
 	return &models.User{
 		Email:    email,
-		Name:     name,
+		Name:     &name,
 		Handle:   handle,
 		Verified: false,
 	}

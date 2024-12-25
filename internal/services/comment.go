@@ -11,20 +11,22 @@ import (
 )
 
 type commentService struct {
-	repo            interfaces.CommentRepository
-	authService     services.AuthService
-	activityService services.ActivityService
-	broadcaster     services.EventBroadcaster
-	logger          logger.Logger
+	repo                interfaces.CommentRepository
+	authService         services.AuthService
+	activityService     services.ActivityService
+	notificationService services.NotificationService
+	broadcaster         services.EventBroadcaster
+	logger              logger.Logger
 }
 
-func NewCommentService(repo interfaces.CommentRepository, authService services.AuthService, activityService services.ActivityService, broadcaster services.EventBroadcaster, logger logger.Logger) services.CommentService {
+func NewCommentService(repo interfaces.CommentRepository, authService services.AuthService, activityService services.ActivityService, notificationService services.NotificationService, broadcaster services.EventBroadcaster, logger logger.Logger) services.CommentService {
 	return &commentService{
-		repo:            repo,
-		authService:     authService,
-		broadcaster:     broadcaster,
-		activityService: activityService,
-		logger:          logger,
+		repo:                repo,
+		authService:         authService,
+		notificationService: notificationService,
+		broadcaster:         broadcaster,
+		activityService:     activityService,
+		logger:              logger,
 	}
 }
 
@@ -38,7 +40,8 @@ func (c *commentService) CreateComment(comment *models.Comment, campaignID strin
 	}
 
 	// Validate activity
-	if _, err := c.activityService.GetActivityByID(activityID, campaignID); err != nil {
+	activity, err := c.activityService.GetActivityByID(activityID, campaignID)
+	if err != nil {
 		return err
 	}
 
@@ -66,6 +69,9 @@ func (c *commentService) CreateComment(comment *models.Comment, campaignID strin
 
 	// Broadcast new comment
 	c.broadcaster.NewEvent(campaignID, websocket.EventTypeCommentCreated, comment)
+
+	go c.notificationService.NotifyCommentAddition(comment, &activity)
+
 	return nil
 }
 

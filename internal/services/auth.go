@@ -177,8 +177,16 @@ func (s *authService) FindExistingAndNonExistingUsers(emails []string) (existing
 	return existing, nonExisting, nil
 }
 
-// Helper methods
+// GetAllUser retrieves all users from the repository
+func (s *authService) GetAllUser() ([]models.User, error) {
+	users, err := s.authRepo.GetAll()
+	if err != nil {
+		return nil, errs.InternalServerError(err).Log(s.logger)
+	}
+	return users, nil
+}
 
+// Helper methods
 func (s *authService) getOrCreateUser(otp models.Otp) (*models.User, error) {
 	user, err := s.authRepo.FindByEmail(otp.Email)
 	if err == nil {
@@ -196,4 +204,44 @@ func (s *authService) getOrCreateUser(otp models.Otp) (*models.User, error) {
 	}
 
 	return newUser, nil
+}
+
+// UpdateFCMToken updates the FCM token for a user
+func (s *authService) SaveFCMToken(handle string, token string) error {
+	user, err := s.authRepo.FindByHandle(handle)
+	if err != nil {
+		if database.Error(err).IsNotfound() {
+			return errs.BadRequest("User not found", nil)
+		}
+		return errs.InternalServerError(err).Log(s.logger)
+	}
+
+	user.FCMToken = &token
+	if err := s.authRepo.Save(user); err != nil {
+		return errs.InternalServerError(err).Log(s.logger)
+	}
+
+	return nil
+}
+
+// RemoveFCMToken removes the FCM token for a user if it matches the provided token
+func (s *authService) RemoveFCMToken(handle string, token string) error {
+	user, err := s.authRepo.FindByHandle(handle)
+	if err != nil {
+		if database.Error(err).IsNotfound() {
+			return errs.BadRequest("User not found", nil)
+		}
+		return errs.InternalServerError(err).Log(s.logger)
+	}
+
+	if user.FCMToken == nil || *user.FCMToken != token {
+		return nil
+	}
+
+	user.FCMToken = nil
+	if err := s.authRepo.Save(user); err != nil {
+		return errs.InternalServerError(err).Log(s.logger)
+	}
+
+	return nil
 }

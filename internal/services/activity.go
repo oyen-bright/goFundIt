@@ -13,11 +13,12 @@ import (
 )
 
 type activityService struct {
-	repo            repositories.ActivityRepository
-	authService     services.AuthService
-	campaignService services.CampaignService
-	broadcaster     services.EventBroadcaster
-	logger          logger.Logger
+	repo                repositories.ActivityRepository
+	authService         services.AuthService
+	campaignService     services.CampaignService
+	notificationService services.NotificationService
+	broadcaster         services.EventBroadcaster
+	logger              logger.Logger
 }
 
 func NewActivityService(
@@ -25,15 +26,16 @@ func NewActivityService(
 	authService services.AuthService,
 	campaignService services.CampaignService,
 	eventBroadcaster services.EventBroadcaster,
+	notificationService services.NotificationService,
 	logger logger.Logger,
 ) services.ActivityService {
 	return &activityService{
-		repo: repo,
-
-		authService:     authService,
-		campaignService: campaignService,
-		broadcaster:     eventBroadcaster,
-		logger:          logger,
+		repo:                repo,
+		notificationService: notificationService,
+		authService:         authService,
+		campaignService:     campaignService,
+		broadcaster:         eventBroadcaster,
+		logger:              logger,
 	}
 }
 
@@ -65,12 +67,58 @@ func (s *activityService) CreateActivity(activity models.Activity, userHandle, c
 	// Broadcast update
 	s.broadcaster.NewEvent(campaignID, websocket.EventTypeActivityCreated, createdActivity)
 
+	// Send notification
+
+	s.notificationService.NotifyActivityAddition(&activity, campaign)
+
+	if campaign.CreatedBy.Handle != createdActivity.CreatedBy.Handle {
+		go s.notificationService.NotifyActivityApprovalRequest(&activity, campaign)
+	}
+
 	return createdActivity, nil
+}
+
+// ApproveActivity implements interfaces.ActivityService.
+func (s *activityService) ApproveActivity(activityID uint, userHandle string) (*models.Activity, error) {
+
+	// validate activity
+	activity, err := s.repo.GetByID(activityID)
+	if err != nil {
+
+		if database.Error(err).IsNotfound() {
+			return nil, errs.NotFound("Activity not found")
+		}
+		return nil, errs.InternalServerError(err).Log(s.logger)
+	}
+
+	// Validate user
+	campaign, err := s.campaignService.GetCampaignByID(activity.CampaignID)
+	if err != nil {
+		return nil, err
+	}
+
+	if campaign.CreatedBy.Handle != userHandle {
+		return nil, errs.Forbidden("Unauthorize: only campaign creator can approve activity")
+	}
+
+	// approve activity
+	activity.ApproveActivity()
+	err = s.repo.Update(&activity)
+	if err != nil {
+		return nil, errs.InternalServerError(err).Log(s.logger)
+	}
+
+	// broadcast event
+	s.broadcaster.NewEvent(campaign.ID, websocket.EventTypeActivityUpdated, activity)
+
+	// send notification
+	go s.notificationService.NotifyActivityApproved(&activity, campaign)
+	return &activity, nil
 }
 
 // GetActivitiesByCampaignID retrieves all activities for a campaign
 func (s *activityService) GetActivitiesByCampaignID(campaignID string) ([]models.Activity, error) {
-	activities, err := s.repo.GetActivitiesByCampaignID(campaignID)
+	activities, err := s.repo.GetByCampaignID(campaignID)
 	if err != nil {
 		return nil, (errs.InternalServerError(err)).Log(s.logger)
 	}
@@ -79,7 +127,7 @@ func (s *activityService) GetActivitiesByCampaignID(campaignID string) ([]models
 
 // GetActivityByID retrieves a specific activity
 func (s *activityService) GetActivityByID(activityID uint, campaignID string) (models.Activity, error) {
-	activity, err := s.repo.GetActivityByID(activityID)
+	activity, err := s.repo.GetByID(activityID)
 	if err != nil {
 		if database.Error(err).IsNotfound() {
 			return models.Activity{}, (errs.NotFound("Activity not found")).Log(s.logger)
@@ -115,6 +163,10 @@ func (s *activityService) UpdateActivity(activity *models.Activity, userHandle s
 
 	// Broadcast update
 	s.broadcaster.NewEvent(activity.CampaignID, websocket.EventTypeActivityUpdated, existingActivity)
+
+	//TODO: need campaign contributors
+	//Send notification
+	// s.notificationService.NotifyActivityUpdate(activity, )
 
 	return nil
 }
@@ -159,7 +211,7 @@ func (s *activityService) OptInContributor(campaignID, userEmail string, activit
 		return errs.BadRequest("Contributor has already opted in.", nil)
 	}
 
-	if err := s.repo.AddContributorToActivity(activity.ID, contributor.ID); err != nil {
+	if err := s.repo.AddContributor(activity.ID, contributor.ID); err != nil {
 		return (errs.InternalServerError(err)).Log(s.logger)
 	}
 
@@ -187,7 +239,7 @@ func (s *activityService) OptOutContributor(campaignID, userEmail string, activi
 		return errs.BadRequest("Contributor has already opted out.", nil)
 	}
 
-	if err := s.repo.RemoveContributorFromActivity(activityID, contributor.ID); err != nil {
+	if err := s.repo.RemoveContributor(activityID, contributor.ID); err != nil {
 		return (errs.InternalServerError(err)).Log(s.logger)
 	}
 
@@ -210,7 +262,7 @@ func (s *activityService) GetParticipants(activityID uint, campaignID string) ([
 		return nil, errs.BadRequest("Activity not found in this campaign.", activityID)
 	}
 
-	contributors, err := s.repo.GetActivityParticipants(activityID)
+	contributors, err := s.repo.GetParticipants(activityID)
 
 	if err != nil {
 		return nil, (errs.InternalServerError(err)).Log(s.logger)
@@ -246,7 +298,7 @@ func (s *activityService) setupActivity(activity *models.Activity, campaign *mod
 }
 
 func (s *activityService) validateActivityForModification(activityID uint, campaignID, userHandle string) (models.Activity, error) {
-	activity, err := s.repo.GetActivityByID(activityID)
+	activity, err := s.repo.GetByID(activityID)
 	if err != nil {
 		if database.Error(err).IsNotfound() {
 			return models.Activity{}, (errs.NotFound("Activity not found")).Log(s.logger)

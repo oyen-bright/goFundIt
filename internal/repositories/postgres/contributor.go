@@ -38,20 +38,10 @@ func (r *contributorRepository) Delete(contribution *models.Contributor) error {
 	return r.db.Delete(contribution).Error
 }
 
-func (r *contributorRepository) ProcessPayment(paymentID string) error {
-	// Implement payment processing logic here
-	return nil
-}
-
-func (r *contributorRepository) RefundPayment(paymentID string) error {
-	// Implement payment refund logic here
-	return nil
-}
-
 // ----------------------------------------------------------------------
 func (r *contributorRepository) GetContributorsByCampaignID(campaignID string) ([]models.Contributor, error) {
 	var contributors []models.Contributor
-	err := r.db.Where("campaign_id = ?", campaignID).Find(&contributors).Error
+	err := r.db.Preload("Payment").Where("campaign_id = ?", campaignID).Find(&contributors).Error
 	return contributors, err
 }
 
