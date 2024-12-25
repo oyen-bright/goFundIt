@@ -81,6 +81,7 @@ func main() {
 	commentRepo := postgress.NewCommentRepository(db)
 	paymentRepo := postgress.NewPaymentRepository(db)
 	payoutRepo := postgress.NewPayoutRepository(db)
+	analyticsRepo := postgress.NewAnalyticsRepository(db)
 
 	// initialize the event broadcaster
 	eventBroadcaster := services.NewEventBroadcaster(websocketHub)
@@ -96,6 +97,12 @@ func main() {
 	suggestionService := services.NewSuggestionService(aiClient, campaignService, logger)
 	paymentService := services.NewPaymentService(paymentRepo, contributorService, campaignService, notificationService, paystackClient, storage, eventBroadcaster, logger)
 	payoutService := services.NewPayoutService(payoutRepo, campaignService, notificationService, paystackClient, eventBroadcaster, logger)
+
+	analyticsService := services.NewAnalyticsService(campaignService, authService, analyticsRepo, cfg.AnalyticsReportEmail, emailer, logger)
+	if err := analyticsService.StartAnalytics(); err != nil {
+		panic(err)
+	}
+	defer analyticsService.StopAnalytics()
 
 	cronService := services.NewCronService(campaignService, notificationService, logger)
 	if err := cronService.StartCronJobs(); err != nil {
