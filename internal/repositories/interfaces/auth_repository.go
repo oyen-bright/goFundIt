@@ -1,6 +1,8 @@
 package interfaces
 
 import (
+	"time"
+
 	"github.com/oyen-bright/goFundIt/internal/models"
 )
 
@@ -13,4 +15,6 @@ type AuthRepository interface {
 	FindByEmail(email string) (*models.User, error)
 	FindExistingAndNonExistingUsers(emails []string) (existing []models.User, nonExisting []string, err error)
 	GetAll() ([]models.User, error)
+
+	GetByCreatedDateRange(from, to time.Time) ([]models.User, error)
 }

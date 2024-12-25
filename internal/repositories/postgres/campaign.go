@@ -12,6 +12,117 @@ type campaignRepository struct {
 	db *gorm.DB
 }
 
+// GetAllForAnalytics implements interfaces.CampaignRepository.
+func (r *campaignRepository) GetAllForAnalytics(yesterday time.Time, today time.Time) ([]models.Campaign, error) {
+	var campaigns []models.Campaign
+
+	query := r.db.Model(&models.Campaign{}).
+		// Get campaigns updated in the time period
+		Where("campaigns.updated_at BETWEEN ? AND ?", yesterday, today).
+		// Or campaigns with any related data updated in the period
+		Or("id IN (?)",
+			r.db.Table("activities").
+				Select("campaign_id").
+				Where("updated_at BETWEEN ? AND ?", yesterday, today)).
+		Or("id IN (?)",
+			r.db.Table("contributors").
+				Select("campaign_id").
+				Where("updated_at BETWEEN ? AND ?", yesterday, today)).
+		Or("id IN (?)",
+			r.db.Table("campaign_images").
+				Select("campaign_id").
+				Where("updated_at BETWEEN ? AND ?", yesterday, today)).
+		Or("id IN (?)",
+			r.db.Table("payouts").
+				Select("campaign_id").
+				Where("updated_at BETWEEN ? AND ?", yesterday, today))
+
+	// Images with update time filter
+	query = query.Preload("Images", func(db *gorm.DB) *gorm.DB {
+		return db.Where("updated_at <= ?", today)
+	})
+
+	// Payout with update time filter
+	query = query.Preload("Payout", func(db *gorm.DB) *gorm.DB {
+		return db.Where("updated_at <= ?", today)
+	})
+
+	// Activities and their relationships with update time filters
+	query = query.Preload("Activities", func(db *gorm.DB) *gorm.DB {
+		return db.Where("updated_at <= ?", today).Order("updated_at DESC")
+	})
+
+	// Activity Contributors with update time filter
+	query = query.Preload("Activities.Contributors", func(db *gorm.DB) *gorm.DB {
+		return db.Where("updated_at <= ?", today)
+	})
+
+	// Activity Contributors Payments
+	query = query.Preload("Activities.Contributors.Payment", func(db *gorm.DB) *gorm.DB {
+		return db.Where("updated_at <= ?", today)
+	})
+
+	// Activity Created By
+	query = query.Preload("Activities.CreatedBy")
+
+	// Comments and nested replies with update time filters
+	query = query.Preload("Activities.Comments", func(db *gorm.DB) *gorm.DB {
+		return db.Where("updated_at <= ?", today).
+			Where("parent_id IS NULL").
+			Order("updated_at DESC")
+	})
+
+	query = query.Preload("Activities.Comments.CreatedBy")
+
+	query = query.Preload("Activities.Comments.Replies", func(db *gorm.DB) *gorm.DB {
+		return db.Where("updated_at <= ?", today).Order("updated_at DESC")
+	})
+
+	query = query.Preload("Activities.Comments.Replies.CreatedBy")
+
+	query = query.Preload("Activities.Comments.Replies.Replies", func(db *gorm.DB) *gorm.DB {
+		return db.Where("updated_at <= ?", today).Order("updated_at DESC")
+	})
+
+	query = query.Preload("Activities.Comments.Replies.Replies.CreatedBy")
+
+	// Contributors and their relationships with update time filters
+	query = query.Preload("Contributors", func(db *gorm.DB) *gorm.DB {
+		return db.Where("updated_at <= ?", today).Order("updated_at DESC")
+	})
+
+	query = query.Preload("Contributors.Payment", func(db *gorm.DB) *gorm.DB {
+		return db.Where("updated_at <= ?", today)
+	})
+
+	query = query.Preload("Contributors.Activities", func(db *gorm.DB) *gorm.DB {
+		return db.Where("updated_at <= ?", today).Order("updated_at DESC")
+	})
+
+	query = query.Preload("Contributors.Activities.Comments", func(db *gorm.DB) *gorm.DB {
+		return db.Where("updated_at <= ?", today).Order("updated_at DESC")
+	})
+
+	query = query.Preload("Contributors.Activities.Contributors", func(db *gorm.DB) *gorm.DB {
+		return db.Where("updated_at <= ?", today)
+	})
+
+	// Campaign creator
+	query = query.Preload("CreatedBy")
+
+	// Add necessary indexes for performance
+	if err := r.ensureAnalyticsIndexes(); err != nil {
+		return nil, err
+	}
+
+	// Execute the query
+	if err := query.Find(&campaigns).Error; err != nil {
+		return nil, err
+	}
+
+	return campaigns, nil
+}
+
 func NewCampaignRepository(db *gorm.DB) interfaces.CampaignRepository {
 	return &campaignRepository{db: db}
 }
@@ -178,6 +289,21 @@ func (r *campaignRepository) GetNearEndCampaigns() ([]models.Campaign, error) {
 		return nil, err
 	}
 	return campaigns, nil
+}
+
+// Helper functions
+// Helper method to ensure all necessary indexes exist
+func (r *campaignRepository) ensureAnalyticsIndexes() error {
+	// Create indexes if they don't exist
+	return r.db.Exec(`
+        CREATE INDEX IF NOT EXISTS idx_campaigns_updated_at ON campaigns(updated_at);
+        CREATE INDEX IF NOT EXISTS idx_activities_updated_at ON activities(updated_at);
+        CREATE INDEX IF NOT EXISTS idx_contributors_updated_at ON contributors(updated_at);
+        CREATE INDEX IF NOT EXISTS idx_comments_updated_at ON comments(updated_at);
+        CREATE INDEX IF NOT EXISTS idx_campaign_images_updated_at ON campaign_images(updated_at);
+        CREATE INDEX IF NOT EXISTS idx_payouts_updated_at ON payouts(updated_at);
+        CREATE INDEX IF NOT EXISTS idx_payments_updated_at ON payments(updated_at);
+    `).Error
 }
 
 // func (r *campaignRepository) Update(campaign *models.Campaign) (models.Campaign, error) {
