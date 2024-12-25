@@ -1,6 +1,8 @@
 package interfaces
 
 import (
+	"time"
+
 	"github.com/oyen-bright/goFundIt/internal/models"
 )
 
@@ -14,4 +16,6 @@ type CampaignService interface {
 	GetExpiredCampaigns() ([]models.Campaign, error)
 	GetActiveCampaigns() ([]models.Campaign, error)
 	GetNearEndCampaigns() ([]models.Campaign, error)
+
+	GetCampaignsForAnalytics(yesterday time.Time, today time.Time) ([]models.Campaign, error)
 }

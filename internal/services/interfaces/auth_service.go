@@ -1,6 +1,8 @@
 package interfaces
 
 import (
+	"time"
+
 	"github.com/oyen-bright/goFundIt/internal/models"
 )
 
@@ -18,4 +20,5 @@ type AuthService interface {
 	GetAllUser() ([]models.User, error)
 	SaveFCMToken(handle string, token string) error
 	RemoveFCMToken(handle string, token string) error
+	GetUsersByCreatedDateRange(from, to time.Time) ([]models.User, error)
 }

@@ -1,6 +1,7 @@
 package templates
 
 import (
+	"fmt"
 	"path/filepath"
 	"time"
 
@@ -14,6 +15,18 @@ func generateFile(fileName string) string {
 }
 
 // Personal Email Templates
+func AnalyticsReport(to []string, today, comparison interface{}, reportDate time.Time) *email.EmailTemplate {
+	return &email.EmailTemplate{
+		To:      to,
+		Subject: fmt.Sprintf("Daily Analytics Report - %s", reportDate.Format("2006-01-02")),
+		Path:    generateFile("personal/analytics_report.html"),
+		Data: map[string]interface{}{
+			"today":      today,
+			"comparison": comparison,
+			"date":       reportDate.Format("January 2, 2006"),
+		},
+	}
+}
 
 func Verification(to []string, name, verificationCode string) *email.EmailTemplate {
 	return &email.EmailTemplate{
