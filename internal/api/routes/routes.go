@@ -21,6 +21,7 @@ type Config struct {
 	WebSocketHandler   *handlers.WebSocketHandler
 	PaymentHandler     *handlers.PaymentHandler
 	PayoutHandler      *handlers.PayoutHandler
+	AnalyticsHandler   *handlers.AnalyticsHandle
 	PaystackKey        string
 	XAPIKey            string
 	JWT                jwt.Jwt
@@ -149,6 +150,12 @@ func SetupRoutes(cfg Config) {
 	{
 		activitySuggestions.GET("/:campaignID", cfg.SuggestionHandler.HandleGetActivitySuggestions)
 		activitySuggestions.POST("/", cfg.SuggestionHandler.HandleGetActivitySuggestionsViaText)
+	}
+
+	//Analytics routes
+	analyticsGroup := cfg.Router.Group("/analytics")
+	{
+		analyticsGroup.GET("/process", cfg.AnalyticsHandler.HandleProcessAnalyticsNow)
 	}
 
 }

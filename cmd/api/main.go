@@ -96,22 +96,23 @@ func main() {
 	eventBroadcaster := services.NewEventBroadcaster(websocketHub)
 
 	// Initialize Services
-	otpService := services.NewOTPService(otpRepo, emailer, *encryptor, logger)
-	authService := services.NewAuthService(authRepo, otpService, *encryptor, jwtService, logger)
-	notificationService := services.NewNotificationService(emailer, authService, fcmClient, logger)
-	campaignService := services.NewCampaignService(campaignRepo, authService, notificationService, eventBroadcaster, logger)
-	contributorService := services.NewContributorService(contributorRepo, campaignService, notificationService, eventBroadcaster, logger)
-	activityService := services.NewActivityService(activityRepo, authService, campaignService, eventBroadcaster, notificationService, logger)
-	commentService := services.NewCommentService(commentRepo, authService, activityService, notificationService, eventBroadcaster, logger)
-	suggestionService := services.NewSuggestionService(aiClient, campaignService, logger)
-	paymentService := services.NewPaymentService(paymentRepo, contributorService, campaignService, notificationService, paystackClient, storage, eventBroadcaster, logger)
-	payoutService := services.NewPayoutService(payoutRepo, campaignService, notificationService, paystackClient, eventBroadcaster, logger)
 
-	analyticsService := services.NewAnalyticsService(campaignService, authService, analyticsRepo, cfg.AnalyticsReportEmail, emailer, logger)
+	analyticsService := services.NewAnalyticsService(analyticsRepo, cfg.AnalyticsReportEmail, emailer, logger)
 	if err := analyticsService.StartAnalytics(); err != nil {
 		panic(err)
 	}
 	defer analyticsService.StopAnalytics()
+
+	otpService := services.NewOTPService(otpRepo, emailer, *encryptor, logger)
+	authService := services.NewAuthService(authRepo, otpService, *encryptor, analyticsService, jwtService, logger)
+	notificationService := services.NewNotificationService(emailer, authService, fcmClient, logger)
+	campaignService := services.NewCampaignService(campaignRepo, authService, analyticsService, notificationService, eventBroadcaster, logger)
+	contributorService := services.NewContributorService(contributorRepo, campaignService, analyticsService, notificationService, eventBroadcaster, logger)
+	activityService := services.NewActivityService(activityRepo, authService, campaignService, eventBroadcaster, analyticsService, notificationService, logger)
+	commentService := services.NewCommentService(commentRepo, authService, activityService, notificationService, eventBroadcaster, logger)
+	suggestionService := services.NewSuggestionService(aiClient, campaignService, logger)
+	paymentService := services.NewPaymentService(paymentRepo, contributorService, analyticsService, campaignService, notificationService, paystackClient, storage, eventBroadcaster, logger)
+	payoutService := services.NewPayoutService(payoutRepo, campaignService, notificationService, paystackClient, eventBroadcaster, logger)
 
 	cronService := services.NewCronService(campaignService, notificationService, logger)
 	if err := cronService.StartCronJobs(); err != nil {
