@@ -19,15 +19,6 @@ func NewCampaignHandler(service services.CampaignService) *CampaignHandler {
 	}
 }
 
-// handleCreateCampaign handles incoming campaign creation requests.
-// Required Fields:
-//   - Title: required, string
-//   - Description: optional, string
-//   - Images: []{imageUrl: required, url}
-//   - Activities: []{title: required, string, subtitle: optional, string, imageUrl: optional, string, isMandatory: optional, bool}
-//   - TargetAmount: required, number
-//   - StartDate: required, date
-//   - EndDate: required, date
 func (h *CampaignHandler) HandleCreateCampaign(c *gin.Context) {
 
 	claims := c.MustGet("claims").(jwt.Claims)
@@ -46,7 +37,7 @@ func (h *CampaignHandler) HandleCreateCampaign(c *gin.Context) {
 	}
 
 	//create service
-	campaign, err := h.service.CreateCampaign(campaign, claims.Handle)
+	campaign, err := h.service.CreateCampaign(&campaign, claims.Handle)
 
 	if err != nil {
 		response.FromError(c, err)
