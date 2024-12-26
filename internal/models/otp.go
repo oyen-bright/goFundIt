@@ -1,17 +1,18 @@
 package models
 
 import (
-	"time"
-
 	"math/rand"
 	"strings"
+	"time"
 
 	"github.com/oyen-bright/goFundIt/pkg/encryption"
 )
 
-const CHARSET = "abcdefghijklmnopqrstuvwxyz"
-const ExpireTime = 5 // minutes
-const OTP_LENGTH = 6
+const (
+	CHARSET    = "abcdefghijklmnopqrstuvwxyz"
+	ExpireTime = 5 // minutes
+	OTP_LENGTH = 6
+)
 
 type Otp struct {
 	ID        uint      `gorm:"primaryKey"`
@@ -23,6 +24,18 @@ type Otp struct {
 	CreatedAt time.Time
 }
 
+// Constructor
+func NewOTP(email string) *Otp {
+	return &Otp{
+		Email:     strings.ToLower(email),
+		Code:      generateOTP(0),
+		RequestId: generateRequestId(),
+		CreatedAt: time.Now(),
+		ExpiresAt: generateExpireDate(),
+	}
+}
+
+// Methods
 func (o *Otp) IsExpired() bool {
 	return o.ExpiresAt.Before(time.Now())
 }
@@ -46,7 +59,6 @@ func (o *Otp) Encrypt(e encryption.Encryptor) error {
 	// 	*o = *otp
 	// }
 	// return err
-
 }
 
 func (o *Otp) Decrypt(e encryption.Encryptor, key string) error {
@@ -62,24 +74,9 @@ func (o *Otp) Decrypt(e encryption.Encryptor, key string) error {
 	// return err
 }
 
-func NewOTP(email string) *Otp {
+// Helper functions ------------------------------------
 
-	code := GenerateOTP(0)
-	expireAt := GenerateExpireDate()
-	requestId := GenerateRequestId()
-	return &Otp{
-		Code:      code,
-		Email:     strings.ToLower(email),
-		CreatedAt: time.Now(),
-		ExpiresAt: expireAt,
-		RequestId: requestId,
-	}
-}
-
-// GenerateOTP generates a random OTP
-// if length is not provided, the default length is 6
-func GenerateOTP(length int) string {
-
+func generateOTP(length int) string {
 	otpLength := length
 	if length == 0 {
 		otpLength = OTP_LENGTH
@@ -93,14 +90,11 @@ func GenerateOTP(length int) string {
 	return strings.ToUpper(string(otp))
 }
 
-// generateExpireDate generates the time the OTP will expire
-// the default expire time is 5 minutes
-func GenerateExpireDate() time.Time {
+func generateExpireDate() time.Time {
 	return time.Now().Add(time.Minute * ExpireTime)
 }
 
-func GenerateRequestId() string {
-
+func generateRequestId() string {
 	numbers := make([]byte, 5)
 	for i := range numbers {
 		numbers[i] = '0' + byte(rand.Intn(10))

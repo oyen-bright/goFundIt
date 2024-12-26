@@ -87,12 +87,17 @@ func NewManualPayout(campaignID string, amount float64, recipientId string) *Pay
 	}
 }
 
-// BeforeCreate ensures ID is not null before creating a new payout
-func (p *Payout) BeforeCreate(tx *gorm.DB) (err error) {
-	if p.ID == "" {
-		return errors.New("ID is required")
+// NewCryptoPayout creates a new crypto payout instance
+func NewCryptoPayout(campaignID string, amount float64, cryptoToken CryptoToken, address string) *Payout {
+	return &Payout{
+		CampaignID:   campaignID,
+		Amount:       amount,
+		PayoutMethod: PaymentMethodCrypto,
+		CryptoAccount: &CryptoAccount{
+			CryptoToken: cryptoToken,
+			Address:     address,
+		},
 	}
-	return nil
 }
 
 // MarkPayoutCompleted sets the payout status as completed and updates the completion time
@@ -115,20 +120,18 @@ func (p *Payout) MarkPayoutProcessing() {
 	p.ProcessedAt = &now
 }
 
-// NewCryptoPayout creates a new crypto payout instance
-func NewCryptoPayout(campaignID string, amount float64, cryptoToken CryptoToken, address string) *Payout {
-	return &Payout{
-		CampaignID:   campaignID,
-		Amount:       amount,
-		PayoutMethod: PaymentMethodCrypto,
-		CryptoAccount: &CryptoAccount{
-			CryptoToken: cryptoToken,
-			Address:     address,
-		},
+// GORM Hooks
+
+// BeforeCreate ensures ID is not null before creating a new payout
+func (p *Payout) BeforeCreate(tx *gorm.DB) (err error) {
+	if p.ID == "" {
+		return errors.New("ID is required")
 	}
+	return nil
 }
 
-// Helper Functions
+// Helper Functions -------------------------------------
+
 func generatePayoutId() string {
 	return utils.GenerateRandomAlphaNumeric("PYT-", 12)
 }

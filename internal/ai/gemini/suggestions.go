@@ -7,7 +7,7 @@ import (
 	"github.com/oyen-bright/goFundIt/internal/models"
 )
 
-// TODO;  add location ?
+// TODO; Add location ?
 func (c *geminiClient) GenerateActivitySuggestions(prompt string) ([]models.ActivitySuggestion, error) {
 	c.model.SetTemperature(0.4)
 	c.model.SetTopK(40)
