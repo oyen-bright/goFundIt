@@ -1,10 +1,12 @@
 package main
 
 import (
+	"time"
+
+	"github.com/getsentry/sentry-go"
 	"github.com/gin-gonic/gin"
 	"github.com/oyen-bright/goFundIt/config"
 	"github.com/oyen-bright/goFundIt/config/providers"
-
 	"github.com/oyen-bright/goFundIt/internal/ai/gemini"
 	"github.com/oyen-bright/goFundIt/internal/api/handlers"
 	"github.com/oyen-bright/goFundIt/internal/api/routes"
@@ -38,13 +40,20 @@ func initialize() (*config.AppConfig, *gorm.DB) {
 }
 
 func main() {
-
-	//Initialize the logger
-	logger := logger.New()
-
 	// Initialize database and application configurations
 	cfg, db := initialize()
 	defer database.Close(db)
+
+	if err := config.InitSentry(
+		cfg.Environment.String(),
+		cfg.Environment.IsDevelopment(),
+	); err != nil {
+		panic(err)
+	}
+	defer sentry.Flush(2 * time.Second)
+
+	//Initialize the logger
+	logger := logger.New()
 
 	// Initialize AI Client
 	aiClient, _ := gemini.NewClient(cfg.GeminiKey)
