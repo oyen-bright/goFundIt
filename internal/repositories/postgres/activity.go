@@ -35,6 +35,11 @@ func (r *activityRepository) Update(activity *models.Activity) error {
 		}).Error
 }
 
+// Save saves changes to an existing activity
+func (r *activityRepository) Save(activity *models.Activity) error {
+	return r.db.Save(activity).Error
+}
+
 // Delete removes an activity from the database
 func (r *activityRepository) Delete(activity *models.Activity) error {
 	return r.db.Delete(activity).Error
@@ -69,16 +74,6 @@ func (r *activityRepository) GetByCampaignID(campaignID string) ([]models.Activi
 	var activities []models.Activity
 	err := r.db.Preload("Contributors").Where("campaign_id = ?", campaignID).Find(&activities).Error
 	return activities, err
-}
-
-// UpdateActivity saves changes to an existing activity
-func (r *activityRepository) Save(activity *models.Activity) error {
-	return r.db.Save(activity).Error
-}
-
-// DeleteActivity removes an activity by its ID
-func (r *activityRepository) DeleteActivity(activityID uint) error {
-	return r.db.Delete(&models.Activity{}, activityID).Error
 }
 
 // GetActivityParticipants retrieves all contributors for a specific activity

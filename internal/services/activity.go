@@ -69,7 +69,7 @@ func (s *activityService) CreateActivity(activity models.Activity, userHandle, c
 	}
 
 	// Broadcast update
-	s.broadcaster.NewEvent(campaignID, websocket.EventTypeActivityCreated, createdActivity)
+	go s.broadcaster.NewEvent(campaignID, websocket.EventTypeActivityCreated, createdActivity)
 
 	// Send notification
 
@@ -115,7 +115,7 @@ func (s *activityService) ApproveActivity(activityID uint, userHandle string) (*
 	}
 
 	// broadcast event
-	s.broadcaster.NewEvent(campaign.ID, websocket.EventTypeActivityUpdated, activity)
+	go s.broadcaster.NewEvent(campaign.ID, websocket.EventTypeActivityUpdated, activity)
 
 	// send notification
 	go s.notificationService.NotifyActivityApproved(&activity, campaign)
@@ -168,7 +168,7 @@ func (s *activityService) UpdateActivity(activity *models.Activity, userHandle s
 	}
 
 	// Broadcast update
-	s.broadcaster.NewEvent(activity.CampaignID, websocket.EventTypeActivityUpdated, existingActivity)
+	go s.broadcaster.NewEvent(activity.CampaignID, websocket.EventTypeActivityUpdated, existingActivity)
 
 	//TODO: need campaign contributors
 	//Send notification
@@ -193,7 +193,7 @@ func (s *activityService) DeleteActivityByID(activityID uint, campaignID, userHa
 	}
 
 	// Broadcast update
-	s.broadcaster.NewEvent(campaignID, websocket.EventTypeActivityDeleted, activityID)
+	go s.broadcaster.NewEvent(campaignID, websocket.EventTypeActivityDeleted, activityID)
 
 	return nil
 }
@@ -223,7 +223,7 @@ func (s *activityService) OptInContributor(campaignID, userEmail string, activit
 
 	// Broadcast update
 	activity.AddContributor(*contributor)
-	s.broadcaster.NewEvent(campaignID, websocket.EventTypeActivityUpdated, activity)
+	go s.broadcaster.NewEvent(campaignID, websocket.EventTypeActivityUpdated, activity)
 
 	return nil
 }
@@ -251,7 +251,7 @@ func (s *activityService) OptOutContributor(campaignID, userEmail string, activi
 
 	// Broadcast update
 	activity.RemoveContributor(*contributor)
-	s.broadcaster.NewEvent(campaignID, websocket.EventTypeActivityUpdated, activity)
+	go s.broadcaster.NewEvent(campaignID, websocket.EventTypeActivityUpdated, activity)
 
 	return nil
 }
@@ -276,7 +276,7 @@ func (s *activityService) GetParticipants(activityID uint, campaignID string) ([
 	return contributors, nil
 }
 
-// Helper methods
+// Helper methods ----------------------------------------------
 
 func (s *activityService) validateCampaignAndUser(campaignID, userHandle string) (*models.Campaign, *models.User, error) {
 	campaign, err := s.campaignService.GetCampaignByID(campaignID)
