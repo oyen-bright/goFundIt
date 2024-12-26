@@ -1,6 +1,9 @@
 package routes
 
 import (
+	"time"
+
+	sentrygin "github.com/getsentry/sentry-go/gin"
 	"github.com/gin-gonic/gin"
 	"github.com/oyen-bright/goFundIt/internal/api/handlers"
 	"github.com/oyen-bright/goFundIt/internal/api/middlewares"
@@ -24,6 +27,13 @@ type Config struct {
 }
 
 func SetupRoutes(cfg Config) {
+
+	// Add Sentry middleware
+	cfg.Router.Use(sentrygin.New(sentrygin.Options{
+		Repanic:         true,
+		WaitForDelivery: true,
+		Timeout:         2 * time.Second,
+	}))
 
 	// Webhook route
 	cfg.Router.POST("/payment/paystack/webhook", cfg.PaymentHandler.HandlePayStackWebhook, middlewares.PaystackSignature(cfg.PaystackKey))

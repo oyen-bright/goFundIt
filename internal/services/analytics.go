@@ -1,3 +1,4 @@
+// TODO: refactor
 package services
 
 import (
@@ -51,7 +52,7 @@ func (s *analyticsService) StartAnalytics() error {
 	// Schedule analytics processing for 23:00 UTC daily
 	_, err := s.cron.AddFunc("0 23 * * *", func() {
 		if err := s.processDailyAnalytics(); err != nil {
-			s.logger.Log(fmt.Sprintf("Failed to process daily analytics: %v", err))
+			s.logger.Error(err, "error processDailyAnalytics ", nil)
 		}
 	})
 
@@ -60,7 +61,6 @@ func (s *analyticsService) StartAnalytics() error {
 	}
 
 	s.cron.Start()
-	s.logger.Log("Analytics service started - scheduled for 23:00 UTC daily")
 	return nil
 }
 
@@ -68,7 +68,7 @@ func (s *analyticsService) StartAnalytics() error {
 func (s *analyticsService) StopAnalytics() {
 	if s.cron != nil {
 		s.cron.Stop()
-		s.logger.Log("Analytics service stopped")
+		s.logger.Info("Analytics service stopped", nil)
 	}
 }
 
