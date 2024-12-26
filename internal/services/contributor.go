@@ -22,8 +22,22 @@ type contributorService struct {
 	logger              logger.Logger
 }
 
-func NewContributorService(repo repositories.ContributorRepository, campaignService services.CampaignService, analyticsService services.AnalyticsService, notificationService services.NotificationService, broadcaster services.EventBroadcaster, logger logger.Logger) services.ContributorService {
-	return &contributorService{repo: repo, logger: logger, campaignService: campaignService, analyticsService: analyticsService, broadcaster: broadcaster, notificationService: notificationService}
+func NewContributorService(
+	repo repositories.ContributorRepository,
+	campaignService services.CampaignService,
+	analyticsService services.AnalyticsService,
+	notificationService services.NotificationService,
+	broadcaster services.EventBroadcaster,
+	logger logger.Logger,
+) services.ContributorService {
+	return &contributorService{
+		repo:                repo,
+		campaignService:     campaignService,
+		analyticsService:    analyticsService,
+		notificationService: notificationService,
+		broadcaster:         broadcaster,
+		logger:              logger,
+	}
 }
 
 // AddContributorToCampaign adds a contributor to a campaign
@@ -61,7 +75,7 @@ func (s *contributorService) AddContributorToCampaign(contributor *models.Contri
 	}
 
 	// broadcast event
-	s.broadcaster.NewEvent(campaign.ID, websocket.EventTypeContributionCreated, contributor)
+	go s.broadcaster.NewEvent(campaign.ID, websocket.EventTypeContributionCreated, contributor)
 	// send notification
 	go s.notificationService.NotifyContributorAdded(contributor, campaign)
 
@@ -78,7 +92,7 @@ func (s *contributorService) UpdateContributor(contributor *models.Contributor) 
 	}
 
 	// broadcast event
-	s.broadcaster.NewEvent(contributor.CampaignID, websocket.EventTypeContributorUpdated, contributor)
+	go s.broadcaster.NewEvent(contributor.CampaignID, websocket.EventTypeContributorUpdated, contributor)
 
 	return nil
 }
@@ -108,7 +122,7 @@ func (s *contributorService) UpdateContributorByID(contributor *models.Contribut
 	retrievedContributor.Name = contributor.Name
 
 	// broadcast event
-	s.broadcaster.NewEvent(retrievedContributor.CampaignID, websocket.EventTypeContributorUpdated, retrievedContributor)
+	go s.broadcaster.NewEvent(retrievedContributor.CampaignID, websocket.EventTypeContributorUpdated, retrievedContributor)
 
 	return retrievedContributor, nil
 }
@@ -142,7 +156,7 @@ func (s *contributorService) RemoveContributorFromCampaign(contributorId uint, c
 	}
 
 	// broadcast event
-	s.broadcaster.NewEvent(campaign.ID, websocket.EventTypeContributorDeleted, contributor)
+	go s.broadcaster.NewEvent(campaign.ID, websocket.EventTypeContributorDeleted, contributor)
 	return nil
 }
 
@@ -169,7 +183,8 @@ func (s *contributorService) GetContributorsByCampaignID(campaignID string) ([]m
 
 }
 
-// Helper methods
+// Helper Methods --------------------------------------
+
 func (s *contributorService) validateCampaignAndPermissions(campaign *models.Campaign, userHandle string, contributor *models.Contributor) error {
 	// Check creator permission
 	if campaign.CreatedBy.Handle != userHandle {

@@ -8,10 +8,11 @@ import (
 	"gorm.io/gorm"
 )
 
-// Contributor represents a user who contributes funds to a campaign
 // TODO: use DTO to bind the email and name
 // TODO: add notification settings - allow contributor to opt-in for notifications or not
 // TODO: consider required the userEmail via binding to make UpdateUserEmail() redundant
+
+// Original struct for reference
 // type Contributor struct {
 // 	ID            uint          `gorm:"primaryKey" json:"id"`
 // 	Name          string        `gorm:"type:varchar(255);default:null;null" validate:"omitempty" binding:"omitempty,gte=3" json:"name"`
@@ -38,8 +39,6 @@ type Contributor struct {
 }
 
 // Constructor
-
-// NewContributor creates a new Contributor instance with the provided parameters
 func NewContributor(campaignID, email string, amount float64) *Contributor {
 	return &Contributor{
 		CampaignID: campaignID,
@@ -49,17 +48,7 @@ func NewContributor(campaignID, email string, amount float64) *Contributor {
 	}
 }
 
-// / GetAmountTotal returns the total amount contributed by the contributor
-func (c *Contributor) GetAmountTotal() float64 {
-	for _, activity := range c.Activities {
-		c.Amount += activity.Cost
-	}
-	return c.Amount
-}
-
 // Payment Status Methods
-
-// HasPaid checks if the payment has been successfully processed
 func (c *Contributor) HasPaid() bool {
 	if c.Payment == nil {
 		return false
@@ -68,7 +57,6 @@ func (c *Contributor) HasPaid() bool {
 	return c.Payment.PaymentStatus == PaymentStatusSucceeded || c.Payment.PaymentStatus == PaymentStatusPendingApproval
 }
 
-// IsPending checks if the payment is still pending
 func (c *Contributor) IsPending() bool {
 	if c.Payment == nil {
 		return false
@@ -76,7 +64,6 @@ func (c *Contributor) IsPending() bool {
 	return c.Payment.PaymentStatus == PaymentStatusPending
 }
 
-// HasFailed checks if the payment has failed
 func (c *Contributor) HasFailed() bool {
 	if c.Payment == nil {
 		return false
@@ -84,10 +71,15 @@ func (c *Contributor) HasFailed() bool {
 	return c.Payment.PaymentStatus == PaymentStatusFailed
 }
 
-// Update Methods
+// Amount Methods
+func (c *Contributor) GetAmountTotal() float64 {
+	for _, activity := range c.Activities {
+		c.Amount += activity.Cost
+	}
+	return c.Amount
+}
 
-// UpdateCampaignId updates the campaignId of the model
-// Note: campaignId is only updated if the current CampaignID is empty
+// Update Methods
 func (c *Contributor) UpdateCampaignId(id string) {
 	if c.CampaignID != "" {
 		return
@@ -95,19 +87,14 @@ func (c *Contributor) UpdateCampaignId(id string) {
 	c.CampaignID = id
 }
 
-// UpdateUserEmail updates the UserEmail of the model
-// Note: UserEmail is only updated if the current UserEmail is empty
 func (c *Contributor) UpdateUserEmail() {
 	// if c.UserEmail != "" {
 	// 	return
 	// }
 	// c.UserEmail = c.Email
-
 }
 
 // Validation Methods
-
-// Validate performs validation checks on the contributor
 func (c *Contributor) Validate() error {
 	v := validator.New(validator.WithRequiredStructEnabled())
 	if err := v.Struct(c); err != nil {
@@ -117,8 +104,6 @@ func (c *Contributor) Validate() error {
 }
 
 // GORM Hooks
-
-// BeforeCreate performs validation before creating the contributor
 func (c *Contributor) BeforeCreate(tx *gorm.DB) (err error) {
 	if validationErrors := c.Validate(); validationErrors != nil {
 		return validationErrors
@@ -126,7 +111,6 @@ func (c *Contributor) BeforeCreate(tx *gorm.DB) (err error) {
 	return nil
 }
 
-// BeforeSave GORM hook to convert empty string to NULL
 func (c *Contributor) BeforeSave(tx *gorm.DB) error {
 	if c.Name == "" {
 		c.Name = sql.NullString{}.String
