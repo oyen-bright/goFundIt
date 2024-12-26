@@ -7,7 +7,7 @@ import (
 	"github.com/google/uuid"
 )
 
-// TODO: implement  better way of handling the replies ot comment
+// TODO: implement  better way of handling the replies of comment
 type Comment struct {
 	ID              string    `gorm:"type:text;primaryKey" json:"id" binding:"-"`
 	Content         string    `gorm:"type:text;not null" binding:"required" validate:"required" json:"content"`
@@ -43,7 +43,7 @@ func (c *Comment) FromBinding(CreatedBy User, activityID uint) {
 	c.ActivityID = activityID
 }
 
-// Helper function
+// Helper function -------------------------------------------------
 
 // generateId generates a new id for Comment
 func generateID() string {

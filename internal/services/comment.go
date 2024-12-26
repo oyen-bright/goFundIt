@@ -19,13 +19,20 @@ type commentService struct {
 	logger              logger.Logger
 }
 
-func NewCommentService(repo interfaces.CommentRepository, authService services.AuthService, activityService services.ActivityService, notificationService services.NotificationService, broadcaster services.EventBroadcaster, logger logger.Logger) services.CommentService {
+func NewCommentService(
+	repo interfaces.CommentRepository,
+	authService services.AuthService,
+	activityService services.ActivityService,
+	notificationService services.NotificationService,
+	broadcaster services.EventBroadcaster,
+	logger logger.Logger,
+) services.CommentService {
 	return &commentService{
 		repo:                repo,
 		authService:         authService,
+		activityService:     activityService,
 		notificationService: notificationService,
 		broadcaster:         broadcaster,
-		activityService:     activityService,
 		logger:              logger,
 	}
 }
@@ -68,7 +75,7 @@ func (c *commentService) CreateComment(comment *models.Comment, campaignID strin
 	}
 
 	// Broadcast new comment
-	c.broadcaster.NewEvent(campaignID, websocket.EventTypeCommentCreated, comment)
+	go c.broadcaster.NewEvent(campaignID, websocket.EventTypeCommentCreated, comment)
 
 	go c.notificationService.NotifyCommentAddition(comment, &activity)
 
@@ -92,7 +99,7 @@ func (c *commentService) DeleteComment(commentID string, userHandle string) erro
 
 	// Broadcast event
 	//TODO: Check if this is the right event to broadcast
-	c.broadcaster.NewEvent(commentID, websocket.EventTypeCommentDeleted, commentID)
+	go c.broadcaster.NewEvent(commentID, websocket.EventTypeCommentDeleted, commentID)
 
 	return nil
 
@@ -134,7 +141,7 @@ func (c *commentService) UpdateComment(comment models.Comment, userHandle string
 
 }
 
-// Helper function
+// Helper function -----------------------------------------------------------
 
 func (c *commentService) validateCommentForModification(commentID, userHandle string) (*models.Comment, error) {
 	//Validate user
