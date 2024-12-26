@@ -16,6 +16,7 @@ import (
 //         CreatedAt:  time.Now(),
 //     }
 
+// Struct definition
 type User struct {
 	ID            uint          `gorm:"primaryKey" json:"-"`
 	Email         string        `gorm:"uniqueIndex;not null" encrypt:"true" binding:"required,email,lowercase"  validate:"email"`
@@ -28,6 +29,7 @@ type User struct {
 	UpdatedAt     time.Time     `json:"-"`
 }
 
+// Constructor
 func NewUser(name, email string, verified bool) *User {
 	return &User{
 		Name:     &name,
@@ -37,13 +39,8 @@ func NewUser(name, email string, verified bool) *User {
 	}
 }
 
-func (u *User) CanContributeToACampaign() bool {
-	return len(u.Contributions) == 0
-
-}
-
+// GORM Hooks
 func (u *User) BeforeCreate(tx *gorm.DB) (err error) {
-
 	//TODO:failing because data Already encrypted
 	// validate := validator.New()
 	// if err = validate.Struct(u); err != nil {
@@ -52,9 +49,11 @@ func (u *User) BeforeCreate(tx *gorm.DB) (err error) {
 	return nil
 }
 
-func getHandle(email string) string {
-	return utils.GenerateRandomString(string(email[:2]), 0)
+// Public methods
+func (u *User) CanContributeToACampaign() bool {
+	return len(u.Contributions) == 0
 }
+
 func (u *User) IsVerified() bool {
 	return u.Verified
 }
@@ -67,21 +66,19 @@ func (u *User) UpdateFCMToken(token string) {
 	u.FCMToken = &token
 }
 
+// Encryption methods
 func (u *User) Encrypt(e encryption.Encryptor) error {
 	//TODO:disabled for now for faster dev
 	return nil
 	// var err error
-
 	// encrypted, err := e.EncryptStruct(u, u.Email)
 	// if err != nil {
 	// 	return err
 	// }
-
 	// if user, ok := encrypted.(*User); ok {
 	// 	*u = *user
 	// }
 	// return err
-
 }
 
 func (u *User) Decrypt(e encryption.Encryptor, key string) error {
@@ -92,9 +89,14 @@ func (u *User) Decrypt(e encryption.Encryptor, key string) error {
 	// if err != nil {
 	// 	return err
 	// }
-
 	// if user, ok := encrypted.(*User); ok {
 	// 	*u = *user
 	// }
 	// return err
+}
+
+// Helper functions -------------------------------------------
+
+func getHandle(email string) string {
+	return utils.GenerateRandomString(string(email[:2]), 0)
 }

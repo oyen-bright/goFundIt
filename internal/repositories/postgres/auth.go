@@ -1,8 +1,6 @@
 package postgress
 
 import (
-	"time"
-
 	"github.com/oyen-bright/goFundIt/internal/models"
 	"github.com/oyen-bright/goFundIt/internal/repositories/interfaces"
 	"gorm.io/gorm"
@@ -17,7 +15,6 @@ func NewAuthRepository(db *gorm.DB) interfaces.AuthRepository {
 	return &authRepository{db: db}
 }
 
-// ----------------------------------------------------------------------
 func (r *authRepository) Save(user *models.User) error {
 	return r.db.Clauses(clause.OnConflict{
 		Columns:   []clause.Column{{Name: "email"}},
@@ -42,7 +39,15 @@ func (r *authRepository) Delete(user *models.User) error {
 	return r.db.Create(user).Error
 }
 
-// ---------------------------------------------------------------------
+func (r *authRepository) GetAll() ([]models.User, error) {
+	var users []models.User
+	err := r.db.Find(&users).Error
+	if err != nil {
+		return nil, err
+	}
+	return users, nil
+
+}
 
 func (r *authRepository) FindByHandle(handle string) (*models.User, error) {
 	var user models.User
@@ -85,24 +90,4 @@ func (r *authRepository) FindExistingAndNonExistingUsers(emails []string) (exist
 	}
 
 	return existingUsers, nonExisting, nil
-}
-
-func (r *authRepository) GetAll() ([]models.User, error) {
-	var users []models.User
-	err := r.db.Find(&users).Error
-	if err != nil {
-		return nil, err
-	}
-	return users, nil
-
-}
-
-// GetUsersForAnalytics implements interfaces.AuthRepository.
-func (r *authRepository) GetByCreatedDateRange(from time.Time, to time.Time) ([]models.User, error) {
-	var users []models.User
-	err := r.db.Where("created_at BETWEEN ? AND ?", from, to).Find(&users).Error
-	if err != nil {
-		return nil, err
-	}
-	return users, nil
 }

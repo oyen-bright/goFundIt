@@ -1,8 +1,6 @@
 package services
 
 import (
-	"time"
-
 	"github.com/oyen-bright/goFundIt/internal/models"
 	repositories "github.com/oyen-bright/goFundIt/internal/repositories/interfaces"
 	services "github.com/oyen-bright/goFundIt/internal/services/interfaces"
@@ -13,19 +11,8 @@ import (
 	"github.com/oyen-bright/goFundIt/pkg/logger"
 )
 
-// TODO(oyen-bright): Split this service into separate AuthService and UserService
-// AuthService should handle:
-// - Authentication (RequestAuth, VerifyAuth, GenerateToken)
-// - Token management
-// UserService should handle:
-// - User CRUD operations
-// - User queries
-// Created: 2024-12-18
-// Priority: Medium
+// TODO: Split this service into separate AuthService and UserService
 
-// authService handles both authentication and user management
-// This service currently has two responsibilities and should be split
-// into separate services for better separation of concerns
 type authService struct {
 	authRepo         repositories.AuthRepository
 	otpService       services.OTPService
@@ -53,7 +40,6 @@ func NewAuthService(
 	}
 }
 
-// Authentication Methods
 func (s *authService) RequestAuth(email, name string) (models.Otp, error) {
 	otp, err := s.otpService.RequestOTP(email, name)
 	if err != nil {
@@ -196,27 +182,6 @@ func (s *authService) GetAllUser() ([]models.User, error) {
 	return users, nil
 }
 
-// Helper methods
-func (s *authService) getOrCreateUser(otp models.Otp) (*models.User, error) {
-	user, err := s.authRepo.FindByEmail(otp.Email)
-	if err == nil {
-		return user, nil
-	}
-
-	if !database.Error(err).IsNotfound() {
-		return nil, errs.InternalServerError(err).Log(s.logger)
-	}
-
-	// Create new user
-	newUser := models.NewUser(otp.Name, otp.Email, true)
-	if err := s.CreateUser(*newUser); err != nil {
-		return nil, err
-	}
-	go s.analyticsService.GetCurrentData().IncrementUsers(true)
-
-	return newUser, nil
-}
-
 // UpdateFCMToken updates the FCM token for a user
 func (s *authService) SaveFCMToken(handle string, token string) error {
 	user, err := s.authRepo.FindByHandle(handle)
@@ -257,11 +222,24 @@ func (s *authService) RemoveFCMToken(handle string, token string) error {
 	return nil
 }
 
-// GetUsersByCreatedDateRange implements interfaces.AuthService.
-func (s *authService) GetUsersByCreatedDateRange(from time.Time, to time.Time) ([]models.User, error) {
-	users, err := s.authRepo.GetByCreatedDateRange(from, to)
-	if err != nil {
+// Helper methods --------------------------------------------------------------
+
+func (s *authService) getOrCreateUser(otp models.Otp) (*models.User, error) {
+	user, err := s.authRepo.FindByEmail(otp.Email)
+	if err == nil {
+		return user, nil
+	}
+
+	if !database.Error(err).IsNotfound() {
 		return nil, errs.InternalServerError(err).Log(s.logger)
 	}
-	return users, nil
+
+	// Create new user
+	newUser := models.NewUser(otp.Name, otp.Email, true)
+	if err := s.CreateUser(*newUser); err != nil {
+		return nil, err
+	}
+	go s.analyticsService.GetCurrentData().IncrementUsers(true)
+
+	return newUser, nil
 }
