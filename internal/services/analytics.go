@@ -40,7 +40,7 @@ func NewAnalyticsService(
 		logger:     logger,
 	}
 
-	service.data = service.GetCurrentData()
+	service.data = service.getCurrentData()
 	return service
 }
 
@@ -82,12 +82,7 @@ func (s *analyticsService) ProcessAnalyticsNow() error {
 
 // GetCurrentData implements interfaces.AnalyticsService.
 func (s *analyticsService) GetCurrentData() *models.PlatformAnalytics {
-	data, err := s.repo.Get(time.Now().UTC())
-	if err != nil {
-		return &models.PlatformAnalytics{}
-	}
-
-	return data
+	return s.data
 }
 
 func (s *analyticsService) processDailyAnalytics() error {
@@ -138,4 +133,15 @@ func (s *analyticsService) sendDailyReport(
 	})
 
 	return nil
+}
+
+// Helper function to get the current analytics data
+func (s *analyticsService) getCurrentData() *models.PlatformAnalytics {
+	data, err := s.repo.Get(time.Now().UTC())
+	if err != nil {
+		s.logger.Error(err, "Failed to get current analytics data", nil)
+		return &models.PlatformAnalytics{}
+	}
+
+	return data
 }
