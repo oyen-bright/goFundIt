@@ -2,10 +2,7 @@ package services
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
-	"os"
-	"time"
 
 	"github.com/oyen-bright/goFundIt/internal/models"
 	services "github.com/oyen-bright/goFundIt/internal/services/interfaces"
@@ -29,7 +26,7 @@ type fcmNotifier struct {
 
 func (e *emailNotifier) send(template *email.EmailTemplate) error {
 	if err := e.client.SendEmailTemplate(*template); err != nil {
-		e.logger.Log("Error sending email: " + template.Name + err.Error())
+		e.logger.Error(err, "Error sending email: "+template.Name+err.Error(), nil)
 		return err
 	}
 	return nil
@@ -44,25 +41,24 @@ func (f *fcmNotifier) send(data fcm.NotificationData, tokens []string) error {
 
 		err := f.client.SendNotification(ctx, tokens[0], data)
 		if err != nil {
-			f.logger.Log("Error sending FCM message: " + data.Title + err.Error())
+			f.logger.Error(err, "Error sending FCM message: "+data.Title+err.Error(), nil)
 		}
 		return err
 	}
 
 	err := f.client.SendMulticastNotification(ctx, tokens, data)
 	if err != nil {
-		f.logger.Log("Error sending FCM multicast message: " + data.Title + err.Error())
+		f.logger.Error(err, "Error sending FCM multicast message: "+data.Title+err.Error(), nil)
 	}
 	return err
 
 }
 
 type notificationService struct {
-	emailer         emailNotifier
-	fcmNotifier     fcmNotifier
-	campaignService services.CampaignService
-	authService     services.AuthService
-	logger          logger.Logger
+	emailer     emailNotifier
+	fcmNotifier fcmNotifier
+	authService services.AuthService
+	logger      logger.Logger
 }
 
 // notificationService implements interfaces.NotificationService.
@@ -270,26 +266,6 @@ func (n *notificationService) NotifyCommentAddition(comment *models.Comment, act
 }
 
 // CRONJOBS methods
-
-// HELPER functions
-func createJSONExport(data models.Campaign) (string, error) {
-	fileName := fmt.Sprintf("campaign_export_%s_%s.json",
-		data.ID,
-		time.Now().UTC().Format("2006-01-02"))
-
-	filePath := fmt.Sprintf("/tmp/%s", fileName)
-
-	jsonData, err := json.MarshalIndent(data, "", "  ")
-	if err != nil {
-		return "", fmt.Errorf("error marshaling JSON: %w", err)
-	}
-
-	if err := os.WriteFile(filePath, jsonData, 0644); err != nil {
-		return "", fmt.Errorf("error writing JSON file: %w", err)
-	}
-
-	return filePath, nil
-}
 
 // GetContributorEmails returns a list of emails from a list of contributors
 func GetContributorEmails(contributors []models.Contributor) []string {

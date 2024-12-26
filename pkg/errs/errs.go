@@ -3,14 +3,13 @@ package errs
 import (
 	"fmt"
 	"runtime"
+
+	"github.com/oyen-bright/goFundIt/pkg/logger"
 )
 
-type Logger interface {
-	Log(message string)
-}
 type Error interface {
 	error
-	Log(logger Logger, additionalContext ...interface{}) Error
+	Log(logger logger.Logger, additionalContext ...interface{}) Error
 	WithStack() Error
 	Unwrap() error
 	Message() string
@@ -52,7 +51,7 @@ func (e *appError) Error() string {
 	return e.message
 }
 
-func (e *appError) Log(logger Logger, additionalContext ...interface{}) Error {
+func (e *appError) Log(logger logger.Logger, additionalContext ...interface{}) Error {
 	e = e.WithStack().(*appError)
 	logMessage := fmt.Sprintf("[%s] %s", e.Error(), additionalContext)
 	if len(additionalContext) > 0 {
@@ -61,7 +60,7 @@ func (e *appError) Log(logger Logger, additionalContext ...interface{}) Error {
 	if e.stack != nil {
 		logMessage += "\nStack Trace:\n" + string(e.stack)
 	}
-	logger.Log(logMessage)
+	logger.Error(e.err, logMessage, nil)
 	return e
 }
 
