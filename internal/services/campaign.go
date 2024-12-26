@@ -16,13 +16,14 @@ import (
 type campaignService struct {
 	repo                repositories.CampaignRepository
 	authService         services.AuthService
+	analyticsService    services.AnalyticsService
 	notificationService services.NotificationService
 	broadcaster         services.EventBroadcaster
 	logger              logger.Logger
 }
 
-func NewCampaignService(repo repositories.CampaignRepository, authService services.AuthService, notificationService services.NotificationService, broadcast services.EventBroadcaster, logger logger.Logger) services.CampaignService {
-	return &campaignService{repo: repo, authService: authService, logger: logger, broadcaster: broadcast, notificationService: notificationService}
+func NewCampaignService(repo repositories.CampaignRepository, authService services.AuthService, analyticsService services.AnalyticsService, notificationService services.NotificationService, broadcast services.EventBroadcaster, logger logger.Logger) services.CampaignService {
+	return &campaignService{repo: repo, authService: authService, logger: logger, broadcaster: broadcast, analyticsService: analyticsService, notificationService: notificationService}
 }
 
 // CreateCampaign creates a new campaign for a user.
@@ -77,6 +78,7 @@ func (s *campaignService) CreateCampaign(campaign models.Campaign, userHandle st
 		return models.Campaign{}, errs.InternalServerError(err).Log(s.logger)
 	}
 	go s.notificationService.NotifyCampaignCreation(&campaign)
+	go s.analyticsService.GetCurrentData().IncrementCampaigns(campaign.TargetAmount)
 	return campaign, nil
 }
 

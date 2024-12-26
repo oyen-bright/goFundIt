@@ -15,6 +15,7 @@ import (
 type activityService struct {
 	repo                repositories.ActivityRepository
 	authService         services.AuthService
+	analyticsService    services.AnalyticsService
 	campaignService     services.CampaignService
 	notificationService services.NotificationService
 	broadcaster         services.EventBroadcaster
@@ -26,11 +27,14 @@ func NewActivityService(
 	authService services.AuthService,
 	campaignService services.CampaignService,
 	eventBroadcaster services.EventBroadcaster,
+	analyticsService services.AnalyticsService,
+
 	notificationService services.NotificationService,
 	logger logger.Logger,
 ) services.ActivityService {
 	return &activityService{
 		repo:                repo,
+		analyticsService:    analyticsService,
 		notificationService: notificationService,
 		authService:         authService,
 		campaignService:     campaignService,
@@ -74,6 +78,8 @@ func (s *activityService) CreateActivity(activity models.Activity, userHandle, c
 	if campaign.CreatedBy.Handle != createdActivity.CreatedBy.Handle {
 		go s.notificationService.NotifyActivityApprovalRequest(&activity, campaign)
 	}
+
+	go s.analyticsService.GetCurrentData().IncrementActivities()
 
 	return createdActivity, nil
 }

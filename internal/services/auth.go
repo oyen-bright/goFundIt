@@ -27,26 +27,29 @@ import (
 // This service currently has two responsibilities and should be split
 // into separate services for better separation of concerns
 type authService struct {
-	authRepo   repositories.AuthRepository
-	otpService services.OTPService
-	encryptor  encryptor.Encryptor
-	jwt        jwt.Jwt
-	logger     logger.Logger
+	authRepo         repositories.AuthRepository
+	otpService       services.OTPService
+	analyticsService services.AnalyticsService
+	encryptor        encryptor.Encryptor
+	jwt              jwt.Jwt
+	logger           logger.Logger
 }
 
 func NewAuthService(
 	authRepo repositories.AuthRepository,
 	otpService services.OTPService,
 	encryptor encryptor.Encryptor,
+	analyticsService services.AnalyticsService,
 	jwt jwt.Jwt,
 	logger logger.Logger,
 ) services.AuthService {
 	return &authService{
-		authRepo:   authRepo,
-		otpService: otpService,
-		encryptor:  encryptor,
-		jwt:        jwt,
-		logger:     logger,
+		authRepo:         authRepo,
+		otpService:       otpService,
+		analyticsService: analyticsService,
+		encryptor:        encryptor,
+		jwt:              jwt,
+		logger:           logger,
 	}
 }
 
@@ -100,6 +103,8 @@ func (s *authService) CreateUser(u models.User) error {
 		return errs.InternalServerError(err).Log(s.logger)
 	}
 
+	go s.analyticsService.GetCurrentData().IncrementUsers(true)
+
 	return nil
 }
 
@@ -111,9 +116,12 @@ func (s *authService) CreateUsers(users []models.User) ([]models.User, error) {
 	}
 
 	createdUsers, err := s.authRepo.CreateMultiple(users)
+
 	if err != nil {
 		return nil, errs.InternalServerError(err).Log(s.logger)
 	}
+
+	go s.analyticsService.GetCurrentData().IncrementMultipleUsers(int64(len(users)), true)
 
 	return createdUsers, nil
 }
@@ -204,6 +212,7 @@ func (s *authService) getOrCreateUser(otp models.Otp) (*models.User, error) {
 	if err := s.CreateUser(*newUser); err != nil {
 		return nil, err
 	}
+	go s.analyticsService.GetCurrentData().IncrementUsers(true)
 
 	return newUser, nil
 }

@@ -20,6 +20,7 @@ type paymentService struct {
 	repo                repos.PaymentRepository
 	paystack            *paystack.Client
 	campaignService     services.CampaignService
+	analyticsService    services.AnalyticsService
 	contributorService  services.ContributorService
 	notificationService services.NotificationService
 	broadcaster         services.EventBroadcaster
@@ -27,12 +28,13 @@ type paymentService struct {
 	logger              logger.Logger
 }
 
-func NewPaymentService(repo repos.PaymentRepository, contributorService services.ContributorService, campaignService services.CampaignService, notificationService services.NotificationService, paystack *paystack.Client, storage storage.Storage, broadcaster services.EventBroadcaster, logger logger.Logger) services.PaymentService {
+func NewPaymentService(repo repos.PaymentRepository, contributorService services.ContributorService, analyticsService services.AnalyticsService, campaignService services.CampaignService, notificationService services.NotificationService, paystack *paystack.Client, storage storage.Storage, broadcaster services.EventBroadcaster, logger logger.Logger) services.PaymentService {
 	return &paymentService{
 		repo:                repo,
 		campaignService:     campaignService,
 		logger:              logger,
 		paystack:            paystack,
+		analyticsService:    analyticsService,
 		notificationService: notificationService,
 		storage:             storage,
 		broadcaster:         broadcaster,
@@ -178,6 +180,7 @@ func (p *paymentService) VerifyManualPayment(reference string, userHandle string
 	contributor.Payment = payment
 	p.broadcaster.NewEvent(contributor.CampaignID, websocket.EventTypeContributorUpdated, contributor)
 	go p.notificationService.NotifyPaymentReceived(&contributor, &payment.Campaign)
+	go p.analyticsService.GetCurrentData().UpdatePaymentStats(payment.PaymentMethod, string(*campaign.FiatCurrency), payment.Amount)
 
 	return nil
 

@@ -15,14 +15,15 @@ import (
 type contributorService struct {
 	repo                repositories.ContributorRepository
 	campaignService     services.CampaignService
+	analyticsService    services.AnalyticsService
 	authService         services.AuthService
 	notificationService services.NotificationService
 	broadcaster         services.EventBroadcaster
 	logger              logger.Logger
 }
 
-func NewContributorService(repo repositories.ContributorRepository, campaignService services.CampaignService, notificationService services.NotificationService, broadcaster services.EventBroadcaster, logger logger.Logger) services.ContributorService {
-	return &contributorService{repo: repo, logger: logger, campaignService: campaignService, broadcaster: broadcaster, notificationService: notificationService}
+func NewContributorService(repo repositories.ContributorRepository, campaignService services.CampaignService, analyticsService services.AnalyticsService, notificationService services.NotificationService, broadcaster services.EventBroadcaster, logger logger.Logger) services.ContributorService {
+	return &contributorService{repo: repo, logger: logger, campaignService: campaignService, analyticsService: analyticsService, broadcaster: broadcaster, notificationService: notificationService}
 }
 
 // AddContributorToCampaign adds a contributor to a campaign
