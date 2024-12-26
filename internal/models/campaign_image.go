@@ -5,15 +5,14 @@ import (
 	"gorm.io/gorm"
 )
 
+// Struct definition
 type CampaignImage struct {
 	ID         uint   `gorm:"primaryKey;autoIncrement;not null" json:"id"`
 	CampaignID string `gorm:"not null;foreignKey:CampaignID" validate:"required" json:"-"`
 	ImageUrl   string `gorm:"type:varchar(255);not null" validate:"required,url" binding:"required,url" json:"imageUrl"`
 }
 
-func (c *CampaignImage) ToJSON() map[string]interface{} {
-	return ToJSON(*c)
-}
+// Constructor
 
 func NewImage(campaignID, imageURL string) *CampaignImage {
 	return &CampaignImage{
@@ -22,27 +21,28 @@ func NewImage(campaignID, imageURL string) *CampaignImage {
 	}
 }
 
+// Methods
+
+func (c *CampaignImage) ToJSON() map[string]interface{} {
+	return ToJSON(*c)
+}
+
 func (c *CampaignImage) Validate() error {
 	v := validator.New()
-
 	if err := v.Struct(c); err != nil {
 		return err
 	}
-
 	return nil
-
 }
 
-// UpdateCampaignId updates the campaignId of the model
-//
-//   - Note: campaignId is only updated if the currentCampaignID is empty
-func (a *CampaignImage) UpdateCampaignId(id string) {
-
-	if a.CampaignID != "" {
+func (c *CampaignImage) UpdateCampaignId(id string) {
+	if c.CampaignID != "" {
 		return
 	}
-	a.CampaignID = id
+	c.CampaignID = id
 }
+
+// GORM Hooks
 
 func (c *CampaignImage) BeforeCreate(tx *gorm.DB) (err error) {
 	return c.Validate()
