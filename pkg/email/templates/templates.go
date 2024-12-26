@@ -27,7 +27,6 @@ func AnalyticsReport(to []string, today, comparison interface{}, reportDate time
 		},
 	}
 }
-
 func Verification(to []string, name, verificationCode string) *email.EmailTemplate {
 	return &email.EmailTemplate{
 		To:      to,

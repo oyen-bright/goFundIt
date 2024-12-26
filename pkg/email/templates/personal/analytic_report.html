@@ -83,6 +83,24 @@
             font-size: 0.8em;
             color: #666;
         }
+
+        .comparison {
+            font-size: 0.9em;
+            margin-top: 5px;
+            padding: 3px 0;
+        }
+
+        .positive {
+            color: #4CAF50;
+        }
+
+        .negative {
+            color: #F44336;
+        }
+
+        .neutral {
+            color: #9E9E9E;
+        }
     </style>
 </head>
 
@@ -98,7 +116,18 @@
             <div class="stat-box">
                 <div class="stat-label">New Users</div>
                 <div class="stat-value">{{.today.NewUsers}}</div>
-                <div class="stat-label">Total Users: {{index .comparison.users "total"}}</div>
+                <div class="stat-label">Total Users: {{.comparison.Users.Total}}</div>
+                <div class="comparison">
+                    {{if gt .comparison.Users.Change 0}}
+                    <span class="positive">↑ {{.comparison.Users.Change}} (+{{printf "%.1f"
+                        .comparison.Users.Percentage}}%)</span>
+                    {{else if lt .comparison.Users.Change 0}}
+                    <span class="negative">↓ {{abs .comparison.Users.Change}} ({{printf "%.1f"
+                        .comparison.Users.Percentage}}%)</span>
+                    {{else}}
+                    <span class="neutral">No change</span>
+                    {{end}}
+                </div>
             </div>
             <div class="stat-box">
                 <div class="stat-label">Active Users Today</div>
@@ -107,12 +136,33 @@
             <div class="stat-box">
                 <div class="stat-label">New Campaigns</div>
                 <div class="stat-value">{{.today.NewCampaigns}}</div>
-                <div class="stat-label">Total Campaigns: {{index .comparison.campaigns "total"}}</div>
+                <div class="stat-label">Total Campaigns: {{.comparison.Campaigns.Total}}</div>
+                <div class="comparison">
+                    {{if gt .comparison.Campaigns.Change 0}}
+                    <span class="positive">↑ {{.comparison.Campaigns.Change}} (+{{printf "%.1f"
+                        .comparison.Campaigns.Percentage}}%)</span>
+                    {{else if lt .comparison.Campaigns.Change 0}}
+                    <span class="negative">↓ {{abs .comparison.Campaigns.Change}} ({{printf "%.1f"
+                        .comparison.Campaigns.Percentage}}%)</span>
+                    {{else}}
+                    <span class="neutral">No change</span>
+                    {{end}}
+                </div>
             </div>
             <div class="stat-box">
                 <div class="stat-label">Amount Raised Today</div>
                 <div class="stat-value">${{printf "%.2f" .today.TotalAmountRaised}}</div>
-                <div class="stat-label">Total Raised: ${{printf "%.2f" (index .comparison.finances "total_raised")}}
+                <div class="stat-label">Total Raised: ${{printf "%.2f" .comparison.Finances.TotalRaised}}</div>
+                <div class="comparison">
+                    {{if gt .comparison.Finances.Change 0}}
+                    <span class="positive">↑ ${{printf "%.2f" .comparison.Finances.Change}} (+{{printf "%.1f"
+                        .comparison.Finances.Percentage}}%)</span>
+                    {{else if lt .comparison.Finances.Change 0}}
+                    <span class="negative">↓ ${{printf "%.2f" (abs .comparison.Finances.Change)}} ({{printf "%.1f"
+                        .comparison.Finances.Percentage}}%)</span>
+                    {{else}}
+                    <span class="neutral">No change</span>
+                    {{end}}
                 </div>
             </div>
         </div>
@@ -124,7 +174,18 @@
             <div class="stat-box">
                 <div class="stat-label">New Activities</div>
                 <div class="stat-value">{{.today.NewActivities}}</div>
-                <div class="stat-label">Total Activities: {{index .comparison.activities "total"}}</div>
+                <div class="stat-label">Total Activities: {{.comparison.Activities.Total}}</div>
+                <div class="comparison">
+                    {{if gt .comparison.Activities.Change 0}}
+                    <span class="positive">↑ {{.comparison.Activities.Change}} (+{{printf "%.1f"
+                        .comparison.Activities.Percentage}}%)</span>
+                    {{else if lt .comparison.Activities.Change 0}}
+                    <span class="negative">↓ {{.comparison.Activities.Change}} ({{printf "%.1f"
+                        .comparison.Activities.Percentage}}%)</span>
+                    {{else}}
+                    <span class="neutral">No change</span>
+                    {{end}}
+                </div>
             </div>
         </div>
     </div>
@@ -136,12 +197,18 @@
                 <th>Method</th>
                 <th>Count Today</th>
             </tr>
-            {{range $method, $count := .today.PaymentMethodStats}}
             <tr>
-                <td>{{$method}}</td>
-                <td>{{$count}}</td>
+                <td>Manual</td>
+                <td>{{.today.PaymentMethods.Manual}}</td>
             </tr>
-            {{end}}
+            <tr>
+                <td>Crypto</td>
+                <td>{{.today.PaymentMethods.Crypto}}</td>
+            </tr>
+            <tr>
+                <td>Fiat</td>
+                <td>{{.today.PaymentMethods.Fiat}}</td>
+            </tr>
         </table>
     </div>
 
@@ -151,10 +218,16 @@
             <div class="stat-box">
                 <h3>Fiat Currencies</h3>
                 <table>
-                    {{range $currency, $count := .today.FiatCurrencyStats}}
+                    <tr>
+                        <th>Currency</th>
+                        <th>Amount</th>
+                        <th>Count</th>
+                    </tr>
+                    {{range $currency, $stats := .today.FiatStats}}
                     <tr>
                         <td>{{$currency}}</td>
-                        <td>{{$count}}</td>
+                        <td>${{printf "%.2f" $stats.Amount}}</td>
+                        <td>{{$stats.Count}}</td>
                     </tr>
                     {{end}}
                 </table>
@@ -162,10 +235,16 @@
             <div class="stat-box">
                 <h3>Crypto Tokens</h3>
                 <table>
-                    {{range $token, $count := .today.CryptoTokenStats}}
+                    <tr>
+                        <th>Token</th>
+                        <th>Amount</th>
+                        <th>Count</th>
+                    </tr>
+                    {{range $token, $stats := .today.CryptoStats}}
                     <tr>
                         <td>{{$token}}</td>
-                        <td>{{$count}}</td>
+                        <td>{{printf "%.8f" $stats.Amount}}</td>
+                        <td>{{$stats.Count}}</td>
                     </tr>
                     {{end}}
                 </table>
