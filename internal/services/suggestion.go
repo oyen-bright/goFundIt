@@ -14,11 +14,16 @@ type suggestionService struct {
 	logger          logger.Logger
 }
 
-func NewSuggestionService(aIService ai.AIService, campaignService services.CampaignService, logger logger.Logger) services.SuggestionService {
+// NewSuggestionService creates a new instance of the suggestion service
+func NewSuggestionService(
+	aIService ai.AIService,
+	campaignService services.CampaignService,
+	logger logger.Logger,
+) services.SuggestionService {
 	return &suggestionService{
 		aIService:       aIService,
-		logger:          logger,
 		campaignService: campaignService,
+		logger:          logger,
 	}
 }
 

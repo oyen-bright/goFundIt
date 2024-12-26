@@ -85,6 +85,8 @@ func (s *analyticsService) GetCurrentData() *models.PlatformAnalytics {
 	return s.data
 }
 
+// Helper Methods ----------------------------------------------------
+
 func (s *analyticsService) processDailyAnalytics() error {
 	now := time.Now().UTC()
 	yesterday := now.AddDate(0, 0, -1)
@@ -135,7 +137,6 @@ func (s *analyticsService) sendDailyReport(
 	return nil
 }
 
-// Helper function to get the current analytics data
 func (s *analyticsService) getCurrentData() *models.PlatformAnalytics {
 	data, err := s.repo.Get(time.Now().UTC())
 	if err != nil {

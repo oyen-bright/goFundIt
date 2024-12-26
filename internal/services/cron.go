@@ -218,7 +218,8 @@ func (n *cronService) checkCampaignDeadline() {
 	}
 }
 
-// HELPER functions
+// Helper Functions ----------------------------------------------
+
 func createJSONExport(data models.Campaign) (string, error) {
 	fileName := fmt.Sprintf("campaign_export_%s_%s.json",
 		data.ID,

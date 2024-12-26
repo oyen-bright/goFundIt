@@ -30,13 +30,7 @@ func NewOTPService(repo repositories.OTPRepository, emailer email.Emailer, encry
 	}
 }
 
-// RequestOTP generates a new OTP and sends it to the user.
-//
-//  1. Clears any previous OTPs for the user from the database.
-//  2. Inserts a new OTP into the database.
-//  3. Sends the OTP to the user via email.
-//
-// It returns an error if any of the steps fail.
+// RequestOTP generates a new OTP and returns
 func (s *otpService) RequestOTP(email, name string) (models.Otp, error) {
 
 	otp := models.NewOTP(email)
@@ -58,12 +52,7 @@ func (s *otpService) RequestOTP(email, name string) (models.Otp, error) {
 	return *otp, nil
 }
 
-// VerifyOTP checks if the OTP provided by the user is valid.
-//
-// It returns a boolean indicating if the OTP is valid and an error if any.
-// If the OTP is valid, the function also checks if the OTP has expired.
-//
-// If the OTP has expired or is invalid, it returns false.
+// VerifyOTP checks if the OTP provided  is valid.
 func (s *otpService) VerifyOTP(email, code, requestId string) (models.Otp, error) {
 
 	otp := models.NewOTP(email)
@@ -91,6 +80,8 @@ func (s *otpService) VerifyOTP(email, code, requestId string) (models.Otp, error
 	defer s.repo.Delete(otp)
 	return *otp, nil
 }
+
+// Helper Methods -------------------------------------------
 
 // Sends OTP to the user via email
 func (s *otpService) sendOTP(emailer email.Emailer, email, code, name string) {

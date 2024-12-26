@@ -24,6 +24,23 @@ type fcmNotifier struct {
 	logger logger.Logger
 }
 
+type notificationService struct {
+	emailer     emailNotifier
+	fcmNotifier fcmNotifier
+	authService services.AuthService
+	logger      logger.Logger
+}
+
+// notificationService implements interfaces.NotificationService.
+func NewNotificationService(emailer email.Emailer, authService services.AuthService, fcmClient *fcm.Client, logger logger.Logger) services.NotificationService {
+	return &notificationService{
+		emailer:     emailNotifier{client: emailer, logger: logger},
+		fcmNotifier: fcmNotifier{client: fcmClient, logger: logger},
+		authService: authService,
+		logger:      logger,
+	}
+}
+
 func (e *emailNotifier) send(template *email.EmailTemplate) error {
 	if err := e.client.SendEmailTemplate(*template); err != nil {
 		e.logger.Error(err, "Error sending email: "+template.Name+err.Error(), nil)
@@ -54,28 +71,11 @@ func (f *fcmNotifier) send(data fcm.NotificationData, tokens []string) error {
 
 }
 
-type notificationService struct {
-	emailer     emailNotifier
-	fcmNotifier fcmNotifier
-	authService services.AuthService
-	logger      logger.Logger
-}
-
-// notificationService implements interfaces.NotificationService.
-func NewNotificationService(emailer email.Emailer, authService services.AuthService, fcmClient *fcm.Client, logger logger.Logger) services.NotificationService {
-	return &notificationService{
-		emailer:     emailNotifier{client: emailer, logger: logger},
-		fcmNotifier: fcmNotifier{client: fcmClient, logger: logger},
-		authService: authService,
-		logger:      logger,
-	}
-}
-
 // ====== Activity Notifications ======
 
 // NotifyActivityAddition sends an email to all activities of a campaign when a new activity is added.
 func (n *notificationService) NotifyActivityAddition(activity *models.Activity, campaign *models.Campaign) error {
-	contributorsEmails := GetContributorEmails(campaign.Contributors)
+	contributorsEmails := getContributorEmails(campaign.Contributors)
 	activityAdded := emailTemplates.ActivityAddedGeneral(contributorsEmails, campaign.ID, activity.Title, activity.Subtitle, activity.Cost)
 
 	return n.emailer.send(activityAdded)
@@ -83,7 +83,7 @@ func (n *notificationService) NotifyActivityAddition(activity *models.Activity, 
 
 // NotifyActivityApproval implements interfaces.NotificationService.
 func (n *notificationService) NotifyActivityApproved(activity *models.Activity, campaign *models.Campaign) error {
-	contributorsEmails := GetContributorEmails(campaign.Contributors)
+	contributorsEmails := getContributorEmails(campaign.Contributors)
 	activityApprovedTemplate := emailTemplates.ActivityApprovedGeneral(contributorsEmails, campaign.ID, activity.Title, activity.Subtitle, campaign.CreatedBy.Email, activity.UpdatedAt)
 	return n.emailer.send(activityApprovedTemplate)
 }
@@ -103,7 +103,7 @@ func (n *notificationService) NotifyActivityApprovalRequest(activity *models.Act
 
 // NotifyActivityUpdate implements interfaces.NotificationService.
 func (n *notificationService) NotifyActivityUpdate(activity *models.Activity, campaign *models.Campaign) error {
-	contributorsEmails := GetContributorEmails(campaign.Contributors)
+	contributorsEmails := getContributorEmails(campaign.Contributors)
 	activityUpdate := emailTemplates.ActivityUpdateGeneral(contributorsEmails, campaign.ID, activity.Title, "details updated")
 	return n.emailer.send(activityUpdate)
 }
@@ -112,8 +112,8 @@ func (n *notificationService) NotifyActivityUpdate(activity *models.Activity, ca
 
 // NotifyCampaignCreation implements interfaces.NotificationService.
 func (n *notificationService) NotifyCampaignCreation(campaign *models.Campaign) error {
-	contributorsNameEmail := GetContributorNameEmail(campaign.Contributors)
-	activitiesTitleSubtitle := GetActivityTitleSubtitle(campaign.Activities)
+	contributorsNameEmail := getContributorNameEmail(campaign.Contributors)
+	activitiesTitleSubtitle := getActivityTitleSubtitle(campaign.Activities)
 
 	//Send email to campaign creator
 	campaignCreatedCampaignCreator := emailTemplates.CampaignCreated([]string{campaign.CreatedBy.Email}, campaign.Title, campaign.Description, campaign.ID, campaign.Key, contributorsNameEmail, activitiesTitleSubtitle)
@@ -131,7 +131,7 @@ func (n *notificationService) NotifyCampaignCreation(campaign *models.Campaign) 
 
 // NotifyCampaignMilestone implements interfaces.NotificationService.
 func (n *notificationService) NotifyCampaignMilestone(campaign *models.Campaign, milestoneType string) error {
-	contributorsEmails := GetContributorEmails(campaign.Contributors)
+	contributorsEmails := getContributorEmails(campaign.Contributors)
 	contributorsEmails = append(contributorsEmails, campaign.CreatedBy.Email)
 
 	userFCMToken := campaign.CreatedBy.FCMToken
@@ -148,7 +148,7 @@ func (n *notificationService) NotifyCampaignMilestone(campaign *models.Campaign,
 
 // NotifyCampaignUpdate implements interfaces.NotificationService.
 func (n *notificationService) NotifyCampaignUpdate(campaign *models.Campaign, updateType string) error {
-	contributorsEmails := GetContributorEmails(campaign.Contributors)
+	contributorsEmails := getContributorEmails(campaign.Contributors)
 	contributorsEmails = append(contributorsEmails, campaign.CreatedBy.Email)
 
 	campaignUpdateTemplate := emailTemplates.CampaignUpdatedGeneral(contributorsEmails, campaign.ID, updateType)
@@ -159,7 +159,7 @@ func (n *notificationService) NotifyCampaignUpdate(campaign *models.Campaign, up
 
 // NotifyContributorAdded implements interfaces.NotificationService.
 func (n *notificationService) NotifyContributorAdded(contributor *models.Contributor, campaign *models.Campaign) error {
-	contributorEmails := GetContributorEmails(campaign.Contributors)
+	contributorEmails := getContributorEmails(campaign.Contributors)
 	contributorAddedTemplate := emailTemplates.ContributorAdded([]string{contributor.Email}, contributor.Name, campaign.Title, campaign.ID, campaign.Key)
 	err := n.emailer.send(contributorAddedTemplate)
 	if err != nil {
@@ -188,7 +188,7 @@ func (n *notificationService) NotifyPaymentReceived(contributor *models.Contribu
 
 // NotifyPayoutCollected implements interfaces.NotificationService.
 func (n *notificationService) NotifyPayoutCollected(campaign *models.Campaign) error {
-	contributorsEmails := GetContributorEmails(campaign.Contributors)
+	contributorsEmails := getContributorEmails(campaign.Contributors)
 	contributorsEmails = append(contributorsEmails, campaign.CreatedBy.Email)
 
 	payoutCollectedTemplate := emailTemplates.PayoutCollected(contributorsEmails, campaign.ID, campaign.CreatedBy.Email, campaign.GetPayoutAmount(), campaign.Payout.UpdatedAt)
@@ -258,17 +258,17 @@ func (n *notificationService) NotifyCampaignCleanUp(campaign *models.Campaign, d
 
 // NotifyCommentAddition implements interfaces.NotificationService.
 func (n *notificationService) NotifyCommentAddition(comment *models.Comment, activity *models.Activity) error {
-	contributorsEmails := GetContributorEmails(activity.Contributors)
+	contributorsEmails := getContributorEmails(activity.Contributors)
 	contributorsEmails = append(contributorsEmails, activity.CreatedBy.Email)
 
 	commentAddedTemplate := emailTemplates.CommentAddedGeneral(contributorsEmails, comment.CreatedBy.Handle, comment.Content, activity.Title, activity.CampaignID)
 	return n.emailer.send(commentAddedTemplate)
 }
 
-// CRONJOBS methods
+// Helper Functions --------------------------------------------------
 
-// GetContributorEmails returns a list of emails from a list of contributors
-func GetContributorEmails(contributors []models.Contributor) []string {
+// getContributorEmails returns a list of emails from a list of contributors
+func getContributorEmails(contributors []models.Contributor) []string {
 	emails := make([]string, len(contributors))
 	for i, contributor := range contributors {
 		emails[i] = contributor.Email
@@ -277,7 +277,7 @@ func GetContributorEmails(contributors []models.Contributor) []string {
 }
 
 // GetContributorNameEmail returns a
-func GetContributorNameEmail(contributors []models.Contributor) []map[string]string {
+func getContributorNameEmail(contributors []models.Contributor) []map[string]string {
 	data := make([]map[string]string, len(contributors))
 
 	for i, contributor := range contributors {
@@ -290,7 +290,7 @@ func GetContributorNameEmail(contributors []models.Contributor) []map[string]str
 }
 
 // GetActivityTitleSubtitle
-func GetActivityTitleSubtitle(activities []models.Activity) []map[string]string {
+func getActivityTitleSubtitle(activities []models.Activity) []map[string]string {
 	data := make([]map[string]string, len(activities))
 
 	for i, activity := range activities {

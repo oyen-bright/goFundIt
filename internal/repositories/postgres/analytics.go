@@ -11,6 +11,12 @@ type analyticsRepository struct {
 	db *gorm.DB
 }
 
+func NewAnalyticsRepository(db *gorm.DB) *analyticsRepository {
+	return &analyticsRepository{
+		db: db,
+	}
+}
+
 func (r *analyticsRepository) Save(analytics *models.PlatformAnalytics) error {
 	return r.db.Save(analytics).Error
 }
@@ -39,10 +45,4 @@ func (r *analyticsRepository) Get(date time.Time) (*models.PlatformAnalytics, er
 	}
 
 	return &analytics, nil
-}
-
-func NewAnalyticsRepository(db *gorm.DB) *analyticsRepository {
-	return &analyticsRepository{
-		db: db,
-	}
 }

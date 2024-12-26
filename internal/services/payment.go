@@ -2,7 +2,6 @@ package services
 
 import (
 	"fmt"
-	"log"
 	"net/http"
 
 	"github.com/oyen-bright/goFundIt/internal/models"
@@ -28,17 +27,32 @@ type paymentService struct {
 	logger              logger.Logger
 }
 
-func NewPaymentService(repo repos.PaymentRepository, contributorService services.ContributorService, analyticsService services.AnalyticsService, campaignService services.CampaignService, notificationService services.NotificationService, paystack *paystack.Client, storage storage.Storage, broadcaster services.EventBroadcaster, logger logger.Logger) services.PaymentService {
+func NewPaymentService(
+	repo repos.PaymentRepository,
+	contributorService services.ContributorService,
+	analyticsService services.AnalyticsService,
+	campaignService services.CampaignService,
+	notificationService services.NotificationService,
+	paystack *paystack.Client,
+	storage storage.Storage,
+	broadcaster services.EventBroadcaster,
+	logger logger.Logger,
+) services.PaymentService {
 	return &paymentService{
-		repo:                repo,
+		// Repository
+		repo: repo,
+
+		// Services
 		campaignService:     campaignService,
-		logger:              logger,
-		paystack:            paystack,
 		analyticsService:    analyticsService,
-		notificationService: notificationService,
-		storage:             storage,
-		broadcaster:         broadcaster,
 		contributorService:  contributorService,
+		notificationService: notificationService,
+
+		// External dependencies
+		paystack:    paystack,
+		storage:     storage,
+		broadcaster: broadcaster,
+		logger:      logger,
 	}
 }
 
@@ -58,10 +72,7 @@ func (p *paymentService) InitializeManualPayment(contributorID uint, reference s
 	payment := models.NewManualPayment(contributor.ID, contributor.CampaignID, fmt.Sprintf("Manual%d", contributorID), contributor.GetAmountTotal(), nil)
 
 	// validate user
-
-	log.Println(contributor.Email, userEmail)
-
-	//TODO: contributor is also createor of campaing a
+	//TODO: contributor is also creator of campaign it should still not require proof
 	if contributor.Email != userEmail {
 
 		if campaign, err := p.campaignService.GetCampaignByID(contributor.CampaignID); err != nil {
@@ -95,7 +106,7 @@ func (p *paymentService) InitializeManualPayment(contributorID uint, reference s
 	}
 	contributor.Payment = payment
 	// Broadcast event
-	p.broadcaster.NewEvent(contributor.CampaignID, websocket.EventTypeContributorUpdated, contributor)
+	go p.broadcaster.NewEvent(contributor.CampaignID, websocket.EventTypeContributorUpdated, contributor)
 
 	return payment, nil
 
@@ -134,7 +145,7 @@ func (p *paymentService) VerifyPayment(reference string) error {
 		// Update the contributor
 		contributor := payment.Contributor
 		contributor.Payment = payment
-		p.broadcaster.NewEvent(contributor.CampaignID, websocket.EventTypeContributorUpdated, contributor)
+		go p.broadcaster.NewEvent(contributor.CampaignID, websocket.EventTypeContributorUpdated, contributor)
 
 		go p.notificationService.NotifyPaymentReceived(&contributor, &payment.Campaign)
 		return nil
@@ -178,7 +189,7 @@ func (p *paymentService) VerifyManualPayment(reference string, userHandle string
 	// Update contributor and broadcast event
 	contributor := payment.Contributor
 	contributor.Payment = payment
-	p.broadcaster.NewEvent(contributor.CampaignID, websocket.EventTypeContributorUpdated, contributor)
+	go p.broadcaster.NewEvent(contributor.CampaignID, websocket.EventTypeContributorUpdated, contributor)
 	go p.notificationService.NotifyPaymentReceived(&contributor, &payment.Campaign)
 	go p.analyticsService.GetCurrentData().UpdatePaymentStats(payment.PaymentMethod, string(*campaign.FiatCurrency), payment.Amount)
 

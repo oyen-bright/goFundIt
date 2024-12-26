@@ -10,9 +10,19 @@ type payoutRepository struct {
 	db *gorm.DB
 }
 
+// NewPayoutRepository creates a new instance of the payout repository
+func NewPayoutRepository(db *gorm.DB) interfaces.PayoutRepository {
+	return &payoutRepository{db: db}
+}
+
 // Create implements interfaces.PayoutRepository.
 func (p *payoutRepository) Create(payout *models.Payout) error {
 	return p.db.Create(payout).Error
+}
+
+// Update implements interfaces.PayoutRepository.
+func (p *payoutRepository) Update(payout *models.Payout) error {
+	return p.db.Save(payout).Error
 }
 
 // GetByCampaignID implements interfaces.PayoutRepository.
@@ -40,14 +50,4 @@ func (p *payoutRepository) GetByID(id string) (*models.Payout, error) {
 		return nil, err
 	}
 	return &payout, nil
-}
-
-// Update implements interfaces.PayoutRepository.
-func (p *payoutRepository) Update(payout *models.Payout) error {
-	return p.db.Save(payout).Error
-}
-
-// NewPayoutRepository creates a new instance of the payout repository
-func NewPayoutRepository(db *gorm.DB) interfaces.PayoutRepository {
-	return &payoutRepository{db: db}
 }

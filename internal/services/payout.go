@@ -25,14 +25,22 @@ type payoutService struct {
 }
 
 // NewPayoutService creates a new instance of the payout service
-func NewPayoutService(payoutRepo interfaces.PayoutRepository, campaignService services.CampaignService, notificationService services.NotificationService, paystack *paystack.Client, broadCaster services.EventBroadcaster, logger logger.Logger) services.PayoutService {
+func NewPayoutService(
+	payoutRepo interfaces.PayoutRepository,
+	campaignService services.CampaignService,
+	notificationService services.NotificationService,
+	paystack *paystack.Client,
+	broadCaster services.EventBroadcaster,
+	logger logger.Logger,
+) services.PayoutService {
 	return &payoutService{
-		broadCaster:         broadCaster,
+		repo:                payoutRepo,
 		campaignService:     campaignService,
 		notificationService: notificationService,
-		repo:                payoutRepo,
 		paystack:            paystack,
-		logger:              logger}
+		broadCaster:         broadCaster,
+		logger:              logger,
+	}
 }
 
 // InitializeManualPayout implements interfaces.PayoutService.
@@ -70,7 +78,7 @@ func (p *payoutService) InitializeManualPayout(campaignID string, userHandle str
 	}
 
 	// Broadcast Payout
-	p.broadCaster.NewEvent(campaignID, websocket.EventTypePayoutUpdated, payout)
+	go p.broadCaster.NewEvent(campaignID, websocket.EventTypePayoutUpdated, payout)
 
 	go p.notificationService.NotifyPayoutCollected(campaign)
 
@@ -185,7 +193,7 @@ func (p *payoutService) GetPayoutByCampaignID(campaignID string) (*models.Payout
 	return &payout[0], nil
 }
 
-// Helper function to process payout transfer
+// Helper Functions ----------------------------------------------------------
 
 // ProcessPayoutTransfer
 func (p *payoutService) processPayoutTransfer(payout models.Payout) {
@@ -208,16 +216,16 @@ func (p *payoutService) processFiatTransfer(payout models.Payout) {
 	if err != nil {
 		payout.MarkPayoutFailed(err.Error())
 		p.repo.Update(&payout)
-		p.broadCaster.NewEvent(payout.CampaignID, websocket.EventTypePayoutUpdated, payout)
+		go p.broadCaster.NewEvent(payout.CampaignID, websocket.EventTypePayoutUpdated, payout)
 		return
 	}
 	if !res.Status {
 		payout.MarkPayoutFailed(res.Message)
 		p.repo.Update(&payout)
-		p.broadCaster.NewEvent(payout.CampaignID, websocket.EventTypePayoutUpdated, payout)
+		go p.broadCaster.NewEvent(payout.CampaignID, websocket.EventTypePayoutUpdated, payout)
 		return
 	}
 	payout.MarkPayoutProcessing()
 	p.repo.Update(&payout)
-	p.broadCaster.NewEvent(payout.CampaignID, websocket.EventTypePayoutUpdated, payout)
+	go p.broadCaster.NewEvent(payout.CampaignID, websocket.EventTypePayoutUpdated, payout)
 }
