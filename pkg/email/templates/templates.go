@@ -19,7 +19,7 @@ func AnalyticsReport(to []string, today, comparison interface{}, reportDate time
 	return &email.EmailTemplate{
 		To:      to,
 		Subject: fmt.Sprintf("Daily Analytics Report - %s", reportDate.Format("2006-01-02")),
-		Path:    generateFile("personal/analytics_report.html"),
+		Path:    generateFile("personal/analytic_report.html"),
 		Data: map[string]interface{}{
 			"today":      today,
 			"comparison": comparison,
@@ -59,6 +59,7 @@ func ActivityApprovalRequest(to []string, campaignTitle, activityTitle, activity
 }
 
 func CampaignCreated(to []string, campaignTitle, campaignDescription, campaignID, campaignKey string, contributors, activities []map[string]string) *email.EmailTemplate {
+
 	return &email.EmailTemplate{
 		To:      to,
 		Subject: "Campaign Created - GoFund It",

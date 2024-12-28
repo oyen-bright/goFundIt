@@ -2,17 +2,13 @@ body {
     font-family: 'Courier New', Courier, monospace;
     background-color: #f4f4f9;
     color: #333;
-    text-align: center;
-    padding: 20px;
-    margin: 0;
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 100vh;
-    overflow: hidden;
-    /* Prevent scrollbars */
-    position: relative;
-    /* For background animation */
+    min-height: 100vh;
+    /* Use min-height instead of height for better responsiveness */
+    padding: 20px;
+    margin: 0;
 }
 
 .container {
@@ -21,30 +17,28 @@ body {
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     max-width: 600px;
     width: 100%;
-    padding: 20px;
+    padding: 30px;
     box-sizing: border-box;
-    text-align: left;
+    text-align: center;
+    /* Center text within the container */
     position: relative;
-    /* For container hover effect */
     transition: transform 0.3s, box-shadow 0.3s;
-    /* Smooth transition for hover */
 }
 
-.container:hover {
+/* .container:hover {
     transform: scale(1.02);
-    /* Slight zoom on hover */
     box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
-    /* Deeper shadow on hover */
-}
+} */
 
-h1,
-h2,
-h3 {
+h1 {
     color: #ff6f61;
+    font-size: 2.5rem;
+    margin-bottom: 20px;
 }
 
 p {
     line-height: 1.6;
+    margin-bottom: 20px;
 }
 
 a.button {
@@ -52,12 +46,12 @@ a.button {
     border: none;
     border-radius: 5px;
     color: white;
-    padding: 10px 20px;
+    padding: 15px 30px;
+    /* Increased padding for better button size */
     text-decoration: none;
     display: inline-block;
     margin-top: 20px;
     transition: background-color 0.3s;
-    /* Smooth transition for hover */
 }
 
 a.button:hover {
@@ -65,28 +59,15 @@ a.button:hover {
 }
 
 .footer {
-    margin-top: 20px;
+    margin-top: 30px;
     font-size: 0.8em;
     color: #777;
     font-family: 'Courier New', Courier, monospace;
-    /* Code text styling */
     background-color: #f4f4f9;
-    /* Matching background color */
-    padding: 10px;
+    padding: 15px;
     border-radius: 5px;
-    /* Rounded corners */
-    animation: fadeIn 2s;
-    /* Fade-in animation */
-}
-
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-    }
-
-    to {
-        opacity: 1;
-    }
+    text-align: center;
+    /* Center footer text */
 }
 
 .code {
@@ -101,7 +82,7 @@ a.button:hover {
     letter-spacing: 2px;
 }
 
-@keyframes backgroundAnimation {
+/* @keyframes backgroundAnimation {
     0% {
         background-position: 0% 50%;
     }
@@ -125,6 +106,5 @@ body::before {
     background: linear-gradient(45deg, #ff6f61, #ff4b3a, #ff6f61);
     background-size: 300% 300%;
     z-index: -1;
-    /* Behind the content */
     animation: backgroundAnimation 10s ease infinite;
-}
+} */
