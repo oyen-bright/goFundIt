@@ -3,7 +3,6 @@ package handlers
 import (
 	"github.com/gin-gonic/gin"
 	services "github.com/oyen-bright/goFundIt/internal/services/interfaces"
-	"github.com/oyen-bright/goFundIt/pkg/response"
 )
 
 type AnalyticsHandle struct {
@@ -19,9 +18,9 @@ func NewAnalyticsHandler(service services.AnalyticsService) *AnalyticsHandle {
 func (h *AnalyticsHandle) HandleProcessAnalyticsNow(c *gin.Context) {
 	err := h.service.ProcessAnalyticsNow()
 	if err != nil {
-		response.FromError(c, err)
+		FromError(c, err)
 		return
 	}
 
-	response.Success(c, "Analytics proceed and send to email", nil)
+	Success(c, "Analytics proceed and send to email", nil)
 }

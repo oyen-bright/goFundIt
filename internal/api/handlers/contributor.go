@@ -5,8 +5,6 @@ import (
 	dto "github.com/oyen-bright/goFundIt/internal/api/dto/contributor"
 	"github.com/oyen-bright/goFundIt/internal/models"
 	services "github.com/oyen-bright/goFundIt/internal/services/interfaces"
-	"github.com/oyen-bright/goFundIt/pkg/response"
-	"github.com/oyen-bright/goFundIt/pkg/utils"
 )
 
 type ContributorHandler struct {
@@ -23,19 +21,20 @@ func NewContributorHandler(service services.ContributorService) *ContributorHand
 func (h *ContributorHandler) HandleAddContributor(c *gin.Context) {
 	claims := getClaimsFromContext(c)
 	campaignID := GetCampaignID(c)
+	campaignKey := getCampaignKey(c)
 	var contributor models.Contributor
 
 	//bind request to the contributor model
 	if err := c.BindJSON(&contributor); err != nil {
-		response.BadRequest(c, "Invalid inputs, please check and try again", utils.ExtractValidationErrors(err))
+		BadRequest(c, "Invalid inputs, please check and try again", ExtractValidationErrors(err))
 		return
 	}
 
-	if err := h.service.AddContributorToCampaign(&contributor, campaignID, claims.Handle); err != nil {
-		response.FromError(c, err)
+	if err := h.service.AddContributorToCampaign(&contributor, campaignID, campaignKey, claims.Handle); err != nil {
+		FromError(c, err)
 		return
 	}
-	response.Success(c, "Contributor added to Campaign", contributor)
+	Success(c, "Contributor added to Campaign", contributor)
 
 }
 
@@ -46,15 +45,15 @@ func (h *ContributorHandler) HandleRemoveContributor(c *gin.Context) {
 
 	contributorId, err := parseContributorID(c)
 	if err != nil {
-		response.BadRequest(c, "Invalid contributor ID", nil)
+		BadRequest(c, "Invalid contributor ID", nil)
 		return
 	}
 
 	if err := h.service.RemoveContributorFromCampaign(contributorId, campaignID, claims.Handle); err != nil {
-		response.FromError(c, err)
+		FromError(c, err)
 		return
 	}
-	response.Success(c, "Contributor removed from Campaign", nil)
+	Success(c, "Contributor removed from Campaign", nil)
 
 }
 
@@ -67,22 +66,22 @@ func (h *ContributorHandler) HandleEditContributor(c *gin.Context) {
 
 	contributorId, err := parseContributorID(c)
 	if err != nil {
-		response.BadRequest(c, "Invalid contributor ID", nil)
+		BadRequest(c, "Invalid contributor ID", nil)
 		return
 	}
 	//bind request to the contributor model
 	if err := c.BindJSON(&requestDTO); err != nil {
-		response.BadRequest(c, "Invalid inputs, please check and try again", utils.ExtractValidationErrors(err))
+		BadRequest(c, "Invalid inputs, please check and try again", ExtractValidationErrors(err))
 		return
 	}
 	contributor.Name = requestDTO.Name
 
 	updateContributor, err := h.service.UpdateContributorByID(&contributor, contributorId, claims.Email)
 	if err != nil {
-		response.FromError(c, err)
+		FromError(c, err)
 		return
 	}
-	response.Success(c, "Contributor updated successfully", updateContributor)
+	Success(c, "Contributor updated successfully", updateContributor)
 
 }
 
@@ -93,10 +92,10 @@ func (h *ContributorHandler) HandleGetContributorsByCampaignID(c *gin.Context) {
 	contributors, err := h.service.GetContributorsByCampaignID(campaignID)
 
 	if err != nil {
-		response.FromError(c, err)
+		FromError(c, err)
 		return
 	}
-	response.Success(c, "Contributors retrieved successfully", contributors)
+	Success(c, "Contributors retrieved successfully", contributors)
 
 }
 
@@ -104,15 +103,15 @@ func (h *ContributorHandler) HandleGetContributorsByCampaignID(c *gin.Context) {
 func (h *ContributorHandler) HandleGetContributorByID(c *gin.Context) {
 	contributorId, err := parseContributorID(c)
 	if err != nil {
-		response.BadRequest(c, "Invalid contributor ID", nil)
+		BadRequest(c, "Invalid contributor ID", nil)
 		return
 	}
 	contributor, err := h.service.GetContributorByID(contributorId)
 
 	if err != nil {
-		response.FromError(c, err)
+		FromError(c, err)
 		return
 	}
-	response.Success(c, "Contributor retrieved successfully", contributor)
+	Success(c, "Contributor retrieved successfully", contributor)
 
 }

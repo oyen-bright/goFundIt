@@ -1,8 +1,6 @@
 package email
 
 import (
-	"log"
-
 	"github.com/sendgrid/sendgrid-go"
 	"github.com/sendgrid/sendgrid-go/helpers/mail"
 )
@@ -20,14 +18,12 @@ func (s *sendGridEmailer) prepareMessage(from string, to []string, name, subject
 	}
 	message := mail.NewSingleEmail(fromEmail, subject, toEmails[0], body, body)
 
-	log.Println(message)
 	return message
 }
 
 func (s *sendGridEmailer) send(m *mail.SGMailV3) error {
 	client := sendgrid.NewSendClient(s.key)
-	response, err := client.Send(m)
-	log.Printf("Status Code: %d", response.StatusCode)
+	_, err := client.Send(m)
 
 	return err
 }

@@ -53,7 +53,7 @@ func main() {
 	defer sentry.Flush(2 * time.Second)
 
 	//Initialize the logger
-	logger := logger.New()
+	logger := logger.New(false)
 
 	// Initialize AI Client
 	aiClient, _ := gemini.NewClient(cfg.GeminiKey)
@@ -107,7 +107,7 @@ func main() {
 	authService := services.NewAuthService(authRepo, otpService, *encryptor, analyticsService, jwtService, logger)
 	notificationService := services.NewNotificationService(emailer, authService, fcmClient, logger)
 	campaignService := services.NewCampaignService(campaignRepo, authService, analyticsService, notificationService, eventBroadcaster, logger)
-	contributorService := services.NewContributorService(contributorRepo, campaignService, analyticsService, notificationService, eventBroadcaster, logger)
+	contributorService := services.NewContributorService(contributorRepo, campaignService, analyticsService, authService, notificationService, eventBroadcaster, logger)
 	activityService := services.NewActivityService(activityRepo, authService, campaignService, eventBroadcaster, analyticsService, notificationService, logger)
 	commentService := services.NewCommentService(commentRepo, authService, activityService, notificationService, eventBroadcaster, logger)
 	suggestionService := services.NewSuggestionService(aiClient, campaignService, logger)
@@ -129,6 +129,7 @@ func main() {
 	suggestionHandler := handlers.NewSuggestionHandler(suggestionService)
 	paymentHandler := handlers.NewPaymentHandler(paymentService)
 	payoutHandler := handlers.NewPayoutHandler(payoutService)
+	analyticsHandler := handlers.NewAnalyticsHandler(analyticsService)
 	websocketHandler := handlers.NewWebSocketHandler(websocketHub, campaignService)
 
 	// Initialize Gin Router
@@ -141,6 +142,7 @@ func main() {
 		CampaignHandler:    campaignHandler,
 		ContributorHandler: contributorHandler,
 		ActivityHandler:    activityHandler,
+		AnalyticsHandler:   analyticsHandler,
 		CommentHandler:     commentHandler,
 		SuggestionHandler:  suggestionHandler,
 		WebSocketHandler:   websocketHandler,
