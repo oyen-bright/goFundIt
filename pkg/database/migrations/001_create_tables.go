@@ -10,15 +10,20 @@ func Migrate(db *gorm.DB) error {
 	// Applying migration
 	// DropOtpTable(db)
 	err := db.AutoMigrate(
+		// Base tables (no foreign key dependencies)
+		&models.User{},
 		&models.Otp{},
+
+		&models.PlatformAnalytics{},
+
 		&models.Campaign{},
 		&models.CampaignImage{},
-		&models.Activity{},
-		&models.Contributor{},
-		&models.User{},
-		&models.Payment{},
-		&models.Comment{},
+
 		&models.Payout{},
+		&models.Contributor{},
+		&models.Comment{},
+		&models.Activity{},
+		&models.Payment{},
 	)
 	if err != nil {
 		return err
@@ -29,7 +34,20 @@ func Migrate(db *gorm.DB) error {
 
 func DropOtpTable(db *gorm.DB) error {
 	// Dropping the otp table
-	err := db.Migrator().DropTable(&models.Campaign{}, &models.CampaignImage{}, models.User{}, models.Contributor{}, models.Otp{}, models.Activity{})
+	err := db.Migrator().DropTable(
+		// &models.User{},
+		// &models.Otp{},
+		// &models.PlatformAnalytics{},
+
+		// &models.Campaign{},
+		// &models.CampaignImage{},
+
+		// &models.Payout{},
+		// &models.Contributor{},
+		// &models.Comment{},
+		// &models.Activity{},
+		&models.Payment{},
+	)
 	if err != nil {
 		return err
 	}

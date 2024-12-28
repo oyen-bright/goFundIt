@@ -1,8 +1,6 @@
 package services
 
 import (
-	"log"
-
 	"github.com/oyen-bright/goFundIt/internal/models"
 	repositories "github.com/oyen-bright/goFundIt/internal/repositories/interfaces"
 	services "github.com/oyen-bright/goFundIt/internal/services/interfaces"
@@ -73,7 +71,7 @@ func (s *activityService) CreateActivity(activity models.Activity, userHandle, c
 
 	// Send notification
 
-	s.notificationService.NotifyActivityAddition(&activity, campaign)
+	go s.notificationService.NotifyActivityAddition(&activity, campaign)
 
 	if campaign.CreatedBy.Handle != createdActivity.CreatedBy.Handle {
 		go s.notificationService.NotifyActivityApprovalRequest(&activity, campaign)
@@ -168,7 +166,7 @@ func (s *activityService) UpdateActivity(activity *models.Activity, userHandle s
 	}
 
 	// Broadcast update
-	go s.broadcaster.NewEvent(activity.CampaignID, websocket.EventTypeActivityUpdated, existingActivity)
+	go s.broadcaster.NewEvent(activity.CampaignID, websocket.EventTypeActivityUpdated, activity)
 
 	//TODO: need campaign contributors
 	//Send notification
@@ -335,7 +333,6 @@ func (s *activityService) validateContributorActivityForOptInOptOut(campaign *mo
 	if contributor.HasPaid() {
 		return nil, nil, errs.BadRequest("Action cannot be performed after making a payment.", nil)
 	}
-	log.Println(len(campaign.Activities))
 	// Validate activity
 	activity = campaign.GetActivityById(activityID)
 	if activity == nil {

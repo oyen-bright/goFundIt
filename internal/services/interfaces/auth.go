@@ -13,8 +13,9 @@ type AuthService interface {
 	UpdateUser(models.User) error
 
 	GetUserByHandle(handle string) (models.User, error)
-	GetUserByEmail(email string) (models.User, error)
+	GetUserByEmail(email string) (*models.User, error)
 	FindExistingAndNonExistingUsers(email []string) (existing []models.User, nonExisting []string, err error)
+	FindUserByEmail(email string) (*models.User, error)
 
 	GenerateToken(models.User) (string, error)
 	SaveFCMToken(handle string, token string) error

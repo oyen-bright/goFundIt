@@ -1,8 +1,6 @@
 package services
 
 import (
-	"log"
-
 	"github.com/oyen-bright/goFundIt/internal/models"
 	repositories "github.com/oyen-bright/goFundIt/internal/repositories/interfaces"
 	services "github.com/oyen-bright/goFundIt/internal/services/interfaces"
@@ -26,6 +24,7 @@ func NewContributorService(
 	repo repositories.ContributorRepository,
 	campaignService services.CampaignService,
 	analyticsService services.AnalyticsService,
+	authService services.AuthService,
 	notificationService services.NotificationService,
 	broadcaster services.EventBroadcaster,
 	logger logger.Logger,
@@ -34,6 +33,7 @@ func NewContributorService(
 		repo:                repo,
 		campaignService:     campaignService,
 		analyticsService:    analyticsService,
+		authService:         authService,
 		notificationService: notificationService,
 		broadcaster:         broadcaster,
 		logger:              logger,
@@ -41,7 +41,7 @@ func NewContributorService(
 }
 
 // AddContributorToCampaign adds a contributor to a campaign
-func (s *contributorService) AddContributorToCampaign(contributor *models.Contributor, campaignId, userHandle string) error {
+func (s *contributorService) AddContributorToCampaign(contributor *models.Contributor, campaignId, campaignKey, userHandle string) error {
 
 	// Get campaign
 	campaign, err := s.campaignService.GetCampaignByID(campaignId)
@@ -55,11 +55,11 @@ func (s *contributorService) AddContributorToCampaign(contributor *models.Contri
 	}
 
 	// Create user if it does not exist
-	user, err := s.authService.GetUserByEmail(contributor.Email)
+	user, err := s.authService.FindUserByEmail(contributor.Email)
 	if err != nil {
 		return err
 	}
-	if user.Email == "" {
+	if user == nil {
 		newUser := models.NewUser(contributor.Name, contributor.Email, false)
 		if err := s.authService.CreateUser(*newUser); err != nil {
 			return err
@@ -70,6 +70,9 @@ func (s *contributorService) AddContributorToCampaign(contributor *models.Contri
 		}
 	}
 
+	contributor.CampaignID = campaignId
+	campaign.Key = campaignKey
+
 	if err = s.repo.Create(contributor); err != nil {
 		return errs.InternalServerError(err).Log(s.logger)
 	}
@@ -78,6 +81,8 @@ func (s *contributorService) AddContributorToCampaign(contributor *models.Contri
 	go s.broadcaster.NewEvent(campaign.ID, websocket.EventTypeContributionCreated, contributor)
 	// send notification
 	go s.notificationService.NotifyContributorAdded(contributor, campaign)
+	// calculates the new target amount and broadcast event
+	go s.campaignService.RecalculateTargetAmount(campaignId)
 
 	return nil
 }
@@ -93,6 +98,8 @@ func (s *contributorService) UpdateContributor(contributor *models.Contributor) 
 
 	// broadcast event
 	go s.broadcaster.NewEvent(contributor.CampaignID, websocket.EventTypeContributorUpdated, contributor)
+	// calculates the new target amount and broadcast event
+	go s.campaignService.RecalculateTargetAmount(contributor.CampaignID)
 
 	return nil
 }
@@ -108,7 +115,6 @@ func (s *contributorService) UpdateContributorByID(contributor *models.Contribut
 	// Validate ownership
 	if retrievedContributor.Email != userEmail {
 
-		log.Println(retrievedContributor.Email, userEmail)
 		return models.Contributor{}, errs.BadRequest("Unauthorized: Only contributor can update their details", nil)
 	}
 
@@ -138,12 +144,14 @@ func (s *contributorService) RemoveContributorFromCampaign(contributorId uint, c
 	//validate ownership
 	if campaign.CreatedBy.Handle != userHandle {
 
-		log.Println(campaign.CreatedByHandle, userHandle)
 		return errs.BadRequest("Unauthorized: Only campaign creator can remove contributors", nil)
 	}
 
 	// Get contributor
 	contributor := campaign.GetContributorByID(contributorId)
+	if contributor == nil {
+		return errs.NotFound("Contributor not found")
+	}
 	if contributor.HasPaid() {
 		return errs.BadRequest("Cannot remove contributor with paid contribution", nil)
 	}
@@ -157,12 +165,16 @@ func (s *contributorService) RemoveContributorFromCampaign(contributorId uint, c
 
 	// broadcast event
 	go s.broadcaster.NewEvent(campaign.ID, websocket.EventTypeContributorDeleted, contributor)
+
+	// calculates the new target amount and broadcast event
+	go s.campaignService.RecalculateTargetAmount(contributor.CampaignID)
+
 	return nil
 }
 
 // GetContributors retrieves contributor by id
 func (s *contributorService) GetContributorByID(contributorID uint) (models.Contributor, error) {
-	contributor, err := s.repo.GetContributorById(contributorID, false)
+	contributor, err := s.repo.GetContributorById(contributorID, true)
 
 	if err != nil {
 		if database.Error(err).IsNotfound() {

@@ -80,6 +80,7 @@ func (s *campaignService) CreateCampaign(campaign *models.Campaign, userHandle s
 	}
 
 	// Get creator's user details
+
 	user, err := s.authService.GetUserByHandle(userHandle)
 	if err != nil {
 		return models.Campaign{}, err
@@ -94,8 +95,8 @@ func (s *campaignService) CreateCampaign(campaign *models.Campaign, userHandle s
 	if err != nil {
 		return models.Campaign{}, errs.InternalServerError(err).Log(s.logger)
 	}
-	go s.notificationService.NotifyCampaignCreation(campaign)
 
+	go s.notificationService.NotifyCampaignCreation(campaign)
 	go s.analyticsService.GetCurrentData().IncrementCampaigns(campaign.TargetAmount)
 
 	return *campaign, nil
@@ -144,6 +145,8 @@ func (s *campaignService) DeleteCampaign(campaignID string) error {
 // GetCampaignByID fetches campaign by ID
 func (s *campaignService) GetCampaignByID(id string) (*models.Campaign, error) {
 	campaign, err := s.repo.GetByID(id)
+	//TODO:implement a better way
+	campaign.UpdateTotalContributionsAmount()
 	if err != nil {
 		if database.Error(err).IsNotfound() {
 			return nil, errs.BadRequest("Campaign not found", nil)
@@ -155,7 +158,7 @@ func (s *campaignService) GetCampaignByID(id string) (*models.Campaign, error) {
 
 // GetCampaignByIDWithContributors fetches campaign by ID with contributors
 func (s *campaignService) GetCampaignByIDWithContributors(id string) (*models.Campaign, error) {
-	campaign, err := s.repo.GetByIDWithSelectedData(id, models.PreloadOption{Contributors: true})
+	campaign, err := s.repo.GetByIDWithSelectedData(id, models.PreloadOption{Contributors: true, Payout: true})
 	if err != nil {
 		if database.Error(err).IsNotfound() {
 			return nil, errs.BadRequest("Campaign not found", nil)

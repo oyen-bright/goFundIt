@@ -69,10 +69,10 @@ func (p *paymentService) InitializeManualPayment(contributorID uint, reference s
 	}
 	// create a new manual payment
 	// TODO: payment ref
-	payment := models.NewManualPayment(contributor.ID, contributor.CampaignID, fmt.Sprintf("Manual%d", contributorID), contributor.GetAmountTotal(), nil)
+	payment := models.NewManualPayment(contributor.ID, contributor.CampaignID, contributor.GetAmountTotal(), nil)
 
 	// validate user
-	//TODO: contributor is also creator of campaign it should still not require proof
+	//TODO: should campaign creator also provide payment reference 🤔
 	if contributor.Email != userEmail {
 
 		if campaign, err := p.campaignService.GetCampaignByID(contributor.CampaignID); err != nil {
@@ -191,6 +191,7 @@ func (p *paymentService) VerifyManualPayment(reference string, userHandle string
 	contributor.Payment = payment
 	go p.broadcaster.NewEvent(contributor.CampaignID, websocket.EventTypeContributorUpdated, contributor)
 	go p.notificationService.NotifyPaymentReceived(&contributor, &payment.Campaign)
+
 	go p.analyticsService.GetCurrentData().UpdatePaymentStats(payment.PaymentMethod, string(*campaign.FiatCurrency), payment.Amount)
 
 	return nil

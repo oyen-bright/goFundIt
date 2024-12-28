@@ -62,7 +62,7 @@ func NewCronService(campaignService interfaces.CampaignService, notificationServ
 
 func (n *cronService) StartCronJobs() error {
 	// Daily cleanup at midnight UTC
-	_, err := n.cron.AddFunc("0 0 0 * * *", func() {
+	_, err := n.cron.AddFunc("0 0 * * *", func() {
 		monitorCronJob("cleanup-campaign", func() {
 			n.cleanUpExpiredCampaign()
 		})

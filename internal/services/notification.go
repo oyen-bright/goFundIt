@@ -3,6 +3,7 @@ package services
 import (
 	"context"
 	"fmt"
+	"log"
 
 	"github.com/oyen-bright/goFundIt/internal/models"
 	services "github.com/oyen-bright/goFundIt/internal/services/interfaces"
@@ -115,6 +116,8 @@ func (n *notificationService) NotifyCampaignCreation(campaign *models.Campaign) 
 	contributorsNameEmail := getContributorNameEmail(campaign.Contributors)
 	activitiesTitleSubtitle := getActivityTitleSubtitle(campaign.Activities)
 
+	log.Println(contributorsNameEmail)
+	log.Println(campaign)
 	//Send email to campaign creator
 	campaignCreatedCampaignCreator := emailTemplates.CampaignCreated([]string{campaign.CreatedBy.Email}, campaign.Title, campaign.Description, campaign.ID, campaign.Key, contributorsNameEmail, activitiesTitleSubtitle)
 	err := n.emailer.send(campaignCreatedCampaignCreator)
@@ -165,7 +168,7 @@ func (n *notificationService) NotifyContributorAdded(contributor *models.Contrib
 	if err != nil {
 		return err
 	}
-	contributorAddedTemplate = emailTemplates.ContributorAddedGeneral(contributorEmails, contributor.Name, campaign.Title, contributor.Amount, campaign.Key)
+	contributorAddedTemplate = emailTemplates.ContributorAddedGeneral(contributorEmails, contributor.Name, contributor.Email, contributor.Amount, campaign.ID)
 	err = n.emailer.send(contributorAddedTemplate)
 	return err
 }
@@ -260,6 +263,10 @@ func (n *notificationService) NotifyCampaignCleanUp(campaign *models.Campaign, d
 func (n *notificationService) NotifyCommentAddition(comment *models.Comment, activity *models.Activity) error {
 	contributorsEmails := getContributorEmails(activity.Contributors)
 	contributorsEmails = append(contributorsEmails, activity.CreatedBy.Email)
+
+	if len(contributorsEmails) == 0 {
+		return nil
+	}
 
 	commentAddedTemplate := emailTemplates.CommentAddedGeneral(contributorsEmails, comment.CreatedBy.Handle, comment.Content, activity.Title, activity.CampaignID)
 	return n.emailer.send(commentAddedTemplate)

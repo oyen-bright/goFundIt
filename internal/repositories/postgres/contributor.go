@@ -48,7 +48,7 @@ func (r *contributorRepository) GetContributorById(contributorID uint, preload b
 
 	if preload {
 		var contributor models.Contributor
-		err := r.db.Preload("Activities").Preload("Payment").First(&contributor, contributorID).Error
+		err := r.db.Preload("Activities.Contributors").Preload("Activities").Preload("Payment").First(&contributor, contributorID).Error
 		return contributor, err
 	}
 	err := r.db.First(&contributor, contributorID).Error

@@ -16,6 +16,7 @@ func NewEventBroadcaster(hub *websocket.Hub) services.EventBroadcaster {
 }
 
 func (e *eventBroadcasterImpl) NewEvent(campaignID string, eventType websocket.EventType, data interface{}) {
+
 	e.hub.BroadcastToCampaign(campaignID, websocket.Message{
 		Type: eventType,
 		Data: data,

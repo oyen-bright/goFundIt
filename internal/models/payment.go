@@ -1,7 +1,10 @@
 package models
 
 import (
+	"fmt"
 	"time"
+
+	"github.com/oyen-bright/goFundIt/pkg/utils"
 )
 
 type PaymentStatus string
@@ -40,9 +43,11 @@ const (
 
 // Payment status constants
 type Payment struct {
-	Reference       string              `gorm:"primaryKey;size:255" json:"reference"`
-	ContributorID   uint                `gorm:"not null" json:"contributorId"`
-	CampaignID      string              `gorm:"not null" json:"campaignId"`
+	Reference string `gorm:"type:text;primaryKey" json:"reference"`
+
+	ContributorID uint   `gorm:"not null;foreignKey:ContributorID" json:"contributorId"`
+	CampaignID    string `gorm:"not null;foreignKey:CampaignID" json:"campaignId"`
+
 	Amount          float64             `gorm:"not null;type:numeric(10,2)" json:"amount"`
 	PaymentMethod   PaymentMethod       `gorm:"not null;size:50" json:"paymentMethod"`
 	PaymentStatus   PaymentStatus       `gorm:"not null;size:50;default:'pending'" json:"paymentStatus"`
@@ -81,11 +86,11 @@ func NewPayment(contributorID uint, campaignID, reference string, amount float64
 	}
 }
 
-func NewManualPayment(contributorID uint, campaignID, reference string, amount float64, paymentProof *ManualPaymentProof) *Payment {
+func NewManualPayment(contributorID uint, campaignID string, amount float64, paymentProof *ManualPaymentProof) *Payment {
 	return &Payment{
 		ContributorID: contributorID,
 		CampaignID:    campaignID,
-		Reference:     reference,
+		Reference:     generateManualReference(contributorID),
 		Amount:        amount,
 		PaymentProof:  paymentProof,
 		PaymentMethod: PaymentMethodManual,
@@ -130,4 +135,10 @@ func (p *Payment) GetPaymentLink() interface{} {
 func (p *Payment) UpdateManualPaymentProof(proof *ManualPaymentProof) {
 	p.PaymentProof = proof
 
+}
+
+// Helper Functions --------------------------------------------------------------------
+
+func generateManualReference(contributorID uint) string {
+	return utils.GenerateRandomAlphaNumeric(fmt.Sprintf("M-%d", contributorID), 8)
 }

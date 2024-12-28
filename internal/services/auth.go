@@ -1,6 +1,8 @@
 package services
 
 import (
+	"log"
+
 	"github.com/oyen-bright/goFundIt/internal/models"
 	repositories "github.com/oyen-bright/goFundIt/internal/repositories/interfaces"
 	services "github.com/oyen-bright/goFundIt/internal/services/interfaces"
@@ -43,7 +45,7 @@ func NewAuthService(
 func (s *authService) RequestAuth(email, name string) (models.Otp, error) {
 	otp, err := s.otpService.RequestOTP(email, name)
 	if err != nil {
-		// return models.Otp{}, errs.InternalServerError(err).Log(s.logger)
+		return models.Otp{}, errs.InternalServerError(err).Log(s.logger)
 	}
 	return otp, nil
 }
@@ -51,8 +53,9 @@ func (s *authService) RequestAuth(email, name string) (models.Otp, error) {
 func (s *authService) VerifyAuth(email, code, requestID string) (string, error) {
 	// Verify OTP
 	otp, err := s.otpService.VerifyOTP(email, code, requestID)
+	log.Println(otp, err)
 	if err != nil {
-		return "", errs.BadRequest("Invalid OTP", err).Log(s.logger)
+		return "", err
 	}
 
 	// Get or create user
@@ -153,16 +156,32 @@ func (s *authService) GetUserByHandle(handle string) (models.User, error) {
 	return *user, nil
 }
 
-func (s *authService) GetUserByEmail(email string) (models.User, error) {
+func (s *authService) GetUserByEmail(email string) (*models.User, error) {
 	user, err := s.authRepo.FindByEmail(email)
 	if err != nil {
 		if database.Error(err).IsNotfound() {
-			return models.User{}, errs.BadRequest("User not found", nil)
+			return nil, errs.BadRequest("User not found", nil)
 		}
-		return models.User{}, errs.InternalServerError(err).Log(s.logger)
+		return nil, errs.InternalServerError(err).Log(s.logger)
 	}
 
-	return *user, nil
+	return user, nil
+}
+
+// TODO : redundant ? GetUserByEmail
+func (s *authService) FindUserByEmail(email string) (*models.User, error) {
+
+	user, err := s.authRepo.FindByEmail(email)
+	log.Println("FindUserByEmail", "email", email, "error", err)
+
+	if err != nil {
+		if database.Error(err).IsNotfound() {
+			return nil, nil
+		}
+		return nil, errs.InternalServerError(err).Log(s.logger)
+	}
+
+	return user, nil
 }
 
 func (s *authService) FindExistingAndNonExistingUsers(emails []string) (existing []models.User, nonExisting []string, err error) {

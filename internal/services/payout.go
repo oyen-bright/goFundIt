@@ -71,6 +71,7 @@ func (p *payoutService) InitializeManualPayout(campaignID string, userHandle str
 	// Process Payout
 	payout := models.NewManualPayout(campaignID, campaign.GetPayoutAmount(), "")
 	payout.MarkPayoutCompleted()
+	campaign.Payout = payout
 
 	// Create Payout
 	if err := p.repo.Create(payout); err != nil {
@@ -90,6 +91,8 @@ func (p *payoutService) InitializeManualPayout(campaignID string, userHandle str
 func (p *payoutService) InitializePayout(campaignID string, userHandle string, req dto.PayoutRequest) (*models.Payout, error) {
 	// Validate the campaign and user
 	campaign, err := p.campaignService.GetCampaignByIDWithContributors(campaignID)
+
+	log.Print(campaign, err)
 	if err != nil {
 		return nil, err
 	}
@@ -164,7 +167,6 @@ func (p *payoutService) VerifyAccount(req dto.VerifyAccountRequest) (interface{}
 // GetBankList implements interfaces.PayoutService.
 func (p *payoutService) GetBankList() ([]interface{}, error) {
 	bankListResponse, err := p.paystack.GetBanks()
-	log.Println(bankListResponse)
 	if err != nil {
 		return nil, errs.InternalServerError(err).Log(p.logger)
 	}

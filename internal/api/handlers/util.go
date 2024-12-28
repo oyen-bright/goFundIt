@@ -17,6 +17,11 @@ func getClaimsFromContext(c *gin.Context) jwt.Claims {
 	return c.MustGet("claims").(jwt.Claims)
 }
 
+// getCampaignKey extracts the campaign key form the request
+func getCampaignKey(c *gin.Context) string {
+	return c.MustGet("Campaign-Key").(string)
+}
+
 // GetCampaignID extracts the campaignId form the requestParam
 func GetCampaignID(c *gin.Context) string {
 	return c.Param("campaignID")

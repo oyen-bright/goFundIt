@@ -12,6 +12,6 @@ type ContributorService interface {
 
 	GetContributorsByCampaignID(campaignID string) ([]models.Contributor, error)
 
-	AddContributorToCampaign(contribution *models.Contributor, campaignId, userHandle string) error
+	AddContributorToCampaign(contribution *models.Contributor, campaignId, campaignKey, userHandle string) error
 	RemoveContributorFromCampaign(contributorId uint, campaignId, userHandle string) error
 }
