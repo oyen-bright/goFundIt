@@ -13,7 +13,7 @@ type Comment struct {
 	Content         string    `gorm:"type:text;not null" binding:"required" validate:"required" json:"content"`
 	ActivityID      uint      `gorm:"type:text;foreignKey:ActivityID;not null" binding:"-" validate:"required" json:"activityID"`
 	ParentID        *string   `gorm:"type:text" json:"parentId"`
-	Replies         []Comment `gorm:"foreignKey:ParentID" json:"replies" binding:"-"`
+	Replies         []Comment `gorm:"foreignKey:ParentID;constraint:OnDelete:CASCADE" json:"replies" binding:"-"`
 	CreatedByHandle string    `gorm:"not null;type:text" validate:"required" json:"-" binding:"-"`
 	CreatedBy       User      `gorm:"references:Handle;foreignKey:CreatedByHandle" json:"createdBy" binding:"-"`
 	CreatedAt       time.Time `gorm:"not null" json:"createdAt"`

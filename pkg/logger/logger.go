@@ -33,9 +33,9 @@ type logger struct {
 	enabled bool
 }
 
-func New() Logger {
+func New(SentryEnabled bool) Logger {
 	return &logger{
-		enabled: true,
+		enabled: SentryEnabled,
 	}
 }
 

@@ -2,6 +2,7 @@ package models
 
 import (
 	"database/sql"
+	"log"
 	"time"
 
 	"github.com/go-playground/validator/v10"
@@ -32,10 +33,12 @@ type Contributor struct {
 	CampaignID string     `gorm:"not null;foreignKey:CampaignID;index:idx_campaign_user,unique" validate:"required" json:"campaignId"`
 	Amount     float64    `gorm:"not null" binding:"required,gte=0" validate:"gte=0,required" json:"amount"`
 	Activities []Activity `gorm:"many2many:activities_contributors" binding:"-" json:"activities"`
-	Payment    *Payment   `gorm:"foreignKey:ContributorID:constraint:OnDelete:CASCADE" json:"payment"`
-	Email      string     `gorm:"not null;foreignKey:Email;index:idx_campaign_user,unique" json:"email" binding:"-"`
-	CreatedAt  time.Time  `gorm:"not null" json:"-"`
-	UpdatedAt  time.Time  `json:"-"`
+
+	Payment *Payment `gorm:"foreignKey:ContributorID" json:"payment"`
+
+	Email     string    `gorm:"not null;foreignKey:Email;index:idx_campaign_user,unique" json:"email" binding:"-"`
+	CreatedAt time.Time `gorm:"not null" json:"-"`
+	UpdatedAt time.Time `json:"-"`
 }
 
 // Constructor
@@ -73,6 +76,7 @@ func (c *Contributor) HasFailed() bool {
 
 // Amount Methods
 func (c *Contributor) GetAmountTotal() float64 {
+	log.Println(c.Activities)
 	for _, activity := range c.Activities {
 		c.Amount += activity.Cost
 	}

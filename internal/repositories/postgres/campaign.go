@@ -43,7 +43,7 @@ func (r *campaignRepository) GetByID(id string) (models.Campaign, error) {
 	var campaign models.Campaign
 
 	query := r.db.Where("id = ?", id)
-	query = query.Preload("Images").Preload("Activities.Contributors").Preload("Activities").Preload("Contributors.Payment").Preload("Contributors").Preload("CreatedBy")
+	query = query.Preload("Images").Preload("Activities.Contributors").Preload("Activities").Preload("Contributors.Payment").Preload("Contributors").Preload("Payout").Preload("CreatedBy")
 	err := query.First(&campaign).Error
 	if err != nil {
 		return models.Campaign{}, err
@@ -51,6 +51,7 @@ func (r *campaignRepository) GetByID(id string) (models.Campaign, error) {
 	return campaign, nil
 }
 
+// TODO:payout createdby not loading
 // GetByIDWithSelectedData fetches a campaign by ID with selected data preloaded
 func (r *campaignRepository) GetByIDWithSelectedData(id string, options models.PreloadOption) (models.Campaign, error) {
 	var campaign models.Campaign
@@ -101,7 +102,7 @@ func (r *campaignRepository) GetByIDWithSelectedData(id string, options models.P
 		}
 	}
 
-	query = query.Preload("CreatedBy")
+	query = query.Preload("CreatedBy").Preload("Payout")
 	err := query.First(&campaign).Error
 	if err != nil {
 		return campaign, err

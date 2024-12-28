@@ -37,6 +37,11 @@ func (h *WebSocketHandler) HandleCampaignWebSocket(c *gin.Context) {
 	claims := c.MustGet("claims").(jwt.Claims)
 
 	//TODO: verify campaign key
+	// Verify campaign
+	if _, err := h.campaignService.GetCampaignByID(campaignID); err != nil {
+		FromError(c, err)
+		return
+	}
 
 	conn, err := upgrader.Upgrade(c.Writer, c.Request, nil)
 	if err != nil {

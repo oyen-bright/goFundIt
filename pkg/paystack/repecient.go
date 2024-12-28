@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"io"
-	"log"
 	"net/http"
 )
 
@@ -18,7 +17,6 @@ func (c *Client) CreateRecipient(recipient Recipient) (*RecipientResponse, error
 	if err != nil {
 		return nil, err
 	}
-	log.Println(resp)
 	defer resp.Body.Close()
 
 	var recResp RecipientResponse

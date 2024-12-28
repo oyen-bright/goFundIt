@@ -9,20 +9,22 @@ import (
 
 // Activity represents an action or task within a campaign that requires funding
 type Activity struct {
-	ID              uint          `gorm:"primaryKey" json:"id"`
-	CampaignID      string        `gorm:"type:text;foreignKey:CampaignID" validate:"required" json:"campaignId"`
-	Title           string        `gorm:"type:varchar(255);not null" binding:"required,min=4" json:"title"`
-	Subtitle        string        `gorm:"type:varchar(255)" json:"subtitle"`
-	ImageUrl        string        `gorm:"type:varchar(255)" binding:"omitempty,url" validate:"omitempty,url" json:"imageUrl"`
-	IsMandatory     bool          `gorm:"not null" binding:"boolean" json:"isMandatory"`
-	Cost            float64       `gorm:"not null" binding:"required" validate:"required,gt=0" json:"cost"`
-	IsApproved      bool          `gorm:"not null; default:false" json:"isApproved"`
-	Contributors    []Contributor `gorm:"many2many:activities_contributors" binding:"-" json:"contributors"`
-	Comments        []Comment     `gorm:"foreignKey:ActivityID;constraint:OnDelete:CASCADE" json:"-" binding:"-"`
-	CreatedByHandle string        `gorm:"not null" validate:"required" json:"-"`
-	CreatedBy       User          `gorm:"references:Handle" binding:"-" validate:"-" json:"-"`
-	CreatedAt       time.Time     `gorm:"not null" json:"-"`
-	UpdatedAt       time.Time     `json:"-"`
+	ID           uint          `gorm:"primaryKey" json:"id"`
+	CampaignID   string        `gorm:"type:text;foreignKey:CampaignID" validate:"required" json:"campaignId"`
+	Title        string        `gorm:"type:varchar(255);not null" binding:"required,min=4" json:"title"`
+	Subtitle     string        `gorm:"type:varchar(255)" json:"subtitle"`
+	ImageUrl     string        `gorm:"type:varchar(255)" binding:"omitempty,url" validate:"omitempty,url" json:"imageUrl"`
+	IsMandatory  bool          `gorm:"not null" binding:"boolean" json:"isMandatory"`
+	Cost         float64       `gorm:"not null" binding:"required" validate:"required,gt=0" json:"cost"`
+	IsApproved   bool          `gorm:"not null; default:false" json:"isApproved"`
+	Contributors []Contributor `gorm:"many2many:activities_contributors" binding:"-" json:"contributors"`
+	Comments     []Comment     `gorm:"foreignKey:ActivityID;constraint:OnDelete:CASCADE" json:"-" binding:"-"`
+
+	CreatedByHandle string `gorm:"not null" validate:"required" json:"-"`
+	CreatedBy       User   `gorm:"references:Handle" binding:"-" validate:"-" json:"-"`
+
+	CreatedAt time.Time `gorm:"not null" json:"-"`
+	UpdatedAt time.Time `json:"-"`
 }
 
 // Constructor

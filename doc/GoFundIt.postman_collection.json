@@ -1,0 +1,1348 @@
+{
+	"info": {
+		"_postman_id": "c5f0391c-7e6c-4208-9913-3d4aa93095af",
+		"name": "Campaign API Collection",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "17306105"
+	},
+	"item": [
+		{
+			"name": "Authentication",
+			"item": [
+				{
+					"name": "Request Authentication",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-API-KEY",
+								"value": "{{apiKey}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Aha\",\n    \"email\": \"bright@krotrust.com\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/auth/",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"auth",
+								""
+							]
+						},
+						"description": "Initiates the authentication process for a user by sending a verification code to their email address. Requires user's name and email in request body."
+					},
+					"response": []
+				},
+				{
+					"name": "Verify Authentication",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-API-KEY",
+								"value": "{{apiKey}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"bright@krotrust.com\",\n    \"code\": \"ZJRJLE\",\n    \"requestId\": \"78218\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/auth/verify",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"auth",
+								"verify"
+							]
+						},
+						"description": "Validates the verification code sent to user's email. Requires email, verification code, and request ID for verification."
+					},
+					"response": []
+				}
+			],
+			"description": "Endpoints for handling user authentication and verification.\n\nFeatures:\n- Email-based authentication\n- Verification code system\n- Token generation",
+			"auth": {
+				"type": "noauth"
+			},
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"type": "text/javascript",
+						"packages": {},
+						"exec": [
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"packages": {},
+						"exec": [
+							""
+						]
+					}
+				}
+			]
+		},
+		{
+			"name": "Campaigns",
+			"item": [
+				{
+					"name": "Create Campaign",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "X-API-KEY",
+								"value": "{{apiKey}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"title\": \"Trip to New York\",\n    \"description\": \"Exciting journey to explore the Big Apple!, on a weekend trip to  the city that never sleeps, join me on this beautify journey\",\n    \"PaymentMethod\": \"manual\",\n    \"fiatCurrency\": \"NGN\",\n    \"StartDate\": \"2025-01-01T00:00:00Z\",\n    \"EndDate\": \"2025-01-03T00:00:00Z\",\n    \"Activities\": [\n        {\n            \"title\": \"Times Square Visit\",\n            \"cost\": 100,\n            \"IsMandatory\": true,\n            \"isApproved\": true\n        }\n      \n    ],\n    \"Contributors\": [\n        {\n            \"amount\": 2000,\n            \"Email\": \"bright@krotrust.com\"\n        }\n    ]\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/campaign/create",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"campaign",
+								"create"
+							]
+						},
+						"description": "Creates a new fundraising campaign with specified details including title, description, payment method, and timeline."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Campaign Details",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-API-KEY",
+								"value": "{{apiKey}}"
+							},
+							{
+								"key": "Campaign-Key",
+								"value": "{{campaignKey}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/campaign/{{campaignId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"campaign",
+								"{{campaignId}}"
+							]
+						},
+						"description": "Retrieves comprehensive information about a specific campaign including activities, contributors, and current status."
+					},
+					"response": []
+				},
+				{
+					"name": "Update Campaign",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "X-API-KEY",
+								"value": "{{apiKey}}"
+							},
+							{
+								"key": "campaign-key",
+								"value": "{{campaignKey}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"title\": \"NYC New York Trip\",\n    \"endDate\": \"2025-02-01T00:00:00Z\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/campaign/{{campaignId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"campaign",
+								"{{campaignId}}"
+							]
+						},
+						"description": "Updates an existing campaign's details including title, description, and end date."
+					},
+					"response": []
+				}
+			],
+			"description": "Manage fundraising campaigns and their core functionalities.\n\nFeatures:\n- Campaign creation and management\n- Details retrieval\n- Campaign status tracking\n- Timeline management"
+		},
+		{
+			"name": "Contributors",
+			"item": [
+				{
+					"name": "Add Contributor to Campaign",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-API-KEY",
+								"value": "{{apiKey}}"
+							},
+							{
+								"key": "Campaign-Key",
+								"value": "{{campaignId}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"amount\": 2000,\n    \"Email\": \"bright+1@krotrust.com\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/contributor/{{campaignId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"contributor",
+								"{{campaignId}}"
+							]
+						},
+						"description": "Registers a new contributor to the campaign with their contribution amount."
+					},
+					"response": []
+				},
+				{
+					"name": "Update Contributor",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "X-API-KEY",
+								"value": "{{apiKey}}"
+							},
+							{
+								"key": "Campaign-Key",
+								"value": "{{campaignId}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Aha\",\n    \"email\": \"bright@krotrust.com\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/contributor/{{campaignId}}/{{contributorId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"contributor",
+								"{{campaignId}}",
+								"{{contributorId}}"
+							]
+						},
+						"description": "Modifies a contributor's information such as name and email."
+					},
+					"response": []
+				},
+				{
+					"name": "Remove Contributor",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "X-API-KEY",
+								"value": "{{apiKey}}"
+							},
+							{
+								"key": "Campaign-Key",
+								"value": "{{campaignId}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/contributor/{{campaignId}}/{{contributorId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"contributor",
+								"{{campaignId}}",
+								"{{contributorId}}"
+							]
+						},
+						"description": "Removes a contributor from the campaign."
+					},
+					"response": []
+				},
+				{
+					"name": "Get All Contributors",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-API-KEY",
+								"value": "{{apiKey}}"
+							},
+							{
+								"key": "Campaign-Key",
+								"value": "{{campaignId}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/contributor/{{campaignId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"contributor",
+								"{{campaignId}}"
+							]
+						},
+						"description": "Lists all contributors participating in the campaign."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Contributor by ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-API-KEY",
+								"value": "{{apiKey}}"
+							},
+							{
+								"key": "Campaign-Key",
+								"value": "{{campaignId}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/contributor/{{campaignId}}/{{contributorId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"contributor",
+								"{{campaignId}}",
+								"{{contributorId}}"
+							]
+						},
+						"description": "Retrieves detailed information about a specific contributor."
+					},
+					"response": []
+				}
+			],
+			"description": "Handle campaign contributor management.\n\nFeatures:\n- Add/Remove contributors\n- Update contributor details\n- Contributor listing\n- Individual contributor lookup"
+		},
+		{
+			"name": "Activities",
+			"item": [
+				{
+					"name": "Create New Activity",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-API-KEY",
+								"value": "{{apiKey}}"
+							},
+							{
+								"key": "Campaign-Key",
+								"value": "{{campaignId}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"title\": \"Sling dope\",\n    \"subtitle\":\"24 avenue conneer\",\n    \"cost\": 1000,\n    \"isMandatory\": true\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/activity/{{campaignId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"activity",
+								"{{campaignId}}"
+							]
+						},
+						"description": "Creates a new activity within a campaign. Requires activity title, cost, and mandatory status in request body."
+					},
+					"response": []
+				},
+				{
+					"name": "Update Activity",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "X-API-KEY",
+								"value": "{{apiKey}}"
+							},
+							{
+								"key": "Campaign-Key",
+								"value": "{{campaignId}}"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{authToken}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"title\": \"Visity Statue of Liberty\",\n    \"cost\": 5000,\n    \"isApproved\": true,\n    \"Subtitle\":\"aha\",\n    \"ImageUrl\":\"https://google.com\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/activity/{{campaignId}}/{{ActivityID}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"activity",
+								"{{campaignId}}",
+								"{{ActivityID}}"
+							]
+						},
+						"description": "Updates an existing activity's details including title, cost, and approval status."
+					},
+					"response": []
+				},
+				{
+					"name": "Get All Activities for Campaign",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-API-KEY",
+								"value": "{{apiKey}}"
+							},
+							{
+								"key": "Campaign-Key",
+								"value": "{{campaignId}}"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{authToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/activity/{{campaignId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"activity",
+								"{{campaignId}}"
+							]
+						},
+						"description": "Retrieves a list of all activities associated with a specific campaign."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Single Activity",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-API-KEY",
+								"value": "{{apiKey}}"
+							},
+							{
+								"key": "Campaign-Key",
+								"value": "{{campaignId}}"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{authToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/activity/{{campaignId}}/{{ActivityID}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"activity",
+								"{{campaignId}}",
+								"{{ActivityID}}"
+							]
+						},
+						"description": "Retrieves detailed information about a specific activity by its ID."
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Activity",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "X-API-KEY",
+								"value": "{{apiKey}}"
+							},
+							{
+								"key": "Campaign-Key",
+								"value": "{{campaignId}}"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{authToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/activity/{{campaignId}}/{{ActivityID}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"activity",
+								"{{campaignId}}",
+								"{{ActivityID}}"
+							]
+						},
+						"description": "Removes an activity from the campaign permanently."
+					},
+					"response": []
+				},
+				{
+					"name": "Opt In Activity",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-API-KEY",
+								"value": "{{apiKey}}"
+							},
+							{
+								"key": "Campaign-Key",
+								"value": "{{campaignId}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/activity/{{campaignId}}/{{ActivityID}}/participants/{{ContributorID}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"activity",
+								"{{campaignId}}",
+								"{{ActivityID}}",
+								"participants",
+								"{{ContributorID}}"
+							]
+						},
+						"description": "Allows a contributor to participate in a specific activity."
+					},
+					"response": []
+				},
+				{
+					"name": "Opt Out Activity",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "X-API-KEY",
+								"value": "{{apiKey}}"
+							},
+							{
+								"key": "Campaign-Key",
+								"value": "{{campaignId}}"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{authToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/activity/{{campaignId}}/{{ActivityID}}/participants/{{ContributorID}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"activity",
+								"{{campaignId}}",
+								"{{ActivityID}}",
+								"participants",
+								"{{ContributorID}}"
+							]
+						},
+						"description": "Removes a contributor's participation from a specific activity."
+					},
+					"response": []
+				},
+				{
+					"name": "Get All Participants for Activity",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-API-KEY",
+								"value": "{{apiKey}}"
+							},
+							{
+								"key": "Campaign-Key",
+								"value": "{{campaignId}}"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{authToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/activity/{{campaignId}}/{{ActivityID}}/participants",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"activity",
+								"{{campaignId}}",
+								"{{ActivityID}}",
+								"participants"
+							]
+						},
+						"description": "Lists all contributors who have opted in to participate in a specific activity."
+					},
+					"response": []
+				}
+			],
+			"description": "Manage campaign activities and participant interactions.\n\nFeatures:\n- Create/Update/Delete activities\n- Manage activity participants\n- Activity status tracking\n- Cost management"
+		},
+		{
+			"name": "Suggestions",
+			"item": [
+				{
+					"name": "Get Activity Suggestions",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-API-KEY",
+								"value": "{{apiKey}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/suggestions/activity/{{campaignId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"suggestions",
+								"activity",
+								"{{campaignId}}"
+							]
+						},
+						"description": "Retrieves a list of suggested activities for a specific campaign."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Activity Suggestion by input",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-API-KEY",
+								"value": "{{apiKey}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"content\": \"Trip to londer for a day at midnight\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/suggestions/activity/",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"suggestions",
+								"activity",
+								""
+							]
+						},
+						"description": "Submits a new activity suggestion for consideration."
+					},
+					"response": []
+				}
+			],
+			"description": "Handle activity suggestions for campaigns.\n\nFeatures:\n- Get activity suggestions\n- Create new suggestions\n- Suggestion management"
+		},
+		{
+			"name": "Comments",
+			"item": [
+				{
+					"name": "Create Comment",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "X-API-KEY",
+								"value": "{{apiKey}}"
+							},
+							{
+								"key": "Campaign-Key",
+								"value": "{{campaignId}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"content\": \"This is a test comment childe\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/activity/{{campaignId}}/{{ActivityID}}/comments",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"activity",
+								"{{campaignId}}",
+								"{{ActivityID}}",
+								"comments"
+							]
+						},
+						"description": "Posts a new comment or reply on an activity. Can be a top-level comment or a reply to existing comment."
+					},
+					"response": []
+				},
+				{
+					"name": "Update Comment",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "X-API-KEY",
+								"value": "{{apiKey}}"
+							},
+							{
+								"key": "Campaign-Key",
+								"value": "{{campaignId}}"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{authToken}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"content\": \"i wanna Upgrade: \"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/activity/{{campaignId}}/{{ActivityID}}/comments/{{commentID}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"activity",
+								"{{campaignId}}",
+								"{{ActivityID}}",
+								"comments",
+								"{{commentID}}"
+							]
+						},
+						"description": "Modifies the content of an existing comment."
+					},
+					"response": []
+				},
+				{
+					"name": "Get All Comments",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-API-KEY",
+								"value": "{{apiKey}}"
+							},
+							{
+								"key": "Campaign-Key",
+								"value": "{{campaignId}}"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{authToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/activity/{{campaignId}}/{{ActivityID}}/comments",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"activity",
+								"{{campaignId}}",
+								"{{ActivityID}}",
+								"comments"
+							]
+						},
+						"description": "Retrieves all comments associated with a specific activity."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Comment Replies",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-API-KEY",
+								"value": "{{apiKey}}"
+							},
+							{
+								"key": "Campaign-Key",
+								"value": "{{campaignId}}"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{authToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/activity/{{campaignId}}/{{ActivityID}}/comments/{{commentID}}/replies",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"activity",
+								"{{campaignId}}",
+								"{{ActivityID}}",
+								"comments",
+								"{{commentID}}",
+								"replies"
+							]
+						},
+						"description": "Fetches all replies to a specific comment."
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Comment",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "X-API-KEY",
+								"value": "{{apiKey}}"
+							},
+							{
+								"key": "Campaign-Key",
+								"value": "{{campaignId}}"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{authToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/activity/{{campaignId}}/{{ActivityID}}/comments/{{commentID}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"activity",
+								"{{campaignId}}",
+								"{{ActivityID}}",
+								"comments",
+								"{{commentID}}"
+							]
+						},
+						"description": "Removes a comment and its associated replies."
+					},
+					"response": []
+				}
+			],
+			"description": "Manage activity comments and replies.\n\nFeatures:\n- Create/Update/Delete comments\n- Thread management\n- Reply system\n- Comment retrieval"
+		},
+		{
+			"name": "Payments",
+			"item": [
+				{
+					"name": "Initialize Payment",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-API-KEY",
+								"value": "{{apiKey}}"
+							},
+							{
+								"key": "Campaign-Key",
+								"value": "{{campaignId}}"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{authToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/payment/contributor/{{contributorId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"payment",
+								"contributor",
+								"{{contributorId}}"
+							]
+						},
+						"description": "Starts a new payment transaction for a contributor."
+					},
+					"response": []
+				},
+				{
+					"name": "Initialize Manual Payment",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "multipart/form-data; boundary=----WebKitFormBoundary"
+							},
+							{
+								"key": "X-API-KEY",
+								"value": "{{apiKey}}"
+							},
+							{
+								"key": "Campaign-Key",
+								"value": "{{campaignId}}"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{authToken}}"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "reference",
+									"type": "file",
+									"src": "/Users/brinnixs/Documents/Go/goFundIt/ref.png"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{baseUrl}}/payment/manual/contributor/{{contributorId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"payment",
+								"manual",
+								"contributor",
+								"{{contributorId}}"
+							]
+						},
+						"description": "Creates a manual payment record with proof of payment upload."
+					},
+					"response": []
+				},
+				{
+					"name": "Verify Payment",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-API-KEY",
+								"value": "{{apiKey}}"
+							},
+							{
+								"key": "Campaign-Key",
+								"value": "{{campaignId}}"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{authToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/payment/verify/{{paymentReference}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"payment",
+								"verify",
+								"{{paymentReference}}"
+							]
+						},
+						"description": "Confirms the status of an automated payment transaction."
+					},
+					"response": []
+				},
+				{
+					"name": "Verify Manual Payment",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-API-KEY",
+								"value": "{{apiKey}}"
+							},
+							{
+								"key": "Campaign-Key",
+								"value": "{{campaignId}}"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{authToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/payment/manual/verify/{{paymentReference}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"payment",
+								"manual",
+								"verify",
+								"{{paymentReference}}"
+							]
+						},
+						"description": "Validates and confirms a manual payment submission."
+					},
+					"response": []
+				}
+			],
+			"description": "Handle payment processing and verification.\n\nFeatures:\n- Payment initialization\n- Manual payment handling\n- Payment verification\n- Payment status tracking"
+		},
+		{
+			"name": "Payouts",
+			"item": [
+				{
+					"name": "Get Bank List",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-API-KEY",
+								"value": "{{apiKey}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/payout/bank-list",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"payout",
+								"bank-list"
+							]
+						},
+						"description": "Retrieves a list of available banks for payouts"
+					},
+					"response": []
+				},
+				{
+					"name": "Verify Bank Account",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-API-KEY",
+								"value": "{{apiKey}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"AccountNumber\": \"0708737418\",\n    \"BankCode\": \"058\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/payout/verify/bank-account",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"payout",
+								"verify",
+								"bank-account"
+							]
+						},
+						"description": "Verifies a bank account for payout"
+					},
+					"response": []
+				},
+				{
+					"name": "Initiate Payout",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-API-KEY",
+								"value": "{{apiKey}}"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{authToken}}"
+							},
+							{
+								"key": "Campaign-Key",
+								"value": "{{campaignId}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"BankName\": \"GTB\",\n    \"bankCode\": \"058\",\n    \"accountNumber\": \"0708737418\",\n    \"accountName\": \"OYENIYI BRIGHT AJANI\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/payout/{{campaignId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"payout",
+								"{{campaignId}}"
+							]
+						},
+						"description": "Initiates a payout for a specific campaign"
+					},
+					"response": []
+				},
+				{
+					"name": "Initiate Manual Payout",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-API-KEY",
+								"value": "{{apiKey}}"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{authToken}}"
+							},
+							{
+								"key": "Campaign-Key",
+								"value": "{{campaignId}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"BankName\": \"GTB\",\n    \"bankCode\": \"058\",\n    \"accountNumber\": \"0708737418\",\n    \"accountName\": \"OYENIYI BRIGHT AJANI\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/payout/manual/{{campaignId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"payout",
+								"manual",
+								"{{campaignId}}"
+							]
+						},
+						"description": "Initiates a payout for a specific campaign"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Campaign Payout",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-API-KEY",
+								"value": "{{apiKey}}"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{authToken}}"
+							},
+							{
+								"key": "Campaign-Key",
+								"value": "{{campaignId}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/payout/{{campaignId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"payout",
+								"{{campaignId}}"
+							]
+						},
+						"description": "Retrieves payout information for a specific campaign"
+					},
+					"response": []
+				}
+			],
+			"description": "Manage campaign payouts and bank integrations.\n\nFeatures:\n- Bank account verification\n- Payout initialization\n- Bank list retrieval\n- Payout tracking"
+		},
+		{
+			"name": "WebSocket",
+			"item": [
+				{
+					"name": "Get Campaign WebSocket Connection",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-API-KEY",
+								"value": "{{apiKey}}"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{authToken}}"
+							},
+							{
+								"key": "Campaign-Key",
+								"value": "{{campaignId}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/ws/campaign/{{campaignId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"ws",
+								"campaign",
+								"{{campaignId}}"
+							]
+						},
+						"description": "Establishes a WebSocket connection for real-time updates and notifications about campaign activities."
+					},
+					"response": []
+				}
+			],
+			"description": "Real-time communication endpoints.\n\nFeatures:\n- Campaign updates\n- Live notifications\n- Real-time data sync"
+		},
+		{
+			"name": "Analytics",
+			"item": [
+				{
+					"name": "Process Analytics",
+					"request": {
+						"method": "GET",
+						"header": []
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MCwiZW1haWwiOiJveWVuYnJpaGlnaHRAZ21haWwuY29tIiwiaGFuZGxlIjoiT1lLTldNIiwiZXhwIjoxNzM1NDg0MjM1fQ.33BQGs594KU9tQBCXYADDjyaKr6SGVLW-fhprVd5ZTQ",
+				"type": "string"
+			}
+		]
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "your_base_url_here"
+		},
+		{
+			"key": "contentType",
+			"value": "application/json"
+		},
+		{
+			"key": "apiKey",
+			"value": "{{X_API_KEY}}"
+		},
+		{
+			"key": "authToken",
+			"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MCwiZW1haWwiOiJicmlnaHRAa3JvdHJ1c3QuY29tIiwiaGFuZGxlIjoiQlJLTFdSIiwiZXhwIjoxNzM1MTM3NDQ3fQ.r7rsPoN-4evxoAdM885_aYBrY9jrKqDRKTzztmoGImM"
+		},
+		{
+			"key": "campaignId",
+			"value": "TRPNRUXPQ"
+		},
+		{
+			"key": "ActivityID",
+			"value": "5"
+		},
+		{
+			"key": "ContributorID",
+			"value": "2"
+		},
+		{
+			"key": "commentID",
+			"value": "CMT697D5"
+		},
+		{
+			"key": "campaignKey",
+			"value": "",
+			"type": "default"
+		},
+		{
+			"key": "contributorId",
+			"value": "2",
+			"type": "default"
+		}
+	]
+}

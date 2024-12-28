@@ -1,7 +1,6 @@
 package models
 
 import (
-	"errors"
 	"time"
 
 	"github.com/go-playground/validator/v10"
@@ -21,8 +20,8 @@ type Campaign struct {
 	ID           string  `gorm:"type:text;primaryKey" validate:"-" binding:"-" json:"id"`
 	Key          string  `gorm:"-" validate:"-" binding:"-" json:"key"`
 	Title        string  `gorm:"type:varchar(255);not null" validate:"required,min=4" binding:"required" json:"title"`
-	Description  string  `gorm:"type:text" validate:"required,min=100" binding:"required" json:"description"`
-	TargetAmount float64 `gorm:"not null" validate:"required,gt=0" binding:"required,gt=0" json:"targetAmount"`
+	Description  string  `gorm:"type:text" validate:"required,min=100" binding:"required,min=100" json:"description"`
+	TargetAmount float64 `gorm:"not null" validate:"required,gt=0" binding:"-" json:"targetAmount"`
 
 	//Payment
 	PaymentMethod PaymentMethod `gorm:"type:varchar(10);not null" validate:"required,oneof=fiat crypto manual" binding:"required,oneof=fiat crypto manual" json:"paymentMethod"`
@@ -32,17 +31,19 @@ type Campaign struct {
 	//Relations
 	Images       []CampaignImage `gorm:"foreignKey:CampaignID;constraint:OnDelete:CASCADE" validate:"-" binding:"omitempty,dive,required" json:"images"`
 	Activities   []Activity      `gorm:"foreignKey:CampaignID;constraint:OnDelete:CASCADE" validate:"-" binding:"omitempty,dive,required"`
-	Contributors []Contributor   `gorm:"foreignKey:CampaignID;constraint:OnDelete:CASCADE" validate:"required,gt=0,dive,required,contributorSum" binding:"required,gt=0,dive,required" json:"contributors"`
+	Contributors []Contributor   `gorm:"foreignKey:CampaignID;constraint:OnDelete:CASCADE" validate:"required,gt=0,dive,required" binding:"required,gt=0,dive,required" json:"contributors"`
 
 	//Payout
 	Payout *Payout `gorm:"foreignKey:CampaignID;constraint:OnDelete:CASCADE" validate:"-" binding:"-" json:"payout"`
 
-	StartDate       time.Time `gorm:"not null" validate:"required" binding:"required" json:"startDate"`
-	EndDate         time.Time `gorm:"not null" validate:"required,gtfield=StartDate" binding:"required,gtfield=StartDate" json:"endDate"`
-	CreatedByHandle string    `gorm:"not null" validate:"required" binding:"-" json:"createdByHandle"`
-	CreatedBy       User      `gorm:"references:Handle" validate:"-" binding:"-" json:"-"`
-	CreatedAt       time.Time `gorm:"not null" validate:"-" binding:"-" json:"-"`
-	UpdatedAt       time.Time `validate:"-" binding:"-" json:"-"`
+	StartDate time.Time `gorm:"not null" validate:"required" binding:"required" json:"startDate"`
+	EndDate   time.Time `gorm:"not null" validate:"required,gtfield=StartDate" binding:"required,gtfield=StartDate" json:"endDate"`
+
+	CreatedByHandle string `gorm:"not null" validate:"required" binding:"-" json:"createdByHandle"`
+	CreatedBy       User   `gorm:"references:Handle" validate:"-" binding:"-" json:"-"`
+
+	CreatedAt time.Time `gorm:"not null" validate:"-" binding:"-" json:"-"`
+	UpdatedAt time.Time `validate:"-" binding:"-" json:"-"`
 }
 
 // NewCampaign
@@ -180,6 +181,12 @@ func (c *Campaign) GetPayoutAmount() float64 {
 	return amount
 }
 
+func (c *Campaign) HasReached50PercentMilestone() bool {
+	c.UpdateTotalContributionsAmount()
+	percentage := (c.GetPayoutAmount() / c.TargetAmount) * 100
+	return percentage >= 50
+}
+
 func (c *Campaign) EmailIsPartOfCampaign(email string) bool {
 	if c.CreatedBy.Email == email {
 		return true
@@ -204,30 +211,12 @@ func (c *Campaign) GetActivityById(ID uint) *Activity {
 
 func (c *Campaign) Validate() error {
 	v := validator.New()
-	v.RegisterValidation("contributorSum", validateContributionSum)
 
 	if err := v.Struct(c); err != nil {
 		return err
 	}
 
 	return nil
-}
-
-func (c *Campaign) ValidateNewCampaign() error {
-	if time.Now().After(c.StartDate) {
-		return errors.New("campaign start date must be today or in the future")
-	}
-
-	total := calculateContributionTotal(*c)
-	if total != c.TargetAmount {
-		return errors.New("total contributions do not match the target amount")
-	}
-
-	return nil
-}
-
-func (c *Campaign) BeforeCreate(tx *gorm.DB) (err error) {
-	return c.Validate()
 }
 
 func (c *Campaign) Update(title, description *string, endDate *time.Time) {
@@ -241,6 +230,24 @@ func (c *Campaign) Update(title, description *string, endDate *time.Time) {
 		c.EndDate = *endDate
 	}
 }
+func (c *Campaign) UpdateTotalContributionsAmount() {
+	var totalAmount float64
+	for _, contributor := range c.Contributors {
+		totalAmount += contributor.GetAmountTotal()
+	}
+	c.TargetAmount = totalAmount
+}
+
+// GORM Hooks ---------------------------------------------------------
+
+func (c *Campaign) BeforeSave(tx *gorm.DB) (err error) {
+	c.UpdateTotalContributionsAmount()
+	return nil
+}
+
+func (c *Campaign) BeforeCreate(tx *gorm.DB) (err error) {
+	return c.Validate()
+}
 
 // Helper Functions --------------------------------------------------
 
@@ -250,20 +257,4 @@ func generateKey() string {
 
 func generateCampaignId(title string) string {
 	return utils.GenerateRandomString(title[:2], 9)
-}
-
-func validateContributionSum(fl validator.FieldLevel) bool {
-	campaign, ok := fl.Parent().Interface().(Campaign)
-	if !ok {
-		return false
-	}
-	return calculateContributionTotal(campaign) == campaign.TargetAmount
-}
-
-func calculateContributionTotal(campaign Campaign) float64 {
-	var totalAmount float64
-	for _, contributor := range campaign.Contributors {
-		totalAmount += contributor.Amount
-	}
-	return totalAmount
 }

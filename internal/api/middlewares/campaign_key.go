@@ -14,6 +14,7 @@ func CampaignKey() gin.HandlerFunc {
 			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": "Unauthorized"})
 			return
 		}
+		c.Set("Campaign-Key", campaignKey)
 
 		c.Next()
 	}

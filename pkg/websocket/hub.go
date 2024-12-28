@@ -1,6 +1,8 @@
 package websocket
 
-import "sync"
+import (
+	"sync"
+)
 
 type Hub struct {
 	clients    map[string]map[*Client]bool
@@ -47,6 +49,10 @@ func (h *Hub) Run() {
 	for {
 		select {
 		case client := <-h.register:
+			if client == nil {
+				continue
+			}
+
 			h.mutex.Lock()
 			if _, ok := h.clients[client.campaignID]; !ok {
 				h.clients[client.campaignID] = make(map[*Client]bool)
@@ -55,6 +61,10 @@ func (h *Hub) Run() {
 			h.mutex.Unlock()
 
 		case client := <-h.unregister:
+
+			if client == nil {
+				continue
+			}
 			h.mutex.Lock()
 			if _, ok := h.clients[client.campaignID]; ok {
 				delete(h.clients[client.campaignID], client)
