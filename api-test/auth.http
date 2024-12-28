@@ -24,6 +24,6 @@ X-API-KEY: {{apiKey}}
 
 {
     "email": "{{userEmail}}",
-    "code": "SKINYO",
-    "requestId": "10355"
+    "code": "XXBBUG",
+    "requestId": "04029"
 }

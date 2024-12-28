@@ -1,5 +1,5 @@
 ### Environment Variables
-@authToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MCwiZW1haWwiOiJicmlnaHRAa3JvdHJ1c3QuY29tIiwiaGFuZGxlIjoiQlJLTFdSIiwiZXhwIjoxNzM1MTM3NDQ3fQ.r7rsPoN-4evxoAdM885_aYBrY9jrKqDRKTzztmoGImM
+@authToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJicmlnaHRAa3JvdHJ1c3QuY29tIiwiaGFuZGxlIjoiQlJFREpTIiwiZXhwIjoxNzM1NDI0NjkwfQ._hrKbCdsnea35_HU1zcRfEHBKBFVd4E60w3pZg8pMpw
 ### Common Headers
 @contentType = application/json
 @apiKey = {{X_API_KEY}}
@@ -54,7 +54,6 @@ Authorization: Bearer {{authToken}}
             "Email": "bright@krotrust.com"
         }
     ],
-    "targetAmount": 2000,
     "StartDate": "2025-01-01T00:00:00Z",
     "EndDate":"2025-01-03T00:00:00Z"
 }
