@@ -5,11 +5,12 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
 
-func setupTestDB(t *testing.T) *gorm.DB {
+func setupTestDB(t *testing.T) (*gorm.DB, func()) {
 	if os.Getenv("TEST_DB") != "true" {
 		t.Skip("Skipping database tests. Set TEST_DB=true to run")
 	}
@@ -19,7 +20,14 @@ func setupTestDB(t *testing.T) *gorm.DB {
 	if err != nil {
 		t.Fatalf("Failed to connect to test database: %v", err)
 	}
-	return db
+
+	sqlDB, err := db.DB()
+	require.NoError(t, err)
+	cleanUp := func() {
+		sqlDB.Close()
+	}
+
+	return db, cleanUp
 }
 
 func TestMigrate(t *testing.T) {
