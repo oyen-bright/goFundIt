@@ -15,10 +15,10 @@ var encryptor *encryption.Encryptor
 
 func mockConfig() *config.AppConfig {
 	return &config.AppConfig{
-		Environment:   environment.Development,
-		ServerPort:    ":8080",
-		EmailProvider: providers.EmailSMTP,
-		EncryptionKey: []string{"test-key"},
+		Environment:    environment.Development,
+		ServerPort:     ":8080",
+		EmailProvider:  providers.EmailSMTP,
+		EncryptionKeys: []string{"test-key"},
 	}
 }
 
@@ -26,7 +26,7 @@ func mockConfig() *config.AppConfig {
 func TestMain(m *testing.M) {
 
 	appConfig = mockConfig()
-	encryptor = encryption.New(appConfig.EncryptionKey)
+	encryptor = encryption.New(appConfig.EncryptionKeys)
 
 	// Run tests
 	code := m.Run()
@@ -100,7 +100,7 @@ func TestMissingSecretKey(t *testing.T) {
 }
 
 func TestDecryptWithWrongKey(t *testing.T) {
-	originalKey := appConfig.EncryptionKey
+	originalKey := appConfig.EncryptionKeys
 	wrongKey := []string{"wrong-secure-secret-key"}
 	data := "Sensitive campaign data"
 	email := "test@example.com"

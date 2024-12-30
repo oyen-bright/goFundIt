@@ -3,15 +3,16 @@ package templates
 import (
 	"fmt"
 	"path/filepath"
+	"runtime"
 	"time"
 
-	"github.com/oyen-bright/goFundIt/config"
 	"github.com/oyen-bright/goFundIt/pkg/email"
 )
 
 func generateFile(fileName string) string {
-	//TODO:implement better file path generation and handling
-	return filepath.Join(config.BaseDir, "pkg", "email", "templates", fileName)
+	_, currentFile, _, _ := runtime.Caller(0)
+	templateDir := filepath.Dir(currentFile)
+	return filepath.Join(templateDir, fileName)
 }
 
 // Personal Email Templates
