@@ -29,19 +29,36 @@ func (h *Hub) Broadcast(message Message) {
 }
 
 // Add new method to broadcast to specific campaign
+// func (h *Hub) BroadcastToCampaign(campaignID string, message Message) {
+// 	h.mutex.RLock()
+// 	if clients, ok := h.clients[campaignID]; ok {
+// 		for client := range clients {
+// 			select {
+// 			case client.send <- message:
+// 			default:
+// 				close(client.send)
+// 				delete(clients, client)
+// 			}
+// 		}
+// 	}
+// 	h.mutex.RUnlock()
+// }
+
 func (h *Hub) BroadcastToCampaign(campaignID string, message Message) {
 	h.mutex.RLock()
+	defer h.mutex.RUnlock()
+
 	if clients, ok := h.clients[campaignID]; ok {
 		for client := range clients {
 			select {
 			case client.send <- message:
 			default:
-				close(client.send)
-				delete(clients, client)
+				h.mutex.RUnlock()
+				h.unregister <- client
+				h.mutex.RLock()
 			}
 		}
 	}
-	h.mutex.RUnlock()
 }
 
 // Modify the Run method to handle campaign-specific broadcasts
