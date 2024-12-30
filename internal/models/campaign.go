@@ -246,6 +246,8 @@ func (c *Campaign) BeforeSave(tx *gorm.DB) (err error) {
 }
 
 func (c *Campaign) BeforeCreate(tx *gorm.DB) (err error) {
+	c.UpdateTotalContributionsAmount()
+
 	return c.Validate()
 }
 

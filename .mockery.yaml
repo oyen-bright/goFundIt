@@ -1,0 +1,11 @@
+with-expecter: true
+packages:
+  github.com/oyen-bright/goFundIt/internal/services/interfaces:
+    config:
+      dir: "internal/services/mocks"
+      filename: "{{.InterfaceName}}_mock.go"
+    
+  github.com/oyen-bright/goFundIt/internal/repositories/interfaces:
+    config:
+      dir: "internal/repositories/mocks"
+      filename: "{{.InterfaceName}}_mock.go"

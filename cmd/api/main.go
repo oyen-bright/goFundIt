@@ -1,6 +1,7 @@
 package main
 
 import (
+	"log"
 	"time"
 
 	"github.com/getsentry/sentry-go"
@@ -35,7 +36,7 @@ func initialize() (*config.AppConfig, *gorm.DB) {
 		panic(err)
 	}
 	db.Debug()
-
+	log.Println(cfg.EncryptionKeys)
 	return cfg, db
 }
 
@@ -74,7 +75,7 @@ func main() {
 
 	// Initialize Core Services
 
-	encryptor := encryption.New(cfg.EncryptionKey)
+	encryptor := encryption.New(cfg.EncryptionKeys)
 	emailer := email.New(providers.EmailSMTP, cfg.EmailConfig)
 	jwtService := jwt.New(cfg.JWTSecret)
 

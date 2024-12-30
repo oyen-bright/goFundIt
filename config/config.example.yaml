@@ -1,0 +1,26 @@
+port: ":8080"
+email_provider: "smtp"
+email:
+  host: "smtp.example.com"
+  port: 465
+  username: "your-email@example.com"
+  password: "your-password"
+  name: "your-sender-name@example.com"
+  sendgrid_api_key: "your-sendgrid-key"
+encryption_keys:
+  - "key1=your-encryption-key-1"
+  - "key2=your-encryption-key-2"
+database:
+  dbname: "dbname"
+  username: "dbuser"
+  password: "dbpassword"
+  host: "localhost"
+  port: 5432
+  pgadmin_default_password: "123456"
+  pgadmin_default_email: "2323434@dfs.com"
+x_api_key: "your-api-key"
+jwt_secret: "your-jwt-secret"
+gemini_key: "your-gemini-key"
+paystack_key: "your-paystack-key"
+cloudinary_url: "your-cloudinary-url"
+analytics_report_email: "your-email@example.com"
