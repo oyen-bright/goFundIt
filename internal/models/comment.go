@@ -23,10 +23,10 @@ type Comment struct {
 // Constructor and Initialization Methods
 
 // NewComment creates a new Comment instance
-func NewComment(parentID string, activityID uint, content string, createdBy User) *Comment {
+func NewComment(parentID *string, activityID uint, content string, createdBy User) *Comment {
 	return &Comment{
 		ID:              generateID(),
-		ParentID:        &parentID,
+		ParentID:        parentID,
 		ActivityID:      activityID,
 		CreatedByHandle: createdBy.Handle,
 		CreatedBy:       createdBy,
