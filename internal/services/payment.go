@@ -17,7 +17,7 @@ import (
 
 type paymentService struct {
 	repo                repos.PaymentRepository
-	paystack            *paystack.Client
+	paystack            paystack.PaystackClient
 	campaignService     services.CampaignService
 	analyticsService    services.AnalyticsService
 	contributorService  services.ContributorService
@@ -25,6 +25,7 @@ type paymentService struct {
 	broadcaster         services.EventBroadcaster
 	storage             storage.Storage
 	logger              logger.Logger
+	runAsync            func(func())
 }
 
 func NewPaymentService(
@@ -33,7 +34,7 @@ func NewPaymentService(
 	analyticsService services.AnalyticsService,
 	campaignService services.CampaignService,
 	notificationService services.NotificationService,
-	paystack *paystack.Client,
+	paystack paystack.PaystackClient,
 	storage storage.Storage,
 	broadcaster services.EventBroadcaster,
 	logger logger.Logger,
@@ -53,6 +54,7 @@ func NewPaymentService(
 		storage:     storage,
 		broadcaster: broadcaster,
 		logger:      logger,
+		runAsync:    func(f func()) { go f() },
 	}
 }
 
@@ -106,7 +108,9 @@ func (p *paymentService) InitializeManualPayment(contributorID uint, reference s
 	}
 	contributor.Payment = payment
 	// Broadcast event
-	go p.broadcaster.NewEvent(contributor.CampaignID, websocket.EventTypeContributorUpdated, contributor)
+	p.runAsync(func() {
+		p.broadcaster.NewEvent(contributor.CampaignID, websocket.EventTypeContributorUpdated, contributor)
+	})
 
 	return payment, nil
 
@@ -189,10 +193,16 @@ func (p *paymentService) VerifyManualPayment(reference string, userHandle string
 	// Update contributor and broadcast event
 	contributor := payment.Contributor
 	contributor.Payment = payment
-	go p.broadcaster.NewEvent(contributor.CampaignID, websocket.EventTypeContributorUpdated, contributor)
-	go p.notificationService.NotifyPaymentReceived(&contributor, &payment.Campaign)
 
-	go p.analyticsService.GetCurrentData().UpdatePaymentStats(payment.PaymentMethod, string(*campaign.FiatCurrency), payment.Amount)
+	p.runAsync(func() {
+		p.broadcaster.NewEvent(contributor.CampaignID, websocket.EventTypeContributorUpdated, contributor)
+	})
+	p.runAsync(func() {
+		p.notificationService.NotifyPaymentReceived(&contributor, &payment.Campaign)
+	})
+	p.runAsync(func() {
+		p.analyticsService.GetCurrentData().UpdatePaymentStats(payment.PaymentMethod, string(*campaign.FiatCurrency), payment.Amount)
+	})
 
 	return nil
 

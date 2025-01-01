@@ -19,7 +19,7 @@ type payoutService struct {
 	repo                interfaces.PayoutRepository
 	campaignService     services.CampaignService
 	notificationService services.NotificationService
-	paystack            *paystack.Client
+	paystack            paystack.PaystackClient
 	broadCaster         services.EventBroadcaster
 	logger              logger.Logger
 }
@@ -29,7 +29,7 @@ func NewPayoutService(
 	payoutRepo interfaces.PayoutRepository,
 	campaignService services.CampaignService,
 	notificationService services.NotificationService,
-	paystack *paystack.Client,
+	paystack paystack.PaystackClient,
 	broadCaster services.EventBroadcaster,
 	logger logger.Logger,
 ) services.PayoutService {

@@ -5,15 +5,15 @@ import (
 	"reflect"
 )
 
-type Encryptor struct {
+type encryptor struct {
 	Keys []string
 }
 
-func New(key []string) *Encryptor {
-	return &Encryptor{Keys: key}
+func New(key []string) Encryptor {
+	return &encryptor{Keys: key}
 }
 
-func (e *Encryptor) Encrypt(data Data) (string, error) {
+func (e *encryptor) Encrypt(data Data) (string, error) {
 	// Check if the secret key is missing
 	if len(e.Keys) == 0 {
 		return "", errors.New("missing secret key")
@@ -28,7 +28,7 @@ func (e *Encryptor) Encrypt(data Data) (string, error) {
 	return encryptData(data.Data, encryptionKey)
 }
 
-func (e *Encryptor) EncryptStruct(data interface{}, key string) (interface{}, error) {
+func (e *encryptor) EncryptStruct(data interface{}, key string) (interface{}, error) {
 	v := reflect.ValueOf(data)
 	if v.Kind() == reflect.Ptr {
 		v = v.Elem()
@@ -65,7 +65,7 @@ func (e *Encryptor) EncryptStruct(data interface{}, key string) (interface{}, er
 	return data, nil
 }
 
-func (e *Encryptor) Decrypt(data Data) (string, error) {
+func (e *encryptor) Decrypt(data Data) (string, error) {
 
 	var plaintext *string
 
@@ -94,7 +94,7 @@ func (e *Encryptor) Decrypt(data Data) (string, error) {
 	return *plaintext, nil
 }
 
-func (e *Encryptor) DecryptStruct(data interface{}, key string) (interface{}, error) {
+func (e *encryptor) DecryptStruct(data interface{}, key string) (interface{}, error) {
 	v := reflect.ValueOf(data)
 
 	if v.Kind() == reflect.Ptr {
