@@ -8,14 +8,6 @@ import (
 	"testing"
 )
 
-type mockHTTPClient struct {
-	doFunc func(*http.Request) (*http.Response, error)
-}
-
-func (m *mockHTTPClient) Do(req *http.Request) (*http.Response, error) {
-	return m.doFunc(req)
-}
-
 func TestInitiateTransaction(t *testing.T) {
 	tests := []struct {
 		name          string
@@ -58,12 +50,12 @@ func TestInitiateTransaction(t *testing.T) {
 			}))
 			defer server.Close()
 
-			client := &Client{
+			testClient := &client{
 				secretKey: "test_key",
 				baseURL:   server.URL,
 			}
 
-			resp, err := client.InitiateTransaction(tt.email, tt.currency, tt.amount)
+			resp, err := testClient.InitiateTransaction(tt.email, tt.currency, tt.amount)
 			if (err != nil) != tt.expectedError {
 				t.Errorf("InitiateTransaction() error = %v, expectedError %v", err, tt.expectedError)
 				return
@@ -122,12 +114,12 @@ func TestVerifyTransaction(t *testing.T) {
 			}))
 			defer server.Close()
 
-			client := &Client{
+			testClient := &client{ // Use lowercase client
 				secretKey: "test_key",
 				baseURL:   server.URL,
 			}
 
-			resp, err := client.VerifyTransaction(tt.reference)
+			resp, err := testClient.VerifyTransaction(tt.reference)
 			if (err != nil) != tt.expectedError {
 				t.Errorf("VerifyTransaction() error = %v, expectedError %v", err, tt.expectedError)
 				return

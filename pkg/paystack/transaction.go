@@ -10,7 +10,7 @@ import (
 )
 
 // InitiateTransaction initiates a transaction on Paystack
-func (c *Client) InitiateTransaction(email, currency string, amount float64) (*TransactionResponse, error) {
+func (c *client) InitiateTransaction(email, currency string, amount float64) (*TransactionResponse, error) {
 	txn := NewTransaction(email, currency, amount)
 	reqBody, err := txn.GetBody()
 	if err != nil {
@@ -29,7 +29,7 @@ func (c *Client) InitiateTransaction(email, currency string, amount float64) (*T
 
 }
 
-func (c *Client) VerifyTransaction(reference string) (*VerifyTransactionResponse, error) {
+func (c *client) VerifyTransaction(reference string) (*VerifyTransactionResponse, error) {
 	resp, err := c.SetupRequest(http.MethodGet, "/transaction/verify/"+reference, nil, nil)
 	if err != nil {
 		return nil, err

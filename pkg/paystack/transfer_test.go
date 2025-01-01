@@ -53,11 +53,11 @@ func TestInitiateTransfer(t *testing.T) {
 			}))
 			defer server.Close()
 
-			client := &Client{
+			testClient := &client{
 				secretKey: "test_key",
 				baseURL:   server.URL,
 			}
-			resp, err := client.InitiateTransfer(*tt.mockRequest)
+			resp, err := testClient.InitiateTransfer(*tt.mockRequest)
 			if (err != nil) != tt.expectedError {
 				t.Errorf("InitiateTransfer() error = %v, expectedError %v", err, tt.expectedError)
 				return
@@ -127,12 +127,12 @@ func TestFinalizeTransfer(t *testing.T) {
 			}))
 			defer server.Close()
 
-			client := &Client{
+			testClient := &client{
 				secretKey: "test_key",
 				baseURL:   server.URL + "/",
 			}
 
-			resp, err := client.FinalizeTransfer(tt.transferCode)
+			resp, err := testClient.FinalizeTransfer(tt.transferCode)
 			log.Println(err)
 			if (err != nil) != tt.expectedError {
 				t.Errorf("FinalizeTransfer() error = %v, expectedError %v", err, tt.expectedError)

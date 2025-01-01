@@ -6,7 +6,7 @@ import (
 )
 
 // GetBanks returns a list of banks
-func (c *Client) GetBanks() (*BankListResponse, error) {
+func (c *client) GetBanks() (*BankListResponse, error) {
 	resp, err := c.SetupRequest(http.MethodGet, "/bank", nil, nil)
 	if err != nil {
 		return nil, err
@@ -21,7 +21,7 @@ func (c *Client) GetBanks() (*BankListResponse, error) {
 }
 
 // ResolveAccount resolves an account number
-func (c *Client) ResolveAccount(accountNumber, bankCode string) (*ResolveAccountResponse, error) {
+func (c *client) ResolveAccount(accountNumber, bankCode string) (*ResolveAccountResponse, error) {
 
 	params := []map[string]string{
 		{

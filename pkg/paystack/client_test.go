@@ -9,7 +9,7 @@ import (
 
 func TestNewClient(t *testing.T) {
 	secretKey := "test_secret_key"
-	client := NewClient(secretKey)
+	client := NewClient(secretKey).(*client) // Type assert to access private fields
 
 	if client.secretKey != secretKey {
 		t.Errorf("Expected secret key %s, got %s", secretKey, client.secretKey)
@@ -53,7 +53,7 @@ func TestSetupRequest(t *testing.T) {
 	}))
 	defer server.Close()
 
-	client := &Client{
+	testClient := &client{ // Use lowercase client
 		secretKey: "test_secret_key",
 		baseURL:   server.URL,
 	}
@@ -61,7 +61,7 @@ func TestSetupRequest(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			bodyReader := strings.NewReader(tt.body)
-			resp, err := client.SetupRequest(tt.method, tt.path, bodyReader, tt.queryParam)
+			resp, err := testClient.SetupRequest(tt.method, tt.path, bodyReader, tt.queryParam)
 
 			if (err != nil) != tt.wantErr {
 				t.Errorf("SetupRequest() error = %v, wantErr %v", err, tt.wantErr)
@@ -79,8 +79,8 @@ func TestSetupRequest(t *testing.T) {
 				}
 
 				auth := resp.Request.Header.Get("Authorization")
-				if auth != "Bearer "+client.secretKey {
-					t.Errorf("Expected Authorization header Bearer %s, got %s", client.secretKey, auth)
+				if auth != "Bearer "+testClient.secretKey {
+					t.Errorf("Expected Authorization header Bearer %s, got %s", testClient.secretKey, auth)
 				}
 
 				contentType := resp.Request.Header.Get("Content-Type")

@@ -5,13 +5,24 @@ import (
 	"net/http"
 )
 
-type Client struct {
+// PaystackClient represents all available Paystack operations
+type PaystackClient interface {
+	InitiateTransaction(email, currency string, amount float64) (*TransactionResponse, error)
+	VerifyTransaction(reference string) (*VerifyTransactionResponse, error)
+	CreateRecipient(recipient Recipient) (*RecipientResponse, error)
+	InitiateTransfer(transfer Transfer) (*TransactionResponse, error)
+	FinalizeTransfer(transferCode string) (*FinalizeTransferResponse, error)
+	ResolveAccount(accountNumber, bankCode string) (*ResolveAccountResponse, error)
+	GetBanks() (*BankListResponse, error)
+}
+
+type client struct {
 	secretKey string
 	baseURL   string
 }
 
-func NewClient(secretKey string) *Client {
-	return &Client{
+func NewClient(secretKey string) PaystackClient {
+	return &client{
 		secretKey: secretKey,
 		baseURL:   "https://api.paystack.co",
 	}
@@ -20,7 +31,7 @@ func NewClient(secretKey string) *Client {
 // Helper factions
 
 // SetupRequest sets up the request to the Paystack API
-func (c *Client) SetupRequest(method, path string, body io.Reader, queryParam *[]map[string]string) (*http.Response, error) {
+func (c *client) SetupRequest(method, path string, body io.Reader, queryParam *[]map[string]string) (*http.Response, error) {
 	req, err := http.NewRequest(method, c.baseURL+path, body)
 	if err != nil {
 		return nil, err

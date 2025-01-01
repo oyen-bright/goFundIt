@@ -7,7 +7,7 @@ import (
 	"net/http"
 )
 
-func (c *Client) CreateRecipient(recipient Recipient) (*RecipientResponse, error) {
+func (c *client) CreateRecipient(recipient Recipient) (*RecipientResponse, error) {
 
 	body, err := recipient.getBody()
 	if err != nil {

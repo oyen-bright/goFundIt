@@ -8,7 +8,7 @@ import (
 )
 
 // InitiateTransfer
-func (c *Client) InitiateTransfer(transfer Transfer) (*TransactionResponse, error) {
+func (c *client) InitiateTransfer(transfer Transfer) (*TransactionResponse, error) {
 	body, err := transfer.GetBody()
 	if err != nil {
 		return nil, err
@@ -28,7 +28,7 @@ func (c *Client) InitiateTransfer(transfer Transfer) (*TransactionResponse, erro
 }
 
 // FinalizeTransfer finalize the initiated transfer by the transfer code
-func (c *Client) FinalizeTransfer(transferCode string) (*FinalizeTransferResponse, error) {
+func (c *client) FinalizeTransfer(transferCode string) (*FinalizeTransferResponse, error) {
 
 	data, err := json.Marshal(map[string]string{
 		"transfer_code": transferCode,

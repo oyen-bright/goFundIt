@@ -40,13 +40,13 @@ func TestCreateRecipient(t *testing.T) {
 	}))
 	defer server.Close()
 
-	client := &Client{
+	testClient := &client{ // Use lowercase client
 		baseURL:   server.URL,
 		secretKey: "test_key",
 	}
 
 	recipient := NewRecipient("John Doe", "1234567890", "123", "NGN")
-	resp, err := client.CreateRecipient(*recipient)
+	resp, err := testClient.CreateRecipient(*recipient)
 	if err != nil {
 		t.Fatalf("Expected no error, got %v", err)
 	}

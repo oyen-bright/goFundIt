@@ -29,12 +29,12 @@ func TestGetBanks(t *testing.T) {
 	}))
 	defer server.Close()
 
-	client := &Client{
+	testClient := &client{
 		baseURL:   server.URL,
 		secretKey: "test_key",
 	}
 
-	resp, err := client.GetBanks()
+	resp, err := testClient.GetBanks()
 	if err != nil {
 		t.Fatalf("Expected no error, got %v", err)
 	}
@@ -67,12 +67,12 @@ func TestResolveAccount(t *testing.T) {
 	}))
 	defer server.Close()
 
-	client := &Client{
+	testClient := &client{
 		baseURL:   server.URL,
 		secretKey: "test_key",
 	}
 
-	resp, err := client.ResolveAccount("1234567890", "123")
+	resp, err := testClient.ResolveAccount("1234567890", "123")
 	if err != nil {
 		t.Fatalf("Expected no error, got %v", err)
 	}
