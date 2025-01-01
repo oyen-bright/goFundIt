@@ -104,8 +104,8 @@ func main() {
 	}
 	defer analyticsService.StopAnalytics()
 
-	otpService := services.NewOTPService(otpRepo, emailer, *encryptor, logger)
-	authService := services.NewAuthService(authRepo, otpService, *encryptor, analyticsService, jwtService, logger)
+	otpService := services.NewOTPService(otpRepo, emailer, logger)
+	authService := services.NewAuthService(authRepo, otpService, encryptor, analyticsService, jwtService, logger)
 	notificationService := services.NewNotificationService(emailer, authService, fcmClient, logger)
 	campaignService := services.NewCampaignService(campaignRepo, authService, analyticsService, notificationService, eventBroadcaster, logger)
 	contributorService := services.NewContributorService(contributorRepo, campaignService, analyticsService, authService, notificationService, eventBroadcaster, logger)

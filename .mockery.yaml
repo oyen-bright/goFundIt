@@ -9,3 +9,56 @@ packages:
     config:
       dir: "internal/repositories/mocks"
       filename: "{{.InterfaceName}}_mock.go"
+
+
+  github.com/oyen-bright/goFundIt/pkg/jwt:
+    config:
+      dir: "pkg/jwt/mocks"
+      filename: "{{.InterfaceName}}_mock.go"
+
+  github.com/oyen-bright/goFundIt/pkg/logger:
+    config:
+      dir: "pkg/logger/mocks"
+      filename: "{{.InterfaceName}}_mock.go"
+
+  github.com/oyen-bright/goFundIt/pkg/encryption:
+    config:
+      dir: "pkg/encryption/mocks"
+      filename: "{{.InterfaceName}}_mock.go"
+
+
+  github.com/oyen-bright/goFundIt/pkg/errs:
+    config:
+      dir: "pkg/errs/mocks"
+      filename: "{{.InterfaceName}}_mock.go"
+
+
+  github.com/oyen-bright/goFundIt/pkg/email:
+    config:
+      dir: "pkg/email/mocks"
+      filename: "{{.InterfaceName}}_mock.go"
+
+
+  github.com/oyen-bright/goFundIt/internal/ai/interfaces:
+    config:
+      dir: "internal/ai/mocks"
+      filename: "{{.InterfaceName}}_mock.go"
+
+
+
+  github.com/oyen-bright/goFundIt/pkg/paystack:
+    config:
+      dir: "pkg/paystack/mocks"
+      filename: "{{.InterfaceName}}_mock.go"
+
+  github.com/oyen-bright/goFundIt/pkg/storage:
+    config:
+      dir: "pkg/storage/mocks"
+      filename: "{{.InterfaceName}}_mock.go"
+
+  github.com/oyen-bright/goFundIt/pkg/fcm:
+    config:
+      dir: "pkg/fcm/mocks"
+      filename: "{{.InterfaceName}}_mock.go"
+
+
