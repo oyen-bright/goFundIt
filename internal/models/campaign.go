@@ -137,6 +137,7 @@ func (c *Campaign) TimeRemaining() time.Duration {
 }
 
 func (c *Campaign) GetContributorsEmails() []string {
+
 	emails := make([]string, len(c.Contributors))
 	for i, contributor := range c.Contributors {
 		emails[i] = contributor.Email

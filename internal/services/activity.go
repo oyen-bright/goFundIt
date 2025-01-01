@@ -18,6 +18,7 @@ type activityService struct {
 	notificationService services.NotificationService
 	broadcaster         services.EventBroadcaster
 	logger              logger.Logger
+	runAsync            func(func())
 }
 
 func NewActivityService(
@@ -38,6 +39,7 @@ func NewActivityService(
 		campaignService:     campaignService,
 		broadcaster:         eventBroadcaster,
 		logger:              logger,
+		runAsync:            func(f func()) { go f() },
 	}
 }
 
@@ -66,18 +68,28 @@ func (s *activityService) CreateActivity(activity models.Activity, userHandle, c
 		return models.Activity{}, (errs.InternalServerError(err)).Log(s.logger)
 	}
 
+	s.runAsync(func() {
+		s.broadcaster.NewEvent(campaignID, websocket.EventTypeActivityCreated, createdActivity)
+		s.notificationService.NotifyActivityAddition(&activity, campaign)
+		if campaign.CreatedBy.Handle != createdActivity.CreatedBy.Handle {
+			s.notificationService.NotifyActivityApprovalRequest(&activity, campaign)
+		}
+		s.analyticsService.GetCurrentData().IncrementActivities()
+
+	})
+
 	// Broadcast update
-	go s.broadcaster.NewEvent(campaignID, websocket.EventTypeActivityCreated, createdActivity)
+	// go s.broadcaster.NewEvent(campaignID, websocket.EventTypeActivityCreated, createdActivity)
 
 	// Send notification
 
-	go s.notificationService.NotifyActivityAddition(&activity, campaign)
+	// go s.notificationService.NotifyActivityAddition(&activity, campaign)
 
-	if campaign.CreatedBy.Handle != createdActivity.CreatedBy.Handle {
-		go s.notificationService.NotifyActivityApprovalRequest(&activity, campaign)
-	}
+	// if campaign.CreatedBy.Handle != createdActivity.CreatedBy.Handle {
+	// 	go s.notificationService.NotifyActivityApprovalRequest(&activity, campaign)
+	// }
 
-	go s.analyticsService.GetCurrentData().IncrementActivities()
+	// go s.analyticsService.GetCurrentData().IncrementActivities()
 
 	return createdActivity, nil
 }
@@ -221,7 +233,10 @@ func (s *activityService) OptInContributor(campaignID, userEmail string, activit
 
 	// Broadcast update
 	activity.AddContributor(*contributor)
-	go s.broadcaster.NewEvent(campaignID, websocket.EventTypeActivityUpdated, activity)
+	// go s.broadcaster.NewEvent(campaignID, websocket.EventTypeActivityUpdated, activity)
+	s.runAsync(func() {
+		s.broadcaster.NewEvent(campaignID, websocket.EventTypeActivityUpdated, activity)
+	})
 
 	return nil
 }

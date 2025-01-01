@@ -2,7 +2,6 @@ package models
 
 import (
 	"database/sql"
-	"log"
 	"time"
 
 	"github.com/go-playground/validator/v10"
@@ -76,7 +75,6 @@ func (c *Contributor) HasFailed() bool {
 
 // Amount Methods
 func (c *Contributor) GetAmountTotal() float64 {
-	log.Println(c.Activities)
 	for _, activity := range c.Activities {
 		c.Amount += activity.Cost
 	}
