@@ -8,7 +8,12 @@ import (
 	"google.golang.org/api/option"
 )
 
-type Client struct {
+type FCM interface {
+	SendNotification(ctx context.Context, token string, notification NotificationData) error
+	SendMulticastNotification(ctx context.Context, tokens []string, notification NotificationData) error
+}
+
+type fCMClient struct {
 	client *messaging.Client
 }
 
@@ -19,7 +24,7 @@ type NotificationData struct {
 	ImageURL string            `json:"imageUrl,omitempty"`
 }
 
-func New(serviceJSON string) (*Client, error) {
+func New(serviceJSON string) (FCM, error) {
 	opt := option.WithCredentialsFile(serviceJSON)
 	app, err := firebase.NewApp(context.Background(), nil, opt)
 	if err != nil {
@@ -31,10 +36,10 @@ func New(serviceJSON string) (*Client, error) {
 		return nil, err
 	}
 
-	return &Client{client: client}, nil
+	return &fCMClient{client: client}, nil
 }
 
-func (f *Client) SendNotification(ctx context.Context, token string, notification NotificationData) error {
+func (f *fCMClient) SendNotification(ctx context.Context, token string, notification NotificationData) error {
 	message := &messaging.Message{
 		Token: token,
 		Notification: &messaging.Notification{
@@ -49,7 +54,7 @@ func (f *Client) SendNotification(ctx context.Context, token string, notificatio
 	return err
 }
 
-func (f *Client) SendMulticastNotification(ctx context.Context, tokens []string, notification NotificationData) error {
+func (f *fCMClient) SendMulticastNotification(ctx context.Context, tokens []string, notification NotificationData) error {
 	message := &messaging.MulticastMessage{
 		Tokens: tokens,
 		Notification: &messaging.Notification{
