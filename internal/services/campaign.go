@@ -23,6 +23,7 @@ type campaignService struct {
 	notificationService services.NotificationService
 	broadcaster         services.EventBroadcaster
 	logger              logger.Logger
+	runAsync            func(func())
 }
 
 func NewCampaignService(
@@ -40,6 +41,7 @@ func NewCampaignService(
 		notificationService: notificationService,
 		broadcaster:         broadcast,
 		logger:              logger,
+		runAsync:            func(f func()) { go f() },
 	}
 }
 
@@ -96,8 +98,12 @@ func (s *campaignService) CreateCampaign(campaign *models.Campaign, userHandle s
 		return models.Campaign{}, errs.InternalServerError(err).Log(s.logger)
 	}
 
-	go s.notificationService.NotifyCampaignCreation(campaign)
-	go s.analyticsService.GetCurrentData().IncrementCampaigns(campaign.TargetAmount)
+	// go s.notificationService.NotifyCampaignCreation(campaign)
+	// go s.analyticsService.GetCurrentData().IncrementCampaigns(campaign.TargetAmount)
+	s.runAsync(func() {
+		s.notificationService.NotifyCampaignCreation(campaign)
+		s.analyticsService.GetCurrentData().IncrementCampaigns(campaign.TargetAmount)
+	})
 
 	return *campaign, nil
 }
@@ -123,10 +129,16 @@ func (s *campaignService) UpdateCampaign(req dto.CampaignUpdateRequest, campaign
 	}
 
 	// Broadcast Event
-	go s.broadcaster.NewEvent(campaign.ID, websocket.EventTypeCampaignUpdated, campaign)
+	// go s.broadcaster.NewEvent(campaign.ID, websocket.EventTypeCampaignUpdated, campaign)
 
 	// Send notification
-	go s.notificationService.NotifyCampaignUpdate(campaign, "")
+	// go s.notificationService.NotifyCampaignUpdate(campaign, "")
+
+	s.runAsync(func() {
+		s.notificationService.NotifyCampaignUpdate(campaign, "")
+		s.broadcaster.NewEvent(campaign.ID, websocket.EventTypeCampaignUpdated, campaign)
+
+	})
 
 	return campaign, nil
 
@@ -234,7 +246,11 @@ func (s *campaignService) RecalculateTargetAmount(campaignID string) {
 	s.repo.Update(&campaign)
 
 	// Broadcast Event
-	go s.broadcaster.NewEvent(campaignID, websocket.EventTypeCampaignUpdated, campaign)
+	// go s.broadcaster.NewEvent(campaignID, websocket.EventTypeCampaignUpdated, campaign)
+
+	s.runAsync(func() {
+		s.broadcaster.NewEvent(campaignID, websocket.EventTypeCampaignUpdated, campaign)
+	})
 
 }
 

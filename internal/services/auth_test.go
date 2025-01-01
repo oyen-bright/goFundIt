@@ -1,445 +1,276 @@
-// // internal/services/auth_test.go
+package services
 
-package services_test
+import (
+	"errors"
+	"testing"
 
-// import (
-// 	"testing"
+	"github.com/oyen-bright/goFundIt/internal/models"
+	mock_interfaces "github.com/oyen-bright/goFundIt/internal/repositories/mocks"
+	mock_services "github.com/oyen-bright/goFundIt/internal/services/mocks"
+	mock_encryption "github.com/oyen-bright/goFundIt/pkg/encryption/mocks"
+	"github.com/oyen-bright/goFundIt/pkg/errs"
+	mock_jwt "github.com/oyen-bright/goFundIt/pkg/jwt/mocks"
+	mock_logger "github.com/oyen-bright/goFundIt/pkg/logger/mocks"
+	"gorm.io/gorm"
 
-// 	"github.com/oyen-bright/goFundIt/internal/models"
-// 	"github.com/oyen-bright/goFundIt/internal/repositories/mocks"
-// 	"github.com/oyen-bright/goFundIt/internal/services"
-// 	serviceMocks "github.com/oyen-bright/goFundIt/internal/services/mocks"
-// 	"github.com/oyen-bright/goFundIt/pkg/encryption"
-// 	"github.com/oyen-bright/goFundIt/pkg/jwt"
-// 	"github.com/oyen-bright/goFundIt/pkg/logger"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
+)
 
-// 	"github.com/stretchr/testify/assert"
-// 	"github.com/stretchr/testify/mock"
-// 	"gorm.io/gorm"
-// )
+func setupAuthTest(t *testing.T) (
+	*mock_interfaces.MockAuthRepository,
+	*mock_services.MockOTPService,
+	*mock_services.MockAnalyticsService,
+	*mock_encryption.MockEncryptor,
+	*mock_jwt.MockJwt,
+	*mock_logger.MockLogger,
+	*authService,
+) {
+	mockAuthRepo := mock_interfaces.NewMockAuthRepository(t)
+	mockOtpService := mock_services.NewMockOTPService(t)
+	mockAnalyticsService := mock_services.NewMockAnalyticsService(t)
+	mockEncryptor := mock_encryption.NewMockEncryptor(t)
+	mockJwt := mock_jwt.NewMockJwt(t)
+	mockLogger := mock_logger.NewMockLogger(t)
 
-// type serviceDependencies struct {
-// 	authRepo   *mocks.AuthRepository
-// 	otpService *serviceMocks.OTPService
-// 	encryptor  encryption.Encryptor
-// 	jwt        jwt.Jwt
-// 	logger     logger.Logger
-// }
+	service := &authService{
+		authRepo:         mockAuthRepo,
+		otpService:       mockOtpService,
+		analyticsService: mockAnalyticsService,
+		encryptor:        mockEncryptor,
+		jwt:              mockJwt,
+		logger:           mockLogger,
+	}
 
-// func setupTest(t *testing.T) serviceDependencies {
-// 	return serviceDependencies{
-// 		authRepo:   mocks.NewAuthRepository(t),
-// 		otpService: serviceMocks.NewOTPService(t),
-// 		encryptor:  *encryption.New([]string{"test-secret"}),
-// 		jwt:        jwt.New("test-secret"),
-// 		logger:     logger.New(),
-// 	}
-// }
+	return mockAuthRepo, mockOtpService, mockAnalyticsService, mockEncryptor, mockJwt, mockLogger, service
+}
 
-// func TestAuthService_RequestAuth(t *testing.T) {
-// 	deps := setupTest(t)
-// 	authService := services.NewAuthService(deps.authRepo, deps.otpService, deps.encryptor, deps.jwt, deps.logger)
+func TestRequestAuth(t *testing.T) {
+	_, mockOtpService, _, _, _, mockLogger, service := setupAuthTest(t)
 
-// 	tests := []struct {
-// 		name     string
-// 		email    string
-// 		userName string
-// 		mockFn   func()
-// 		wantErr  bool
-// 	}{
-// 		{
-// 			name:     "successful request",
-// 			email:    "test@example.com",
-// 			userName: "Test User",
-// 			mockFn: func() {
-// 				deps.otpService.On("RequestOTP", "test@example.com", "Test User").
-// 					Return(models.Otp{Email: "test@example.com"}, nil)
-// 			},
-// 			wantErr: false,
-// 		},
-// 		{
-// 			name:     "otp service error",
-// 			email:    "error@example.com",
-// 			userName: "Error User",
-// 			mockFn: func() {
-// 				deps.otpService.On("RequestOTP", "error@example.com", "Error User").
-// 					Return(models.Otp{}, assert.AnError)
-// 			},
-// 			wantErr: true,
-// 		},
-// 	}
+	tests := []struct {
+		name    string
+		email   string
+		userKey string
+		mock    func()
+		want    models.Otp
+		wantErr bool
+	}{
+		{
+			name:    "Success",
+			email:   "test@example.com",
+			userKey: "testUser",
+			mock: func() {
+				mockOtpService.EXPECT().
+					RequestOTP("test@example.com", "testUser").
+					Return(models.Otp{Email: "test@example.com"}, nil)
+			},
+			want:    models.Otp{Email: "test@example.com"},
+			wantErr: false,
+		},
+		{
+			name:    "OTP Service Error",
+			email:   "test1@example.com",
+			userKey: "testUser",
+			mock: func() {
+				mockOtpService.EXPECT().
+					RequestOTP("test1@example.com", "testUser").
+					Return(models.Otp{}, errs.InternalServerError(errors.New("error")))
 
-// 	for _, tt := range tests {
-// 		t.Run(tt.name, func(t *testing.T) {
-// 			tt.mockFn()
+				mockLogger.EXPECT().Error(mock.Anything, mock.Anything, mock.Anything).Return()
 
-// 			otp, err := authService.RequestAuth(tt.email, tt.userName)
-// 			if tt.wantErr {
-// 				assert.Error(t, err)
-// 				return
-// 			}
+			},
+			want:    models.Otp{},
+			wantErr: true,
+		},
+	}
 
-// 			assert.NoError(t, err)
-// 			assert.Equal(t, tt.email, otp.Email)
-// 			deps.otpService.AssertExpectations(t)
-// 		})
-// 	}
-// }
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tt.mock()
+			got, err := service.RequestAuth(tt.email, tt.userKey)
+			if tt.wantErr {
+				assert.Error(t, err)
+				return
+			}
+			assert.NoError(t, err)
+			assert.Equal(t, tt.want, got)
+		})
+	}
+}
 
-// func TestAuthService_VerifyAuth(t *testing.T) {
-// 	deps := setupTest(t)
-// 	authService := services.NewAuthService(deps.authRepo, deps.otpService, deps.encryptor, deps.jwt, deps.logger)
+func TestVerifyAuth(t *testing.T) {
+	mockAuthRepo, mockOtpService, mockAnalyticsService, mockEncryptor, mockJwt, mockLogger, service := setupAuthTest(t)
 
-// 	tests := []struct {
-// 		name      string
-// 		email     string
-// 		code      string
-// 		requestID string
-// 		mockFn    func()
-// 		wantErr   bool
-// 	}{
-// 		{
-// 			name:      "successful verification",
-// 			email:     "test@example.com",
-// 			code:      "123456",
-// 			requestID: "req-id",
-// 			mockFn: func() {
-// 				deps.otpService.On("VerifyOTP", "test@example.com", "123456", "req-id").
-// 					Return(models.Otp{Email: "test@example.com", Name: "Test User"}, nil)
-// 				deps.authRepo.On("FindByHandle", mock.AnythingOfType("string")).
-// 					Return(nil, gorm.ErrRecordNotFound)
-// 				deps.authRepo.On("Save", mock.AnythingOfType("*models.User")).
-// 					Return(nil)
-// 			},
-// 			wantErr: false,
-// 		},
-// 		{
-// 			name:      "invalid otp",
-// 			email:     "test@example.com",
-// 			code:      "invalid",
-// 			requestID: "req-id",
-// 			mockFn: func() {
-// 				deps.otpService.On("VerifyOTP", "test@example.com", "invalid", "req-id").
-// 					Return(models.Otp{}, assert.AnError)
-// 			},
-// 			wantErr: true,
-// 		},
-// 	}
+	tests := []struct {
+		name      string
+		email     string
+		handle    string
+		code      string
+		requestID string
+		mock      func()
+		want      string
+		wantErr   bool
+	}{
+		{
+			name:      "Success - New User",
+			email:     "new@example.com",
+			handle:    "XXXXXX",
+			code:      "123456",
+			requestID: "req123",
+			mock: func() {
+				mockOtpService.EXPECT().
+					VerifyOTP("new@example.com", "123456", "req123").
+					Return(models.Otp{Email: "new@example.com", Name: "New User"}, nil)
 
-// 	for _, tt := range tests {
-// 		t.Run(tt.name, func(t *testing.T) {
-// 			tt.mockFn()
+				mockAuthRepo.EXPECT().
+					FindByEmail("new@example.com").
+					Return(nil, errors.New("not found"))
 
-// 			token, err := authService.VerifyAuth(tt.email, tt.code, tt.requestID)
-// 			if tt.wantErr {
-// 				assert.Error(t, err)
-// 				return
-// 			}
+				mockAuthRepo.EXPECT().
+					FindByHandle(mock.AnythingOfType("string")).
+					Return(nil, errors.New("not found"))
 
-// 			assert.NoError(t, err)
-// 			assert.NotEmpty(t, token)
-// 			deps.otpService.AssertExpectations(t)
-// 			deps.authRepo.AssertExpectations(t)
-// 		})
-// 	}
-// }
+				mockAuthRepo.EXPECT().
+					Save(mock.AnythingOfType("*models.User")).
+					Return(nil)
 
-// func TestAuthService_CreateUser(t *testing.T) {
-// 	deps := setupTest(t)
-// 	authService := services.NewAuthService(deps.authRepo, deps.otpService, deps.encryptor, deps.jwt, deps.logger)
+				mockAnalyticsService.EXPECT().
+					GetCurrentData().
+					Return(&models.PlatformAnalytics{})
 
-// 	tests := []struct {
-// 		name    string
-// 		user    models.User
-// 		mockFn  func()
-// 		wantErr bool
-// 	}{
-// 		{
-// 			name: "successful create",
-// 			user: models.User{Email: "new@example.com", Name: "New User"},
-// 			mockFn: func() {
-// 				deps.authRepo.On("FindByHandle", mock.AnythingOfType("string")).
-// 					Return(nil, gorm.ErrRecordNotFound)
-// 				deps.authRepo.On("Save", mock.AnythingOfType("*models.User")).
-// 					Return(nil)
-// 			},
-// 			wantErr: false,
-// 		},
-// 		{
-// 			name: "user already exists",
-// 			user: models.User{Email: "existing@example.com", Name: "Existing User"},
-// 			mockFn: func() {
-// 				deps.authRepo.On("FindByHandle", mock.AnythingOfType("string")).
-// 					Return(&models.User{}, nil)
-// 			},
-// 			wantErr: true,
-// 		},
-// 	}
+				mockJwt.EXPECT().
+					GenerateToken(mock.AnythingOfType("uint"), "new@example.com", mock.AnythingOfType("string")).
+					Return("token", nil)
 
-// 	for _, tt := range tests {
-// 		t.Run(tt.name, func(t *testing.T) {
-// 			tt.mockFn()
+			},
+			wantErr: false,
+		},
+	}
 
-// 			err := authService.CreateUser(tt.user)
-// 			if tt.wantErr {
-// 				assert.Error(t, err)
-// 				return
-// 			}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
 
-// 			assert.NoError(t, err)
-// 			deps.authRepo.AssertExpectations(t)
-// 		})
-// 	}
-// }
+			tt.mock()
+			_, err := service.VerifyAuth(tt.email, tt.code, tt.requestID)
+			if tt.wantErr {
+				assert.Error(t, err)
+				return
+			}
+			assert.NoError(t, err)
 
-// func TestAuthService_GetUserByHandle(t *testing.T) {
-// 	deps := setupTest(t)
-// 	authService := services.NewAuthService(deps.authRepo, deps.otpService, deps.encryptor, deps.jwt, deps.logger)
+			// Ensure all expectations were met
+			mockOtpService.AssertExpectations(t)
+			mockAuthRepo.AssertExpectations(t)
+			mockEncryptor.AssertExpectations(t)
+			mockAnalyticsService.AssertExpectations(t)
+			mockJwt.AssertExpectations(t)
+			mockLogger.AssertExpectations(t)
+		})
+	}
+}
 
-// 	tests := []struct {
-// 		name    string
-// 		handle  string
-// 		mockFn  func()
-// 		want    models.User
-// 		wantErr bool
-// 	}{
-// 		{
-// 			name:   "user found",
-// 			handle: "test-handle",
-// 			mockFn: func() {
-// 				deps.authRepo.On("FindByHandle", "test-handle").
-// 					Return(&models.User{
-// 						Handle: "test-handle",
-// 						Email:  "test@example.com",
-// 						Name:   "Test User",
-// 					}, nil)
-// 			},
-// 			want: models.User{
-// 				Handle: "test-handle",
-// 				Email:  "test@example.com",
-// 				Name:   "Test User",
-// 			},
-// 			wantErr: false,
-// 		},
-// 		{
-// 			name:   "user not found",
-// 			handle: "non-existent",
-// 			mockFn: func() {
-// 				deps.authRepo.On("FindByHandle", "non-existent").
-// 					Return(nil, gorm.ErrRecordNotFound)
-// 			},
-// 			wantErr: true,
-// 		},
-// 	}
+func TestCreateUser(t *testing.T) {
+	mockAuthRepo, _, mockAnalyticsService, _, _, _, service := setupAuthTest(t)
 
-// 	for _, tt := range tests {
-// 		t.Run(tt.name, func(t *testing.T) {
-// 			tt.mockFn()
+	tests := []struct {
+		name    string
+		user    models.User
+		mock    func()
+		wantErr bool
+	}{
+		{
+			name: "Success - User Already Exists",
+			user: models.User{Email: "test@example.com", Handle: "test"},
+			mock: func() {
+				mockAuthRepo.EXPECT().
+					FindByHandle("test").
+					Return(nil, errors.New("not found"))
 
-// 			user, err := authService.GetUserByHandle(tt.handle)
-// 			if tt.wantErr {
-// 				assert.Error(t, err)
-// 				return
-// 			}
+				mockAuthRepo.EXPECT().
+					Save(mock.AnythingOfType("*models.User")).
+					Return(nil)
 
-// 			assert.NoError(t, err)
-// 			assert.Equal(t, tt.want, user)
-// 			deps.authRepo.AssertExpectations(t)
-// 		})
-// 	}
-// }
+				mockAnalyticsService.EXPECT().
+					GetCurrentData().
+					Return(&models.PlatformAnalytics{})
+			},
+			wantErr: false,
+		},
+		{
+			name: "Success new User",
+			user: models.User{Email: "test@example.com", Handle: "test"},
+			mock: func() {
+				mockAuthRepo.EXPECT().
+					FindByHandle("test").
+					Return(&models.User{}, gorm.ErrRecordNotFound)
+				mockAnalyticsService.EXPECT().
+					GetCurrentData().
+					Return(&models.PlatformAnalytics{})
+			},
+			wantErr: false,
+		},
+	}
 
-// func TestAuthService_DeleteUser(t *testing.T) {
-// 	deps := setupTest(t)
-// 	authService := services.NewAuthService(deps.authRepo, deps.otpService, deps.encryptor, deps.jwt, deps.logger)
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tt.mock()
+			err := service.CreateUser(tt.user)
+			if tt.wantErr {
+				assert.Error(t, err)
+				return
+			}
+			assert.NoError(t, err)
+		})
+	}
+}
 
-// 	tests := []struct {
-// 		name    string
-// 		handle  string
-// 		mockFn  func()
-// 		wantErr bool
-// 	}{
-// 		{
-// 			name:   "successful delete",
-// 			handle: "test-handle",
-// 			mockFn: func() {
-// 				deps.authRepo.On("FindByHandle", "test-handle").
-// 					Return(&models.User{Handle: "test-handle"}, nil)
-// 				deps.authRepo.On("Delete", mock.AnythingOfType("*models.User")).
-// 					Return(nil)
-// 			},
-// 			wantErr: false,
-// 		},
-// 		{
-// 			name:   "user not found",
-// 			handle: "non-existent",
-// 			mockFn: func() {
-// 				deps.authRepo.On("FindByHandle", "non-existent").
-// 					Return(nil, gorm.ErrRecordNotFound)
-// 			},
-// 			wantErr: true,
-// 		},
-// 	}
+func TestGetUserByHandle(t *testing.T) {
+	mockAuthRepo, _, _, _, _, mockLogger, service := setupAuthTest(t)
 
-// 	for _, tt := range tests {
-// 		t.Run(tt.name, func(t *testing.T) {
-// 			tt.mockFn()
+	tests := []struct {
+		name    string
+		handle  string
+		mock    func()
+		want    models.User
+		wantErr bool
+	}{
+		{
+			name:   "Success",
+			handle: "test",
+			mock: func() {
+				mockAuthRepo.EXPECT().
+					FindByHandle("test").
+					Return(&models.User{Handle: "test"}, nil)
+			},
+			want:    models.User{Handle: "test"},
+			wantErr: false,
+		},
+		{
+			name:   "User Not Found",
+			handle: "nonexistent",
+			mock: func() {
+				mockAuthRepo.EXPECT().
+					FindByHandle("nonexistent").
+					Return(nil, errors.New("not found"))
+				mockLogger.EXPECT().Error(mock.Anything, mock.Anything, mock.Anything).Return()
 
-// 			err := authService.DeleteUser(tt.handle)
-// 			if tt.wantErr {
-// 				assert.Error(t, err)
-// 				return
-// 			}
+			},
+			want:    models.User{},
+			wantErr: true,
+		},
+	}
 
-// 			assert.NoError(t, err)
-// 			deps.authRepo.AssertExpectations(t)
-// 		})
-// 	}
-// }
-
-// func TestAuthService_CreateUsers(t *testing.T) {
-// 	deps := setupTest(t)
-// 	authService := services.NewAuthService(deps.authRepo, deps.otpService, deps.encryptor, deps.jwt, deps.logger)
-
-// 	tests := []struct {
-// 		name    string
-// 		users   []models.User
-// 		mockFn  func()
-// 		wantErr bool
-// 	}{
-// 		{
-// 			name: "successful batch create",
-// 			users: []models.User{
-// 				{Email: "user1@example.com", Name: "User 1"},
-// 				{Email: "user2@example.com", Name: "User 2"},
-// 			},
-// 			mockFn: func() {
-// 				deps.authRepo.On("CreateMultiple", mock.AnythingOfType("[]models.User")).
-// 					Return([]models.User{
-// 						{Email: "user1@example.com", Name: "User 1"},
-// 						{Email: "user2@example.com", Name: "User 2"},
-// 					}, nil)
-// 			},
-// 			wantErr: false,
-// 		},
-// 		{
-// 			name: "creation error",
-// 			users: []models.User{
-// 				{Email: "error@example.com", Name: "Error User"},
-// 			},
-// 			mockFn: func() {
-// 				deps.authRepo.On("CreateMultiple", mock.AnythingOfType("[]models.User")).
-// 					Return(nil, assert.AnError)
-// 			},
-// 			wantErr: true,
-// 		},
-// 	}
-
-// 	for _, tt := range tests {
-// 		t.Run(tt.name, func(t *testing.T) {
-// 			tt.mockFn()
-
-// 			users, err := authService.CreateUsers(tt.users)
-// 			if tt.wantErr {
-// 				assert.Error(t, err)
-// 				return
-// 			}
-
-// 			assert.NoError(t, err)
-// 			assert.Len(t, users, len(tt.users))
-// 			deps.authRepo.AssertExpectations(t)
-// 		})
-// 	}
-// }
-
-// func TestAuthService_FindNonExistingUsers(t *testing.T) {
-// 	deps := setupTest(t)
-// 	authService := services.NewAuthService(deps.authRepo, deps.otpService, deps.encryptor, deps.jwt, deps.logger)
-
-// 	tests := []struct {
-// 		name    string
-// 		users   []models.User
-// 		mockFn  func()
-// 		want    []models.User
-// 		wantErr bool
-// 	}{
-// 		{
-// 			name: "find non-existing users",
-// 			users: []models.User{
-// 				{Email: "new1@example.com", Name: "New User 1"},
-// 				{Email: "new2@example.com", Name: "New User 2"},
-// 			},
-// 			mockFn: func() {
-// 				deps.authRepo.On("FindNonExistingUsers", mock.AnythingOfType("[]models.User")).
-// 					Return([]models.User{
-// 						{Email: "new1@example.com", Name: "New User 1"},
-// 					}, nil)
-// 			},
-// 			want: []models.User{
-// 				{Email: "new1@example.com", Name: "New User 1"},
-// 			},
-// 			wantErr: false,
-// 		},
-// 		{
-// 			name: "repository error",
-// 			users: []models.User{
-// 				{Email: "error@example.com", Name: "Error User"},
-// 			},
-// 			mockFn: func() {
-// 				deps.authRepo.On("FindNonExistingUsers", mock.AnythingOfType("[]models.User")).
-// 					Return(nil, assert.AnError)
-// 			},
-// 			wantErr: true,
-// 		},
-// 	}
-
-// 	for _, tt := range tests {
-// 		t.Run(tt.name, func(t *testing.T) {
-// 			tt.mockFn()
-
-// 			users, err := authService.FindNonExistingUsers(tt.users)
-// 			if tt.wantErr {
-// 				assert.Error(t, err)
-// 				return
-// 			}
-
-// 			assert.NoError(t, err)
-// 			assert.Equal(t, tt.want, users)
-// 			deps.authRepo.AssertExpectations(t)
-// 		})
-// 	}
-// }
-
-// func TestAuthService_GenerateToken(t *testing.T) {
-// 	deps := setupTest(t)
-// 	authService := services.NewAuthService(deps.authRepo, deps.otpService, deps.encryptor, deps.jwt, deps.logger)
-
-// 	tests := []struct {
-// 		name    string
-// 		user    models.User
-// 		wantErr bool
-// 	}{
-// 		{
-// 			name: "successful token generation",
-// 			user: models.User{
-// 				ID:     1,
-// 				Email:  "test@example.com",
-// 				Handle: "test-handle",
-// 			},
-// 			wantErr: false,
-// 		},
-// 	}
-
-// 	for _, tt := range tests {
-// 		t.Run(tt.name, func(t *testing.T) {
-// 			token, err := authService.GenerateToken(tt.user)
-// 			if tt.wantErr {
-// 				assert.Error(t, err)
-// 				return
-// 			}
-
-// 			assert.NoError(t, err)
-// 			assert.NotEmpty(t, token)
-// 		})
-// 	}
-// }
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tt.mock()
+			got, err := service.GetUserByHandle(tt.handle)
+			if tt.wantErr {
+				assert.Error(t, err)
+				return
+			}
+			assert.NoError(t, err)
+			assert.Equal(t, tt.want, got)
+		})
+	}
+}

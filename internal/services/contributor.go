@@ -18,6 +18,7 @@ type contributorService struct {
 	notificationService services.NotificationService
 	broadcaster         services.EventBroadcaster
 	logger              logger.Logger
+	runAsync            func(func())
 }
 
 func NewContributorService(
@@ -37,6 +38,7 @@ func NewContributorService(
 		notificationService: notificationService,
 		broadcaster:         broadcaster,
 		logger:              logger,
+		runAsync:            func(f func()) { go f() },
 	}
 }
 
@@ -78,11 +80,18 @@ func (s *contributorService) AddContributorToCampaign(contributor *models.Contri
 	}
 
 	// broadcast event
-	go s.broadcaster.NewEvent(campaign.ID, websocket.EventTypeContributionCreated, contributor)
-	// send notification
-	go s.notificationService.NotifyContributorAdded(contributor, campaign)
-	// calculates the new target amount and broadcast event
-	go s.campaignService.RecalculateTargetAmount(campaignId)
+	// go s.broadcaster.NewEvent(campaign.ID, websocket.EventTypeContributionCreated, contributor)
+	// // send notification
+	// go s.notificationService.NotifyContributorAdded(contributor, campaign)
+	// // calculates the new target amount and broadcast event
+	// go s.campaignService.RecalculateTargetAmount(campaignId)
+
+	//
+	s.runAsync(func() {
+		s.broadcaster.NewEvent(campaign.ID, websocket.EventTypeContributionCreated, contributor)
+		s.notificationService.NotifyContributorAdded(contributor, campaign)
+		s.campaignService.RecalculateTargetAmount(campaignId)
+	})
 
 	return nil
 }
@@ -97,9 +106,13 @@ func (s *contributorService) UpdateContributor(contributor *models.Contributor) 
 	}
 
 	// broadcast event
-	go s.broadcaster.NewEvent(contributor.CampaignID, websocket.EventTypeContributorUpdated, contributor)
+	// go s.broadcaster.NewEvent(contributor.CampaignID, websocket.EventTypeContributorUpdated, contributor)
 	// calculates the new target amount and broadcast event
-	go s.campaignService.RecalculateTargetAmount(contributor.CampaignID)
+	// go s.campaignService.RecalculateTargetAmount(contributor.CampaignID)
+	s.runAsync(func() {
+		s.broadcaster.NewEvent(contributor.CampaignID, websocket.EventTypeContributorUpdated, contributor)
+		s.campaignService.RecalculateTargetAmount(contributor.CampaignID)
+	})
 
 	return nil
 }
@@ -164,10 +177,16 @@ func (s *contributorService) RemoveContributorFromCampaign(contributorId uint, c
 	}
 
 	// broadcast event
-	go s.broadcaster.NewEvent(campaign.ID, websocket.EventTypeContributorDeleted, contributor)
+	// go s.broadcaster.NewEvent(campaign.ID, websocket.EventTypeContributorDeleted, contributor)
 
 	// calculates the new target amount and broadcast event
-	go s.campaignService.RecalculateTargetAmount(contributor.CampaignID)
+	// go s.campaignService.RecalculateTargetAmount(contributor.CampaignID)
+
+	s.runAsync(func() {
+		s.broadcaster.NewEvent(campaign.ID, websocket.EventTypeContributorDeleted, contributor)
+		s.campaignService.RecalculateTargetAmount(contributor.CampaignID)
+
+	})
 
 	return nil
 }
