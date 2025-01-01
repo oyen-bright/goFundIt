@@ -21,7 +21,7 @@ type emailNotifier struct {
 }
 
 type fcmNotifier struct {
-	client *fcm.Client
+	client fcm.FCM
 	logger logger.Logger
 }
 
@@ -33,7 +33,7 @@ type notificationService struct {
 }
 
 // notificationService implements interfaces.NotificationService.
-func NewNotificationService(emailer email.Emailer, authService services.AuthService, fcmClient *fcm.Client, logger logger.Logger) services.NotificationService {
+func NewNotificationService(emailer email.Emailer, authService services.AuthService, fcmClient fcm.FCM, logger logger.Logger) services.NotificationService {
 	return &notificationService{
 		emailer:     emailNotifier{client: emailer, logger: logger},
 		fcmNotifier: fcmNotifier{client: fcmClient, logger: logger},

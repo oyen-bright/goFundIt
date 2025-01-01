@@ -29,37 +29,6 @@ func NewCronService(campaignService interfaces.CampaignService, notificationServ
 	}
 }
 
-// // StartCronJobs implements interfaces.NotificationService.
-// func (n *cronService) StartCronJobs() error {
-
-// 	// Daily cleanup at midnight UTC
-// 	_, err := n.cron.AddFunc("0 0 0 * * *", func() {
-// 		n.cleanUpExpiredCampaign()
-// 	})
-// 	if err != nil {
-// 		return fmt.Errorf("failed to schedule cleanup job: %w", err)
-// 	}
-
-// 	// Check contribution reminders every 3 days
-// 	_, err = n.cron.AddFunc("0 0 */3 * *", func() {
-// 		n.checkContributionReminders()
-// 	})
-// 	if err != nil {
-// 		return fmt.Errorf("failed to schedule contribution reminders job: %w", err)
-// 	}
-
-// 	// Check campaign deadlines every day
-// 	_, err = n.cron.AddFunc("0 0 * * *", func() {
-// 		n.checkCampaignDeadline()
-// 	})
-// 	if err != nil {
-// 		return fmt.Errorf("failed to schedule campaign deadline reminders job: %w", err)
-// 	}
-
-// 	return nil
-
-// }
-
 func (n *cronService) StartCronJobs() error {
 	// Daily cleanup at midnight UTC
 	_, err := n.cron.AddFunc("0 0 * * *", func() {
