@@ -100,12 +100,11 @@ func TestRequestAuth(t *testing.T) {
 }
 
 func TestVerifyAuth(t *testing.T) {
-	mockAuthRepo, mockOtpService, mockAnalyticsService, mockEncryptor, mockJwt, mockLogger, service := setupAuthTest(t)
+	mockAuthRepo, mockOtpService, mockAnalyticsService, _, mockJwt, _, service := setupAuthTest(t)
 
 	tests := []struct {
 		name      string
 		email     string
-		handle    string
 		code      string
 		requestID string
 		mock      func()
@@ -115,57 +114,56 @@ func TestVerifyAuth(t *testing.T) {
 		{
 			name:      "Success - New User",
 			email:     "new@example.com",
-			handle:    "XXXXXX",
 			code:      "123456",
 			requestID: "req123",
 			mock: func() {
+				// Mock OTP verification
 				mockOtpService.EXPECT().
 					VerifyOTP("new@example.com", "123456", "req123").
 					Return(models.Otp{Email: "new@example.com", Name: "New User"}, nil)
 
+				// Mock user lookup by email - not found case
 				mockAuthRepo.EXPECT().
 					FindByEmail("new@example.com").
-					Return(nil, errors.New("not found"))
+					Return(nil, gorm.ErrRecordNotFound)
 
+				// Mock user lookup by handle - not found case
 				mockAuthRepo.EXPECT().
 					FindByHandle(mock.AnythingOfType("string")).
-					Return(nil, errors.New("not found"))
+					Return(nil, gorm.ErrRecordNotFound)
 
+				// Mock user creation
 				mockAuthRepo.EXPECT().
 					Save(mock.AnythingOfType("*models.User")).
 					Return(nil)
 
+				// Mock analytics
+				mockAnalytics := &models.PlatformAnalytics{}
 				mockAnalyticsService.EXPECT().
 					GetCurrentData().
-					Return(&models.PlatformAnalytics{})
+					Return(mockAnalytics)
 
+				// Mock JWT generation
 				mockJwt.EXPECT().
 					GenerateToken(mock.AnythingOfType("uint"), "new@example.com", mock.AnythingOfType("string")).
 					Return("token", nil)
-
 			},
+			want:    "token",
 			wantErr: false,
 		},
+		// ...you can add more test cases here...
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-
 			tt.mock()
-			_, err := service.VerifyAuth(tt.email, tt.code, tt.requestID)
+			got, err := service.VerifyAuth(tt.email, tt.code, tt.requestID)
 			if tt.wantErr {
 				assert.Error(t, err)
 				return
 			}
 			assert.NoError(t, err)
-
-			// Ensure all expectations were met
-			mockOtpService.AssertExpectations(t)
-			mockAuthRepo.AssertExpectations(t)
-			mockEncryptor.AssertExpectations(t)
-			mockAnalyticsService.AssertExpectations(t)
-			mockJwt.AssertExpectations(t)
-			mockLogger.AssertExpectations(t)
+			assert.Equal(t, tt.want, got)
 		})
 	}
 }

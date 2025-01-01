@@ -1,6 +1,7 @@
 package models
 
 import (
+	"log"
 	"math/rand"
 	"strings"
 	"time"
@@ -41,10 +42,10 @@ func (o *Otp) IsExpired() bool {
 }
 
 func (o *Otp) ToJSON() map[string]interface{} {
+	//TODO:remove
+	log.Println(o.Code)
 	return map[string]interface{}{
-		"request_id": o.RequestId,
-		//TODO:remove
-		"code": o.Code,
+		"requestId": o.RequestId,
 	}
 }
 
