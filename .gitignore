@@ -29,4 +29,5 @@ go.work.sum
 # Config files with sensitive data
 config/config.*.yaml
 !config/config.example.yaml
+config/*.json
 
