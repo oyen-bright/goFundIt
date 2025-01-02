@@ -2,6 +2,8 @@ package main
 
 import (
 	"log"
+	"os"
+	"path/filepath"
 	"time"
 
 	"github.com/getsentry/sentry-go"
@@ -31,12 +33,12 @@ func initialize() (*config.AppConfig, *gorm.DB) {
 	if err != nil {
 		panic(err)
 	}
+	log.Println(cfg.FirebaseServiceAccountFilePath)
 	db, err := database.Init(cfg.DBConfig)
 	if err != nil {
 		panic(err)
 	}
 	db.Debug()
-	log.Println(cfg.EncryptionKeys)
 	return cfg, db
 }
 
@@ -70,8 +72,16 @@ func main() {
 		panic(err)
 	}
 
-	//TODO: Initialize FCM Client
-	fcmClient, err := fcm.New("")
+	currentDir, err := os.Getwd()
+	currentDir = filepath.Join(currentDir, "..", "..")
+	if err != nil {
+		panic(err)
+	}
+	log.Println(currentDir)
+	fcmClient, err := fcm.New(filepath.Join(currentDir, cfg.FirebaseServiceAccountFilePath))
+	if err != nil {
+		panic(err)
+	}
 
 	// Initialize Core Services
 
@@ -107,7 +117,7 @@ func main() {
 	otpService := services.NewOTPService(otpRepo, emailer, logger)
 	authService := services.NewAuthService(authRepo, otpService, encryptor, analyticsService, jwtService, logger)
 	notificationService := services.NewNotificationService(emailer, authService, fcmClient, logger)
-	campaignService := services.NewCampaignService(campaignRepo, authService, analyticsService, notificationService, eventBroadcaster, logger)
+	campaignService := services.NewCampaignService(campaignRepo, authService, analyticsService, notificationService, encryptor, eventBroadcaster, logger)
 	contributorService := services.NewContributorService(contributorRepo, campaignService, analyticsService, authService, notificationService, eventBroadcaster, logger)
 	activityService := services.NewActivityService(activityRepo, authService, campaignService, eventBroadcaster, analyticsService, notificationService, logger)
 	commentService := services.NewCommentService(commentRepo, authService, activityService, notificationService, eventBroadcaster, logger)

@@ -183,17 +183,17 @@ func (_c *MockContributorService_GetContributorsByCampaignID_Call) RunAndReturn(
 	return _c
 }
 
-// RemoveContributorFromCampaign provides a mock function with given fields: contributorId, campaignId, userHandle
-func (_m *MockContributorService) RemoveContributorFromCampaign(contributorId uint, campaignId string, userHandle string) error {
-	ret := _m.Called(contributorId, campaignId, userHandle)
+// RemoveContributorFromCampaign provides a mock function with given fields: contributorId, campaignId, userHandle, key
+func (_m *MockContributorService) RemoveContributorFromCampaign(contributorId uint, campaignId string, userHandle string, key string) error {
+	ret := _m.Called(contributorId, campaignId, userHandle, key)
 
 	if len(ret) == 0 {
 		panic("no return value specified for RemoveContributorFromCampaign")
 	}
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(uint, string, string) error); ok {
-		r0 = rf(contributorId, campaignId, userHandle)
+	if rf, ok := ret.Get(0).(func(uint, string, string, string) error); ok {
+		r0 = rf(contributorId, campaignId, userHandle, key)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -210,13 +210,14 @@ type MockContributorService_RemoveContributorFromCampaign_Call struct {
 //   - contributorId uint
 //   - campaignId string
 //   - userHandle string
-func (_e *MockContributorService_Expecter) RemoveContributorFromCampaign(contributorId interface{}, campaignId interface{}, userHandle interface{}) *MockContributorService_RemoveContributorFromCampaign_Call {
-	return &MockContributorService_RemoveContributorFromCampaign_Call{Call: _e.mock.On("RemoveContributorFromCampaign", contributorId, campaignId, userHandle)}
+//   - key string
+func (_e *MockContributorService_Expecter) RemoveContributorFromCampaign(contributorId interface{}, campaignId interface{}, userHandle interface{}, key interface{}) *MockContributorService_RemoveContributorFromCampaign_Call {
+	return &MockContributorService_RemoveContributorFromCampaign_Call{Call: _e.mock.On("RemoveContributorFromCampaign", contributorId, campaignId, userHandle, key)}
 }
 
-func (_c *MockContributorService_RemoveContributorFromCampaign_Call) Run(run func(contributorId uint, campaignId string, userHandle string)) *MockContributorService_RemoveContributorFromCampaign_Call {
+func (_c *MockContributorService_RemoveContributorFromCampaign_Call) Run(run func(contributorId uint, campaignId string, userHandle string, key string)) *MockContributorService_RemoveContributorFromCampaign_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(uint), args[1].(string), args[2].(string))
+		run(args[0].(uint), args[1].(string), args[2].(string), args[3].(string))
 	})
 	return _c
 }
@@ -226,7 +227,7 @@ func (_c *MockContributorService_RemoveContributorFromCampaign_Call) Return(_a0 
 	return _c
 }
 
-func (_c *MockContributorService_RemoveContributorFromCampaign_Call) RunAndReturn(run func(uint, string, string) error) *MockContributorService_RemoveContributorFromCampaign_Call {
+func (_c *MockContributorService_RemoveContributorFromCampaign_Call) RunAndReturn(run func(uint, string, string, string) error) *MockContributorService_RemoveContributorFromCampaign_Call {
 	_c.Call.Return(run)
 	return _c
 }

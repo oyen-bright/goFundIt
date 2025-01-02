@@ -75,25 +75,6 @@ func TestEmail_PrepareBody(t *testing.T) {
 	assert.Equal(t, expected, result)
 }
 
-//TODO:
-// func TestEmailTemplate_PrepareBody(t *testing.T) {
-// 	template := EmailTemplate{
-// 		To:      []string{"test@example.com"},
-// 		Name:    "Test User",
-// 		Subject: "Test Subject",
-// 		Path:    "testdata/test_template.html",
-// 		Data: map[string]interface{}{
-// 			"Name": "John Doe",
-// 		},
-// 	}
-
-// 	// Test with invalid template path
-// 	_, _, err := template.PrepareBody()
-// 	assert.Error(t, err)
-
-// 	// TODO: Add test with valid template file
-// }
-
 func TestNew(t *testing.T) {
 	cfg := EmailConfig{
 		From:           "test@example.com",

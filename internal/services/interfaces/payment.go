@@ -6,11 +6,11 @@ import (
 )
 
 type PaymentService interface {
-	InitializePayment(contributorID uint) (*models.Payment, error)
-	InitializeManualPayment(contributorID uint, reference, userEmail string) (*models.Payment, error)
+	InitializePayment(contributorID uint, key string) (*models.Payment, error)
+	InitializeManualPayment(contributorID uint, reference, userEmail, key string) (*models.Payment, error)
 
 	VerifyPayment(reference string) error
-	VerifyManualPayment(reference, userHandle string) error
+	VerifyManualPayment(reference, userHandle, key string) error
 
 	DeletePayment(payment models.Payment) error
 

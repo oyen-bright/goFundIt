@@ -20,9 +20,9 @@ func (_m *MockActivityService) EXPECT() *MockActivityService_Expecter {
 	return &MockActivityService_Expecter{mock: &_m.Mock}
 }
 
-// ApproveActivity provides a mock function with given fields: activityID, userHandle
-func (_m *MockActivityService) ApproveActivity(activityID uint, userHandle string) (*models.Activity, error) {
-	ret := _m.Called(activityID, userHandle)
+// ApproveActivity provides a mock function with given fields: activityID, userHandle, key
+func (_m *MockActivityService) ApproveActivity(activityID uint, userHandle string, key string) (*models.Activity, error) {
+	ret := _m.Called(activityID, userHandle, key)
 
 	if len(ret) == 0 {
 		panic("no return value specified for ApproveActivity")
@@ -30,19 +30,19 @@ func (_m *MockActivityService) ApproveActivity(activityID uint, userHandle strin
 
 	var r0 *models.Activity
 	var r1 error
-	if rf, ok := ret.Get(0).(func(uint, string) (*models.Activity, error)); ok {
-		return rf(activityID, userHandle)
+	if rf, ok := ret.Get(0).(func(uint, string, string) (*models.Activity, error)); ok {
+		return rf(activityID, userHandle, key)
 	}
-	if rf, ok := ret.Get(0).(func(uint, string) *models.Activity); ok {
-		r0 = rf(activityID, userHandle)
+	if rf, ok := ret.Get(0).(func(uint, string, string) *models.Activity); ok {
+		r0 = rf(activityID, userHandle, key)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*models.Activity)
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(uint, string) error); ok {
-		r1 = rf(activityID, userHandle)
+	if rf, ok := ret.Get(1).(func(uint, string, string) error); ok {
+		r1 = rf(activityID, userHandle, key)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -58,13 +58,14 @@ type MockActivityService_ApproveActivity_Call struct {
 // ApproveActivity is a helper method to define mock.On call
 //   - activityID uint
 //   - userHandle string
-func (_e *MockActivityService_Expecter) ApproveActivity(activityID interface{}, userHandle interface{}) *MockActivityService_ApproveActivity_Call {
-	return &MockActivityService_ApproveActivity_Call{Call: _e.mock.On("ApproveActivity", activityID, userHandle)}
+//   - key string
+func (_e *MockActivityService_Expecter) ApproveActivity(activityID interface{}, userHandle interface{}, key interface{}) *MockActivityService_ApproveActivity_Call {
+	return &MockActivityService_ApproveActivity_Call{Call: _e.mock.On("ApproveActivity", activityID, userHandle, key)}
 }
 
-func (_c *MockActivityService_ApproveActivity_Call) Run(run func(activityID uint, userHandle string)) *MockActivityService_ApproveActivity_Call {
+func (_c *MockActivityService_ApproveActivity_Call) Run(run func(activityID uint, userHandle string, key string)) *MockActivityService_ApproveActivity_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(uint), args[1].(string))
+		run(args[0].(uint), args[1].(string), args[2].(string))
 	})
 	return _c
 }
@@ -74,14 +75,14 @@ func (_c *MockActivityService_ApproveActivity_Call) Return(_a0 *models.Activity,
 	return _c
 }
 
-func (_c *MockActivityService_ApproveActivity_Call) RunAndReturn(run func(uint, string) (*models.Activity, error)) *MockActivityService_ApproveActivity_Call {
+func (_c *MockActivityService_ApproveActivity_Call) RunAndReturn(run func(uint, string, string) (*models.Activity, error)) *MockActivityService_ApproveActivity_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
-// CreateActivity provides a mock function with given fields: activity, userHandle, campaignId
-func (_m *MockActivityService) CreateActivity(activity models.Activity, userHandle string, campaignId string) (models.Activity, error) {
-	ret := _m.Called(activity, userHandle, campaignId)
+// CreateActivity provides a mock function with given fields: activity, userHandle, campaignId, key
+func (_m *MockActivityService) CreateActivity(activity models.Activity, userHandle string, campaignId string, key string) (models.Activity, error) {
+	ret := _m.Called(activity, userHandle, campaignId, key)
 
 	if len(ret) == 0 {
 		panic("no return value specified for CreateActivity")
@@ -89,17 +90,17 @@ func (_m *MockActivityService) CreateActivity(activity models.Activity, userHand
 
 	var r0 models.Activity
 	var r1 error
-	if rf, ok := ret.Get(0).(func(models.Activity, string, string) (models.Activity, error)); ok {
-		return rf(activity, userHandle, campaignId)
+	if rf, ok := ret.Get(0).(func(models.Activity, string, string, string) (models.Activity, error)); ok {
+		return rf(activity, userHandle, campaignId, key)
 	}
-	if rf, ok := ret.Get(0).(func(models.Activity, string, string) models.Activity); ok {
-		r0 = rf(activity, userHandle, campaignId)
+	if rf, ok := ret.Get(0).(func(models.Activity, string, string, string) models.Activity); ok {
+		r0 = rf(activity, userHandle, campaignId, key)
 	} else {
 		r0 = ret.Get(0).(models.Activity)
 	}
 
-	if rf, ok := ret.Get(1).(func(models.Activity, string, string) error); ok {
-		r1 = rf(activity, userHandle, campaignId)
+	if rf, ok := ret.Get(1).(func(models.Activity, string, string, string) error); ok {
+		r1 = rf(activity, userHandle, campaignId, key)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -116,13 +117,14 @@ type MockActivityService_CreateActivity_Call struct {
 //   - activity models.Activity
 //   - userHandle string
 //   - campaignId string
-func (_e *MockActivityService_Expecter) CreateActivity(activity interface{}, userHandle interface{}, campaignId interface{}) *MockActivityService_CreateActivity_Call {
-	return &MockActivityService_CreateActivity_Call{Call: _e.mock.On("CreateActivity", activity, userHandle, campaignId)}
+//   - key string
+func (_e *MockActivityService_Expecter) CreateActivity(activity interface{}, userHandle interface{}, campaignId interface{}, key interface{}) *MockActivityService_CreateActivity_Call {
+	return &MockActivityService_CreateActivity_Call{Call: _e.mock.On("CreateActivity", activity, userHandle, campaignId, key)}
 }
 
-func (_c *MockActivityService_CreateActivity_Call) Run(run func(activity models.Activity, userHandle string, campaignId string)) *MockActivityService_CreateActivity_Call {
+func (_c *MockActivityService_CreateActivity_Call) Run(run func(activity models.Activity, userHandle string, campaignId string, key string)) *MockActivityService_CreateActivity_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(models.Activity), args[1].(string), args[2].(string))
+		run(args[0].(models.Activity), args[1].(string), args[2].(string), args[3].(string))
 	})
 	return _c
 }
@@ -132,7 +134,7 @@ func (_c *MockActivityService_CreateActivity_Call) Return(_a0 models.Activity, _
 	return _c
 }
 
-func (_c *MockActivityService_CreateActivity_Call) RunAndReturn(run func(models.Activity, string, string) (models.Activity, error)) *MockActivityService_CreateActivity_Call {
+func (_c *MockActivityService_CreateActivity_Call) RunAndReturn(run func(models.Activity, string, string, string) (models.Activity, error)) *MockActivityService_CreateActivity_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -300,9 +302,9 @@ func (_c *MockActivityService_GetActivityByID_Call) RunAndReturn(run func(uint, 
 	return _c
 }
 
-// GetParticipants provides a mock function with given fields: activityID, campaignId
-func (_m *MockActivityService) GetParticipants(activityID uint, campaignId string) ([]models.Contributor, error) {
-	ret := _m.Called(activityID, campaignId)
+// GetParticipants provides a mock function with given fields: activityID, campaignId, key
+func (_m *MockActivityService) GetParticipants(activityID uint, campaignId string, key string) ([]models.Contributor, error) {
+	ret := _m.Called(activityID, campaignId, key)
 
 	if len(ret) == 0 {
 		panic("no return value specified for GetParticipants")
@@ -310,19 +312,19 @@ func (_m *MockActivityService) GetParticipants(activityID uint, campaignId strin
 
 	var r0 []models.Contributor
 	var r1 error
-	if rf, ok := ret.Get(0).(func(uint, string) ([]models.Contributor, error)); ok {
-		return rf(activityID, campaignId)
+	if rf, ok := ret.Get(0).(func(uint, string, string) ([]models.Contributor, error)); ok {
+		return rf(activityID, campaignId, key)
 	}
-	if rf, ok := ret.Get(0).(func(uint, string) []models.Contributor); ok {
-		r0 = rf(activityID, campaignId)
+	if rf, ok := ret.Get(0).(func(uint, string, string) []models.Contributor); ok {
+		r0 = rf(activityID, campaignId, key)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]models.Contributor)
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(uint, string) error); ok {
-		r1 = rf(activityID, campaignId)
+	if rf, ok := ret.Get(1).(func(uint, string, string) error); ok {
+		r1 = rf(activityID, campaignId, key)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -338,13 +340,14 @@ type MockActivityService_GetParticipants_Call struct {
 // GetParticipants is a helper method to define mock.On call
 //   - activityID uint
 //   - campaignId string
-func (_e *MockActivityService_Expecter) GetParticipants(activityID interface{}, campaignId interface{}) *MockActivityService_GetParticipants_Call {
-	return &MockActivityService_GetParticipants_Call{Call: _e.mock.On("GetParticipants", activityID, campaignId)}
+//   - key string
+func (_e *MockActivityService_Expecter) GetParticipants(activityID interface{}, campaignId interface{}, key interface{}) *MockActivityService_GetParticipants_Call {
+	return &MockActivityService_GetParticipants_Call{Call: _e.mock.On("GetParticipants", activityID, campaignId, key)}
 }
 
-func (_c *MockActivityService_GetParticipants_Call) Run(run func(activityID uint, campaignId string)) *MockActivityService_GetParticipants_Call {
+func (_c *MockActivityService_GetParticipants_Call) Run(run func(activityID uint, campaignId string, key string)) *MockActivityService_GetParticipants_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(uint), args[1].(string))
+		run(args[0].(uint), args[1].(string), args[2].(string))
 	})
 	return _c
 }
@@ -354,22 +357,22 @@ func (_c *MockActivityService_GetParticipants_Call) Return(_a0 []models.Contribu
 	return _c
 }
 
-func (_c *MockActivityService_GetParticipants_Call) RunAndReturn(run func(uint, string) ([]models.Contributor, error)) *MockActivityService_GetParticipants_Call {
+func (_c *MockActivityService_GetParticipants_Call) RunAndReturn(run func(uint, string, string) ([]models.Contributor, error)) *MockActivityService_GetParticipants_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
-// OptInContributor provides a mock function with given fields: campaignID, userEmail, activityID, contributorID
-func (_m *MockActivityService) OptInContributor(campaignID string, userEmail string, activityID uint, contributorID uint) error {
-	ret := _m.Called(campaignID, userEmail, activityID, contributorID)
+// OptInContributor provides a mock function with given fields: campaignID, userEmail, key, activityID, contributorID
+func (_m *MockActivityService) OptInContributor(campaignID string, userEmail string, key string, activityID uint, contributorID uint) error {
+	ret := _m.Called(campaignID, userEmail, key, activityID, contributorID)
 
 	if len(ret) == 0 {
 		panic("no return value specified for OptInContributor")
 	}
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(string, string, uint, uint) error); ok {
-		r0 = rf(campaignID, userEmail, activityID, contributorID)
+	if rf, ok := ret.Get(0).(func(string, string, string, uint, uint) error); ok {
+		r0 = rf(campaignID, userEmail, key, activityID, contributorID)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -385,15 +388,16 @@ type MockActivityService_OptInContributor_Call struct {
 // OptInContributor is a helper method to define mock.On call
 //   - campaignID string
 //   - userEmail string
+//   - key string
 //   - activityID uint
 //   - contributorID uint
-func (_e *MockActivityService_Expecter) OptInContributor(campaignID interface{}, userEmail interface{}, activityID interface{}, contributorID interface{}) *MockActivityService_OptInContributor_Call {
-	return &MockActivityService_OptInContributor_Call{Call: _e.mock.On("OptInContributor", campaignID, userEmail, activityID, contributorID)}
+func (_e *MockActivityService_Expecter) OptInContributor(campaignID interface{}, userEmail interface{}, key interface{}, activityID interface{}, contributorID interface{}) *MockActivityService_OptInContributor_Call {
+	return &MockActivityService_OptInContributor_Call{Call: _e.mock.On("OptInContributor", campaignID, userEmail, key, activityID, contributorID)}
 }
 
-func (_c *MockActivityService_OptInContributor_Call) Run(run func(campaignID string, userEmail string, activityID uint, contributorID uint)) *MockActivityService_OptInContributor_Call {
+func (_c *MockActivityService_OptInContributor_Call) Run(run func(campaignID string, userEmail string, key string, activityID uint, contributorID uint)) *MockActivityService_OptInContributor_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(string), args[1].(string), args[2].(uint), args[3].(uint))
+		run(args[0].(string), args[1].(string), args[2].(string), args[3].(uint), args[4].(uint))
 	})
 	return _c
 }
@@ -403,22 +407,22 @@ func (_c *MockActivityService_OptInContributor_Call) Return(_a0 error) *MockActi
 	return _c
 }
 
-func (_c *MockActivityService_OptInContributor_Call) RunAndReturn(run func(string, string, uint, uint) error) *MockActivityService_OptInContributor_Call {
+func (_c *MockActivityService_OptInContributor_Call) RunAndReturn(run func(string, string, string, uint, uint) error) *MockActivityService_OptInContributor_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
-// OptOutContributor provides a mock function with given fields: campaignID, userEmail, activityID, contributorID
-func (_m *MockActivityService) OptOutContributor(campaignID string, userEmail string, activityID uint, contributorID uint) error {
-	ret := _m.Called(campaignID, userEmail, activityID, contributorID)
+// OptOutContributor provides a mock function with given fields: campaignID, userEmail, key, activityID, contributorID
+func (_m *MockActivityService) OptOutContributor(campaignID string, userEmail string, key string, activityID uint, contributorID uint) error {
+	ret := _m.Called(campaignID, userEmail, key, activityID, contributorID)
 
 	if len(ret) == 0 {
 		panic("no return value specified for OptOutContributor")
 	}
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(string, string, uint, uint) error); ok {
-		r0 = rf(campaignID, userEmail, activityID, contributorID)
+	if rf, ok := ret.Get(0).(func(string, string, string, uint, uint) error); ok {
+		r0 = rf(campaignID, userEmail, key, activityID, contributorID)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -434,15 +438,16 @@ type MockActivityService_OptOutContributor_Call struct {
 // OptOutContributor is a helper method to define mock.On call
 //   - campaignID string
 //   - userEmail string
+//   - key string
 //   - activityID uint
 //   - contributorID uint
-func (_e *MockActivityService_Expecter) OptOutContributor(campaignID interface{}, userEmail interface{}, activityID interface{}, contributorID interface{}) *MockActivityService_OptOutContributor_Call {
-	return &MockActivityService_OptOutContributor_Call{Call: _e.mock.On("OptOutContributor", campaignID, userEmail, activityID, contributorID)}
+func (_e *MockActivityService_Expecter) OptOutContributor(campaignID interface{}, userEmail interface{}, key interface{}, activityID interface{}, contributorID interface{}) *MockActivityService_OptOutContributor_Call {
+	return &MockActivityService_OptOutContributor_Call{Call: _e.mock.On("OptOutContributor", campaignID, userEmail, key, activityID, contributorID)}
 }
 
-func (_c *MockActivityService_OptOutContributor_Call) Run(run func(campaignID string, userEmail string, activityID uint, contributorID uint)) *MockActivityService_OptOutContributor_Call {
+func (_c *MockActivityService_OptOutContributor_Call) Run(run func(campaignID string, userEmail string, key string, activityID uint, contributorID uint)) *MockActivityService_OptOutContributor_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(string), args[1].(string), args[2].(uint), args[3].(uint))
+		run(args[0].(string), args[1].(string), args[2].(string), args[3].(uint), args[4].(uint))
 	})
 	return _c
 }
@@ -452,7 +457,7 @@ func (_c *MockActivityService_OptOutContributor_Call) Return(_a0 error) *MockAct
 	return _c
 }
 
-func (_c *MockActivityService_OptOutContributor_Call) RunAndReturn(run func(string, string, uint, uint) error) *MockActivityService_OptOutContributor_Call {
+func (_c *MockActivityService_OptOutContributor_Call) RunAndReturn(run func(string, string, string, uint, uint) error) *MockActivityService_OptOutContributor_Call {
 	_c.Call.Return(run)
 	return _c
 }

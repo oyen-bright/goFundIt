@@ -20,9 +20,9 @@ func (_m *MockSuggestionService) EXPECT() *MockSuggestionService_Expecter {
 	return &MockSuggestionService_Expecter{mock: &_m.Mock}
 }
 
-// GetActivitySuggestions provides a mock function with given fields: campaignID
-func (_m *MockSuggestionService) GetActivitySuggestions(campaignID string) ([]models.ActivitySuggestion, error) {
-	ret := _m.Called(campaignID)
+// GetActivitySuggestions provides a mock function with given fields: campaignID, key
+func (_m *MockSuggestionService) GetActivitySuggestions(campaignID string, key string) ([]models.ActivitySuggestion, error) {
+	ret := _m.Called(campaignID, key)
 
 	if len(ret) == 0 {
 		panic("no return value specified for GetActivitySuggestions")
@@ -30,19 +30,19 @@ func (_m *MockSuggestionService) GetActivitySuggestions(campaignID string) ([]mo
 
 	var r0 []models.ActivitySuggestion
 	var r1 error
-	if rf, ok := ret.Get(0).(func(string) ([]models.ActivitySuggestion, error)); ok {
-		return rf(campaignID)
+	if rf, ok := ret.Get(0).(func(string, string) ([]models.ActivitySuggestion, error)); ok {
+		return rf(campaignID, key)
 	}
-	if rf, ok := ret.Get(0).(func(string) []models.ActivitySuggestion); ok {
-		r0 = rf(campaignID)
+	if rf, ok := ret.Get(0).(func(string, string) []models.ActivitySuggestion); ok {
+		r0 = rf(campaignID, key)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]models.ActivitySuggestion)
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(string) error); ok {
-		r1 = rf(campaignID)
+	if rf, ok := ret.Get(1).(func(string, string) error); ok {
+		r1 = rf(campaignID, key)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -57,13 +57,14 @@ type MockSuggestionService_GetActivitySuggestions_Call struct {
 
 // GetActivitySuggestions is a helper method to define mock.On call
 //   - campaignID string
-func (_e *MockSuggestionService_Expecter) GetActivitySuggestions(campaignID interface{}) *MockSuggestionService_GetActivitySuggestions_Call {
-	return &MockSuggestionService_GetActivitySuggestions_Call{Call: _e.mock.On("GetActivitySuggestions", campaignID)}
+//   - key string
+func (_e *MockSuggestionService_Expecter) GetActivitySuggestions(campaignID interface{}, key interface{}) *MockSuggestionService_GetActivitySuggestions_Call {
+	return &MockSuggestionService_GetActivitySuggestions_Call{Call: _e.mock.On("GetActivitySuggestions", campaignID, key)}
 }
 
-func (_c *MockSuggestionService_GetActivitySuggestions_Call) Run(run func(campaignID string)) *MockSuggestionService_GetActivitySuggestions_Call {
+func (_c *MockSuggestionService_GetActivitySuggestions_Call) Run(run func(campaignID string, key string)) *MockSuggestionService_GetActivitySuggestions_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(string))
+		run(args[0].(string), args[1].(string))
 	})
 	return _c
 }
@@ -73,7 +74,7 @@ func (_c *MockSuggestionService_GetActivitySuggestions_Call) Return(_a0 []models
 	return _c
 }
 
-func (_c *MockSuggestionService_GetActivitySuggestions_Call) RunAndReturn(run func(string) ([]models.ActivitySuggestion, error)) *MockSuggestionService_GetActivitySuggestions_Call {
+func (_c *MockSuggestionService_GetActivitySuggestions_Call) RunAndReturn(run func(string, string) ([]models.ActivitySuggestion, error)) *MockSuggestionService_GetActivitySuggestions_Call {
 	_c.Call.Return(run)
 	return _c
 }

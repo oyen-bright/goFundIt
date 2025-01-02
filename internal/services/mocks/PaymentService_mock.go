@@ -259,9 +259,9 @@ func (_c *MockPaymentService_GetPaymentsByContributor_Call) RunAndReturn(run fun
 	return _c
 }
 
-// InitializeManualPayment provides a mock function with given fields: contributorID, reference, userEmail
-func (_m *MockPaymentService) InitializeManualPayment(contributorID uint, reference string, userEmail string) (*models.Payment, error) {
-	ret := _m.Called(contributorID, reference, userEmail)
+// InitializeManualPayment provides a mock function with given fields: contributorID, reference, userEmail, key
+func (_m *MockPaymentService) InitializeManualPayment(contributorID uint, reference string, userEmail string, key string) (*models.Payment, error) {
+	ret := _m.Called(contributorID, reference, userEmail, key)
 
 	if len(ret) == 0 {
 		panic("no return value specified for InitializeManualPayment")
@@ -269,19 +269,19 @@ func (_m *MockPaymentService) InitializeManualPayment(contributorID uint, refere
 
 	var r0 *models.Payment
 	var r1 error
-	if rf, ok := ret.Get(0).(func(uint, string, string) (*models.Payment, error)); ok {
-		return rf(contributorID, reference, userEmail)
+	if rf, ok := ret.Get(0).(func(uint, string, string, string) (*models.Payment, error)); ok {
+		return rf(contributorID, reference, userEmail, key)
 	}
-	if rf, ok := ret.Get(0).(func(uint, string, string) *models.Payment); ok {
-		r0 = rf(contributorID, reference, userEmail)
+	if rf, ok := ret.Get(0).(func(uint, string, string, string) *models.Payment); ok {
+		r0 = rf(contributorID, reference, userEmail, key)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*models.Payment)
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(uint, string, string) error); ok {
-		r1 = rf(contributorID, reference, userEmail)
+	if rf, ok := ret.Get(1).(func(uint, string, string, string) error); ok {
+		r1 = rf(contributorID, reference, userEmail, key)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -298,13 +298,14 @@ type MockPaymentService_InitializeManualPayment_Call struct {
 //   - contributorID uint
 //   - reference string
 //   - userEmail string
-func (_e *MockPaymentService_Expecter) InitializeManualPayment(contributorID interface{}, reference interface{}, userEmail interface{}) *MockPaymentService_InitializeManualPayment_Call {
-	return &MockPaymentService_InitializeManualPayment_Call{Call: _e.mock.On("InitializeManualPayment", contributorID, reference, userEmail)}
+//   - key string
+func (_e *MockPaymentService_Expecter) InitializeManualPayment(contributorID interface{}, reference interface{}, userEmail interface{}, key interface{}) *MockPaymentService_InitializeManualPayment_Call {
+	return &MockPaymentService_InitializeManualPayment_Call{Call: _e.mock.On("InitializeManualPayment", contributorID, reference, userEmail, key)}
 }
 
-func (_c *MockPaymentService_InitializeManualPayment_Call) Run(run func(contributorID uint, reference string, userEmail string)) *MockPaymentService_InitializeManualPayment_Call {
+func (_c *MockPaymentService_InitializeManualPayment_Call) Run(run func(contributorID uint, reference string, userEmail string, key string)) *MockPaymentService_InitializeManualPayment_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(uint), args[1].(string), args[2].(string))
+		run(args[0].(uint), args[1].(string), args[2].(string), args[3].(string))
 	})
 	return _c
 }
@@ -314,14 +315,14 @@ func (_c *MockPaymentService_InitializeManualPayment_Call) Return(_a0 *models.Pa
 	return _c
 }
 
-func (_c *MockPaymentService_InitializeManualPayment_Call) RunAndReturn(run func(uint, string, string) (*models.Payment, error)) *MockPaymentService_InitializeManualPayment_Call {
+func (_c *MockPaymentService_InitializeManualPayment_Call) RunAndReturn(run func(uint, string, string, string) (*models.Payment, error)) *MockPaymentService_InitializeManualPayment_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
-// InitializePayment provides a mock function with given fields: contributorID
-func (_m *MockPaymentService) InitializePayment(contributorID uint) (*models.Payment, error) {
-	ret := _m.Called(contributorID)
+// InitializePayment provides a mock function with given fields: contributorID, key
+func (_m *MockPaymentService) InitializePayment(contributorID uint, key string) (*models.Payment, error) {
+	ret := _m.Called(contributorID, key)
 
 	if len(ret) == 0 {
 		panic("no return value specified for InitializePayment")
@@ -329,19 +330,19 @@ func (_m *MockPaymentService) InitializePayment(contributorID uint) (*models.Pay
 
 	var r0 *models.Payment
 	var r1 error
-	if rf, ok := ret.Get(0).(func(uint) (*models.Payment, error)); ok {
-		return rf(contributorID)
+	if rf, ok := ret.Get(0).(func(uint, string) (*models.Payment, error)); ok {
+		return rf(contributorID, key)
 	}
-	if rf, ok := ret.Get(0).(func(uint) *models.Payment); ok {
-		r0 = rf(contributorID)
+	if rf, ok := ret.Get(0).(func(uint, string) *models.Payment); ok {
+		r0 = rf(contributorID, key)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*models.Payment)
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(uint) error); ok {
-		r1 = rf(contributorID)
+	if rf, ok := ret.Get(1).(func(uint, string) error); ok {
+		r1 = rf(contributorID, key)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -356,13 +357,14 @@ type MockPaymentService_InitializePayment_Call struct {
 
 // InitializePayment is a helper method to define mock.On call
 //   - contributorID uint
-func (_e *MockPaymentService_Expecter) InitializePayment(contributorID interface{}) *MockPaymentService_InitializePayment_Call {
-	return &MockPaymentService_InitializePayment_Call{Call: _e.mock.On("InitializePayment", contributorID)}
+//   - key string
+func (_e *MockPaymentService_Expecter) InitializePayment(contributorID interface{}, key interface{}) *MockPaymentService_InitializePayment_Call {
+	return &MockPaymentService_InitializePayment_Call{Call: _e.mock.On("InitializePayment", contributorID, key)}
 }
 
-func (_c *MockPaymentService_InitializePayment_Call) Run(run func(contributorID uint)) *MockPaymentService_InitializePayment_Call {
+func (_c *MockPaymentService_InitializePayment_Call) Run(run func(contributorID uint, key string)) *MockPaymentService_InitializePayment_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(uint))
+		run(args[0].(uint), args[1].(string))
 	})
 	return _c
 }
@@ -372,7 +374,7 @@ func (_c *MockPaymentService_InitializePayment_Call) Return(_a0 *models.Payment,
 	return _c
 }
 
-func (_c *MockPaymentService_InitializePayment_Call) RunAndReturn(run func(uint) (*models.Payment, error)) *MockPaymentService_InitializePayment_Call {
+func (_c *MockPaymentService_InitializePayment_Call) RunAndReturn(run func(uint, string) (*models.Payment, error)) *MockPaymentService_InitializePayment_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -410,17 +412,17 @@ func (_c *MockPaymentService_ProcessPaystackWebhook_Call) RunAndReturn(run func(
 	return _c
 }
 
-// VerifyManualPayment provides a mock function with given fields: reference, userHandle
-func (_m *MockPaymentService) VerifyManualPayment(reference string, userHandle string) error {
-	ret := _m.Called(reference, userHandle)
+// VerifyManualPayment provides a mock function with given fields: reference, userHandle, key
+func (_m *MockPaymentService) VerifyManualPayment(reference string, userHandle string, key string) error {
+	ret := _m.Called(reference, userHandle, key)
 
 	if len(ret) == 0 {
 		panic("no return value specified for VerifyManualPayment")
 	}
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(string, string) error); ok {
-		r0 = rf(reference, userHandle)
+	if rf, ok := ret.Get(0).(func(string, string, string) error); ok {
+		r0 = rf(reference, userHandle, key)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -436,13 +438,14 @@ type MockPaymentService_VerifyManualPayment_Call struct {
 // VerifyManualPayment is a helper method to define mock.On call
 //   - reference string
 //   - userHandle string
-func (_e *MockPaymentService_Expecter) VerifyManualPayment(reference interface{}, userHandle interface{}) *MockPaymentService_VerifyManualPayment_Call {
-	return &MockPaymentService_VerifyManualPayment_Call{Call: _e.mock.On("VerifyManualPayment", reference, userHandle)}
+//   - key string
+func (_e *MockPaymentService_Expecter) VerifyManualPayment(reference interface{}, userHandle interface{}, key interface{}) *MockPaymentService_VerifyManualPayment_Call {
+	return &MockPaymentService_VerifyManualPayment_Call{Call: _e.mock.On("VerifyManualPayment", reference, userHandle, key)}
 }
 
-func (_c *MockPaymentService_VerifyManualPayment_Call) Run(run func(reference string, userHandle string)) *MockPaymentService_VerifyManualPayment_Call {
+func (_c *MockPaymentService_VerifyManualPayment_Call) Run(run func(reference string, userHandle string, key string)) *MockPaymentService_VerifyManualPayment_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(string), args[1].(string))
+		run(args[0].(string), args[1].(string), args[2].(string))
 	})
 	return _c
 }
@@ -452,7 +455,7 @@ func (_c *MockPaymentService_VerifyManualPayment_Call) Return(_a0 error) *MockPa
 	return _c
 }
 
-func (_c *MockPaymentService_VerifyManualPayment_Call) RunAndReturn(run func(string, string) error) *MockPaymentService_VerifyManualPayment_Call {
+func (_c *MockPaymentService_VerifyManualPayment_Call) RunAndReturn(run func(string, string, string) error) *MockPaymentService_VerifyManualPayment_Call {
 	_c.Call.Return(run)
 	return _c
 }

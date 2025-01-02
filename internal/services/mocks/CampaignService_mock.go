@@ -183,9 +183,9 @@ func (_c *MockCampaignService_GetActiveCampaigns_Call) RunAndReturn(run func() (
 	return _c
 }
 
-// GetCampaignByID provides a mock function with given fields: id
-func (_m *MockCampaignService) GetCampaignByID(id string) (*models.Campaign, error) {
-	ret := _m.Called(id)
+// GetCampaignByID provides a mock function with given fields: id, key
+func (_m *MockCampaignService) GetCampaignByID(id string, key string) (*models.Campaign, error) {
+	ret := _m.Called(id, key)
 
 	if len(ret) == 0 {
 		panic("no return value specified for GetCampaignByID")
@@ -193,19 +193,19 @@ func (_m *MockCampaignService) GetCampaignByID(id string) (*models.Campaign, err
 
 	var r0 *models.Campaign
 	var r1 error
-	if rf, ok := ret.Get(0).(func(string) (*models.Campaign, error)); ok {
-		return rf(id)
+	if rf, ok := ret.Get(0).(func(string, string) (*models.Campaign, error)); ok {
+		return rf(id, key)
 	}
-	if rf, ok := ret.Get(0).(func(string) *models.Campaign); ok {
-		r0 = rf(id)
+	if rf, ok := ret.Get(0).(func(string, string) *models.Campaign); ok {
+		r0 = rf(id, key)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*models.Campaign)
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(string) error); ok {
-		r1 = rf(id)
+	if rf, ok := ret.Get(1).(func(string, string) error); ok {
+		r1 = rf(id, key)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -220,13 +220,14 @@ type MockCampaignService_GetCampaignByID_Call struct {
 
 // GetCampaignByID is a helper method to define mock.On call
 //   - id string
-func (_e *MockCampaignService_Expecter) GetCampaignByID(id interface{}) *MockCampaignService_GetCampaignByID_Call {
-	return &MockCampaignService_GetCampaignByID_Call{Call: _e.mock.On("GetCampaignByID", id)}
+//   - key string
+func (_e *MockCampaignService_Expecter) GetCampaignByID(id interface{}, key interface{}) *MockCampaignService_GetCampaignByID_Call {
+	return &MockCampaignService_GetCampaignByID_Call{Call: _e.mock.On("GetCampaignByID", id, key)}
 }
 
-func (_c *MockCampaignService_GetCampaignByID_Call) Run(run func(id string)) *MockCampaignService_GetCampaignByID_Call {
+func (_c *MockCampaignService_GetCampaignByID_Call) Run(run func(id string, key string)) *MockCampaignService_GetCampaignByID_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(string))
+		run(args[0].(string), args[1].(string))
 	})
 	return _c
 }
@@ -236,7 +237,7 @@ func (_c *MockCampaignService_GetCampaignByID_Call) Return(_a0 *models.Campaign,
 	return _c
 }
 
-func (_c *MockCampaignService_GetCampaignByID_Call) RunAndReturn(run func(string) (*models.Campaign, error)) *MockCampaignService_GetCampaignByID_Call {
+func (_c *MockCampaignService_GetCampaignByID_Call) RunAndReturn(run func(string, string) (*models.Campaign, error)) *MockCampaignService_GetCampaignByID_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -504,9 +505,9 @@ func (_c *MockCampaignService_RecalculateTargetAmount_Call) RunAndReturn(run fun
 	return _c
 }
 
-// UpdateCampaign provides a mock function with given fields: data, campaignID, userHandle
-func (_m *MockCampaignService) UpdateCampaign(data dto.CampaignUpdateRequest, campaignID string, userHandle string) (*models.Campaign, error) {
-	ret := _m.Called(data, campaignID, userHandle)
+// UpdateCampaign provides a mock function with given fields: data, campaignID, key, userHandle
+func (_m *MockCampaignService) UpdateCampaign(data dto.CampaignUpdateRequest, campaignID string, key string, userHandle string) (*models.Campaign, error) {
+	ret := _m.Called(data, campaignID, key, userHandle)
 
 	if len(ret) == 0 {
 		panic("no return value specified for UpdateCampaign")
@@ -514,19 +515,19 @@ func (_m *MockCampaignService) UpdateCampaign(data dto.CampaignUpdateRequest, ca
 
 	var r0 *models.Campaign
 	var r1 error
-	if rf, ok := ret.Get(0).(func(dto.CampaignUpdateRequest, string, string) (*models.Campaign, error)); ok {
-		return rf(data, campaignID, userHandle)
+	if rf, ok := ret.Get(0).(func(dto.CampaignUpdateRequest, string, string, string) (*models.Campaign, error)); ok {
+		return rf(data, campaignID, key, userHandle)
 	}
-	if rf, ok := ret.Get(0).(func(dto.CampaignUpdateRequest, string, string) *models.Campaign); ok {
-		r0 = rf(data, campaignID, userHandle)
+	if rf, ok := ret.Get(0).(func(dto.CampaignUpdateRequest, string, string, string) *models.Campaign); ok {
+		r0 = rf(data, campaignID, key, userHandle)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*models.Campaign)
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(dto.CampaignUpdateRequest, string, string) error); ok {
-		r1 = rf(data, campaignID, userHandle)
+	if rf, ok := ret.Get(1).(func(dto.CampaignUpdateRequest, string, string, string) error); ok {
+		r1 = rf(data, campaignID, key, userHandle)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -542,14 +543,15 @@ type MockCampaignService_UpdateCampaign_Call struct {
 // UpdateCampaign is a helper method to define mock.On call
 //   - data dto.CampaignUpdateRequest
 //   - campaignID string
+//   - key string
 //   - userHandle string
-func (_e *MockCampaignService_Expecter) UpdateCampaign(data interface{}, campaignID interface{}, userHandle interface{}) *MockCampaignService_UpdateCampaign_Call {
-	return &MockCampaignService_UpdateCampaign_Call{Call: _e.mock.On("UpdateCampaign", data, campaignID, userHandle)}
+func (_e *MockCampaignService_Expecter) UpdateCampaign(data interface{}, campaignID interface{}, key interface{}, userHandle interface{}) *MockCampaignService_UpdateCampaign_Call {
+	return &MockCampaignService_UpdateCampaign_Call{Call: _e.mock.On("UpdateCampaign", data, campaignID, key, userHandle)}
 }
 
-func (_c *MockCampaignService_UpdateCampaign_Call) Run(run func(data dto.CampaignUpdateRequest, campaignID string, userHandle string)) *MockCampaignService_UpdateCampaign_Call {
+func (_c *MockCampaignService_UpdateCampaign_Call) Run(run func(data dto.CampaignUpdateRequest, campaignID string, key string, userHandle string)) *MockCampaignService_UpdateCampaign_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(dto.CampaignUpdateRequest), args[1].(string), args[2].(string))
+		run(args[0].(dto.CampaignUpdateRequest), args[1].(string), args[2].(string), args[3].(string))
 	})
 	return _c
 }
@@ -559,7 +561,7 @@ func (_c *MockCampaignService_UpdateCampaign_Call) Return(_a0 *models.Campaign, 
 	return _c
 }
 
-func (_c *MockCampaignService_UpdateCampaign_Call) RunAndReturn(run func(dto.CampaignUpdateRequest, string, string) (*models.Campaign, error)) *MockCampaignService_UpdateCampaign_Call {
+func (_c *MockCampaignService_UpdateCampaign_Call) RunAndReturn(run func(dto.CampaignUpdateRequest, string, string, string) (*models.Campaign, error)) *MockCampaignService_UpdateCampaign_Call {
 	_c.Call.Return(run)
 	return _c
 }
