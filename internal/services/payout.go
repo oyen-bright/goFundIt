@@ -2,7 +2,6 @@ package services
 
 import (
 	"fmt"
-	"log"
 
 	dto "github.com/oyen-bright/goFundIt/internal/api/dto/payout"
 	"github.com/oyen-bright/goFundIt/internal/models"
@@ -92,7 +91,6 @@ func (p *payoutService) InitializePayout(campaignID string, userHandle string, r
 	// Validate the campaign and user
 	campaign, err := p.campaignService.GetCampaignByIDWithContributors(campaignID)
 
-	log.Print(campaign, err)
 	if err != nil {
 		return nil, err
 	}

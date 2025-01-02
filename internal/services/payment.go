@@ -58,7 +58,7 @@ func NewPaymentService(
 	}
 }
 
-func (p *paymentService) InitializeManualPayment(contributorID uint, reference string, userEmail string) (*models.Payment, error) {
+func (p *paymentService) InitializeManualPayment(contributorID uint, reference, userEmail, key string) (*models.Payment, error) {
 
 	// validate contributor
 	contributor, err := p.contributorService.GetContributorByID(contributorID)
@@ -70,14 +70,13 @@ func (p *paymentService) InitializeManualPayment(contributorID uint, reference s
 		return nil, errs.BadRequest("Contributor has already paid", nil)
 	}
 	// create a new manual payment
-	// TODO: payment ref
 	payment := models.NewManualPayment(contributor.ID, contributor.CampaignID, contributor.GetAmountTotal(), nil)
 
 	// validate user
 	//TODO: should campaign creator also provide payment reference 🤔
 	if contributor.Email != userEmail {
 
-		if campaign, err := p.campaignService.GetCampaignByID(contributor.CampaignID); err != nil {
+		if campaign, err := p.campaignService.GetCampaignByID(contributor.CampaignID, key); err != nil {
 			return nil, err
 		} else if campaign.CreatedBy.Email != userEmail {
 			return nil, errs.BadRequest("You are not authorized to perform this action", nil)
@@ -164,7 +163,7 @@ func (p *paymentService) VerifyPayment(reference string) error {
 }
 
 // VerifyManualPayment implements interfaces.PaymentService.
-func (p *paymentService) VerifyManualPayment(reference string, userHandle string) error {
+func (p *paymentService) VerifyManualPayment(reference, userHandle, key string) error {
 
 	// Validate reference
 	payment, err := p.repo.GetByReference(reference)
@@ -176,7 +175,7 @@ func (p *paymentService) VerifyManualPayment(reference string, userHandle string
 	}
 
 	// Validate user and campaign creator
-	campaign, err := p.campaignService.GetCampaignByID(payment.CampaignID)
+	campaign, err := p.campaignService.GetCampaignByID(payment.CampaignID, key)
 	if err != nil {
 		return err
 	}
@@ -209,7 +208,7 @@ func (p *paymentService) VerifyManualPayment(reference string, userHandle string
 }
 
 // InitializePayment implements interfaces.PaymentService.
-func (p *paymentService) InitializePayment(contributorID uint) (*models.Payment, error) {
+func (p *paymentService) InitializePayment(contributorID uint, key string) (*models.Payment, error) {
 
 	// Validate the contributor
 	contributor, err := p.contributorService.GetContributorByID(contributorID)
@@ -221,7 +220,7 @@ func (p *paymentService) InitializePayment(contributorID uint) (*models.Payment,
 	}
 
 	// validate campaign
-	campaign, err := p.campaignService.GetCampaignByID(contributor.CampaignID)
+	campaign, err := p.campaignService.GetCampaignByID(contributor.CampaignID, key)
 
 	if err != nil {
 		return nil, err

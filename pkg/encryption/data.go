@@ -21,13 +21,6 @@ func (e Data) GenerateEncryptionKey(secretKey string) (string, error) {
 		return "", errors.New("invalid secret key")
 	}
 
-	//TODO:should not force key to be email make dynamic
-	// Validate the email
-	// isValidEmail := validator.ValidateEmail(e.Key)
-	// if !isValidEmail {
-	// 	return "", errors.New("invalid email")
-	// }
-
 	// Generate a SHA-256 hash of the email and secret key
 	hash := sha256.Sum256([]byte(strings.ToLower(e.Key) + secretKey))
 

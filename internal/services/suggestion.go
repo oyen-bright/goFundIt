@@ -28,10 +28,10 @@ func NewSuggestionService(
 }
 
 // GenerateActivitySuggestions generates activity suggestions based on the campaign description.
-func (s *suggestionService) GetActivitySuggestions(campaignID string) ([]models.ActivitySuggestion, error) {
+func (s *suggestionService) GetActivitySuggestions(campaignID, key string) ([]models.ActivitySuggestion, error) {
 	//Validate campaign
 
-	campaign, err := s.campaignService.GetCampaignByID(campaignID)
+	campaign, err := s.campaignService.GetCampaignByID(campaignID, key)
 	if err != nil {
 		return nil, err
 	}

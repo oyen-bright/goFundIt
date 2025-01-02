@@ -7,10 +7,10 @@ import (
 
 type CampaignService interface {
 	CreateCampaign(campaign *models.Campaign, userHandle string) (models.Campaign, error)
-	UpdateCampaign(data dto.CampaignUpdateRequest, campaignID string, userHandle string) (*models.Campaign, error)
+	UpdateCampaign(data dto.CampaignUpdateRequest, campaignID, key, userHandle string) (*models.Campaign, error)
 	DeleteCampaign(campaignID string) error
 
-	GetCampaignByID(id string) (*models.Campaign, error)
+	GetCampaignByID(id, key string) (*models.Campaign, error)
 	GetCampaignByIDWithContributors(id string) (*models.Campaign, error)
 	GetCampaignByIDWithAllRelatedData(id string) (*models.Campaign, error)
 

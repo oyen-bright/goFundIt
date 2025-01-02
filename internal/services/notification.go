@@ -3,7 +3,6 @@ package services
 import (
 	"context"
 	"fmt"
-	"log"
 
 	"github.com/oyen-bright/goFundIt/internal/models"
 	services "github.com/oyen-bright/goFundIt/internal/services/interfaces"
@@ -116,8 +115,6 @@ func (n *notificationService) NotifyCampaignCreation(campaign *models.Campaign) 
 	contributorsNameEmail := getContributorNameEmail(campaign.Contributors)
 	activitiesTitleSubtitle := getActivityTitleSubtitle(campaign.Activities)
 
-	log.Println(contributorsNameEmail)
-	log.Println(campaign)
 	//Send email to campaign creator
 	campaignCreatedCampaignCreator := emailTemplates.CampaignCreated([]string{campaign.CreatedBy.Email}, campaign.Title, campaign.Description, campaign.ID, campaign.Key, contributorsNameEmail, activitiesTitleSubtitle)
 	err := n.emailer.send(campaignCreatedCampaignCreator)

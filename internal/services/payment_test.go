@@ -33,6 +33,7 @@ func TestInitializeManualPayment(t *testing.T) {
 		reference     string
 		userEmail     string
 		setupMocks    func()
+		campaignKey   string
 		expectedError bool
 	}{
 		{
@@ -106,7 +107,7 @@ func TestInitializeManualPayment(t *testing.T) {
 			}
 
 			// Execute test
-			payment, err := svc.InitializeManualPayment(tt.contributorID, tt.reference, tt.userEmail)
+			payment, err := svc.InitializeManualPayment(tt.contributorID, tt.reference, tt.userEmail, tt.campaignKey)
 
 			if tt.expectedError {
 				assert.Error(t, err)
@@ -219,12 +220,14 @@ func TestVerifyManualPayment(t *testing.T) {
 		reference     string
 		userHandle    string
 		setupMocks    func()
+		campaignKey   string
 		expectedError bool
 	}{
 		{
-			name:       "Successful manual payment verification",
-			reference:  "ref123",
-			userHandle: "user1",
+			name:        "Successful manual payment verification",
+			reference:   "ref123",
+			campaignKey: "campaign1",
+			userHandle:  "user1",
 			setupMocks: func() {
 
 				fiatCurrency := models.NGN
@@ -296,7 +299,7 @@ func TestVerifyManualPayment(t *testing.T) {
 				runAsync:            func(f func()) { f() },
 			}
 
-			err := svc.VerifyManualPayment(tt.reference, tt.userHandle)
+			err := svc.VerifyManualPayment(tt.reference, tt.userHandle, tt.campaignKey)
 
 			if tt.expectedError {
 				assert.Error(t, err)
@@ -328,6 +331,7 @@ func TestInitializePayment(t *testing.T) {
 	tests := []struct {
 		name          string
 		contributorID uint
+		campaignKey   string
 		setupMocks    func()
 		expectedError bool
 	}{
@@ -381,7 +385,7 @@ func TestInitializePayment(t *testing.T) {
 				mockLogger,
 			)
 
-			payment, err := svc.InitializePayment(tt.contributorID)
+			payment, err := svc.InitializePayment(tt.contributorID, tt.campaignKey)
 
 			if tt.expectedError {
 				assert.Error(t, err)

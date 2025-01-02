@@ -31,6 +31,7 @@ func TestGetActivitySuggestions(t *testing.T) {
 
 	t.Run("Success", func(t *testing.T) {
 		campaignID := "test-id"
+		campaignKey := "test-key"
 		campaign := &models.Campaign{
 			ID:          campaignID,
 			Title:       "Test Campaign",
@@ -41,11 +42,11 @@ func TestGetActivitySuggestions(t *testing.T) {
 			{Title: "Suggestion 2"},
 		}
 
-		mockCampaign.EXPECT().GetCampaignByID(campaignID).Return(campaign, nil)
+		mockCampaign.EXPECT().GetCampaignByID(campaignID, campaignKey).Return(campaign, nil)
 		mockAI.EXPECT().GenerateActivitySuggestions(campaign.Title+" "+campaign.Description).
 			Return(expectedSuggestions, nil)
 
-		suggestions, err := service.GetActivitySuggestions(campaignID)
+		suggestions, err := service.GetActivitySuggestions(campaignID, campaignKey)
 
 		assert.NoError(t, err)
 		assert.Equal(t, expectedSuggestions, suggestions)
@@ -59,9 +60,10 @@ func TestGetActivitySuggestions(t *testing.T) {
 		mockLogger.ExpectedCalls = nil
 		mockLogger.Calls = nil
 		campaignID := "invalid-id"
-		mockCampaign.EXPECT().GetCampaignByID(campaignID).Return(nil, errors.New("campaign not found"))
+		campaignKey := "test-key"
+		mockCampaign.EXPECT().GetCampaignByID(campaignID, campaignKey).Return(nil, errors.New("campaign not found"))
 
-		suggestions, err := service.GetActivitySuggestions(campaignID)
+		suggestions, err := service.GetActivitySuggestions(campaignID, campaignKey)
 
 		assert.Error(t, err)
 		assert.Nil(t, suggestions)
@@ -75,18 +77,19 @@ func TestGetActivitySuggestions(t *testing.T) {
 		mockLogger.ExpectedCalls = nil
 		mockLogger.Calls = nil
 		campaignID := "test-id"
+		campaignKey := "test-key"
 		campaign := &models.Campaign{
 			ID:          campaignID,
 			Title:       "Test Campaign",
 			Description: "Test Description",
 		}
 
-		mockCampaign.EXPECT().GetCampaignByID(campaignID).Return(campaign, nil)
+		mockCampaign.EXPECT().GetCampaignByID(campaignID, campaignKey).Return(campaign, nil)
 		mockAI.EXPECT().GenerateActivitySuggestions(campaign.Title+" "+campaign.Description).
 			Return(nil, errors.New("ai service error"))
 		mockLogger.EXPECT().Error(mock.Anything, mock.Anything, mock.Anything)
 
-		suggestions, err := service.GetActivitySuggestions(campaignID)
+		suggestions, err := service.GetActivitySuggestions(campaignID, campaignKey)
 
 		assert.Error(t, err)
 		assert.Nil(t, suggestions)
