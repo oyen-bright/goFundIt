@@ -6,7 +6,7 @@ import (
 
 type ActivityRepository interface {
 	Create(activity *models.Activity) (models.Activity, error)
-	//TODO: is save redundant
+	//TODO: is save redundant ?
 	Save(activity *models.Activity) error
 	Update(activity *models.Activity) error
 	Delete(activity *models.Activity) error

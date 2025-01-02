@@ -12,18 +12,19 @@ import (
 )
 
 type AppConfig struct {
-	Environment          environment.Environment
-	EmailProvider        providers.EmailProvider
-	ServerPort           string `mapstructure:"port"`
-	GeminiKey            string `mapstructure:"gemini_key"`
-	PaystackKey          string `mapstructure:"paystack_key"`
-	EmailConfig          email.EmailConfig
-	CloudinaryURL        string `mapstructure:"cloudinary_url"`
-	AnalyticsReportEmail string `mapstructure:"analytics_report_email"`
-	DBConfig             database.Config
-	EncryptionKeys       []string `mapstructure:"encryption_keys"` // Changed from string to []string
-	XAPIKey              string   `mapstructure:"x_api_key"`
-	JWTSecret            string   `mapstructure:"jwt_secret"`
+	Environment                    environment.Environment
+	EmailProvider                  providers.EmailProvider
+	FirebaseServiceAccountFilePath string `mapstructure:"firebase_service_account_file_path"`
+	ServerPort                     string `mapstructure:"port"`
+	GeminiKey                      string `mapstructure:"gemini_key"`
+	PaystackKey                    string `mapstructure:"paystack_key"`
+	EmailConfig                    email.EmailConfig
+	CloudinaryURL                  string `mapstructure:"cloudinary_url"`
+	AnalyticsReportEmail           string `mapstructure:"analytics_report_email"`
+	DBConfig                       database.Config
+	EncryptionKeys                 []string `mapstructure:"encryption_keys"` // Changed from string to []string
+	XAPIKey                        string   `mapstructure:"x_api_key"`
+	JWTSecret                      string   `mapstructure:"jwt_secret"`
 }
 
 type EmailConfigYAML struct {

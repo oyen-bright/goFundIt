@@ -18,7 +18,7 @@ func (h *SuggestionHandler) HandleGetActivitySuggestions(c *gin.Context) {
 
 	campaignID := GetCampaignID(c)
 
-	suggestions, err := h.service.GetActivitySuggestions(campaignID)
+	suggestions, err := h.service.GetActivitySuggestions(campaignID, getCampaignKey(c))
 	if err != nil {
 		FromError(c, err)
 		return

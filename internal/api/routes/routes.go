@@ -145,8 +145,10 @@ func SetupRoutes(cfg Config) {
 	suggestionsGroup := cfg.Router.Group("/suggestions")
 	activitySuggestions := suggestionsGroup.Group("/activity")
 	{
-		activitySuggestions.GET("/:campaignID", cfg.SuggestionHandler.HandleGetActivitySuggestions)
 		activitySuggestions.POST("/", cfg.SuggestionHandler.HandleGetActivitySuggestionsViaText)
+
+		activitySuggestions.Use(middlewares.CampaignKey())
+		activitySuggestions.GET("/:campaignID", cfg.SuggestionHandler.HandleGetActivitySuggestions)
 	}
 
 	//Analytics routes

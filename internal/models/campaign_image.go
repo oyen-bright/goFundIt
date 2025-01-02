@@ -2,6 +2,7 @@ package models
 
 import (
 	"github.com/go-playground/validator/v10"
+	"github.com/oyen-bright/goFundIt/pkg/encryption"
 	"gorm.io/gorm"
 )
 
@@ -9,7 +10,7 @@ import (
 type CampaignImage struct {
 	ID         uint   `gorm:"primaryKey;autoIncrement;not null" json:"id"`
 	CampaignID string `gorm:"not null;foreignKey:CampaignID" validate:"required" json:"-"`
-	ImageUrl   string `gorm:"type:varchar(255);not null" validate:"required,url" binding:"required,url" json:"imageUrl"`
+	ImageUrl   string `gorm:"type:varchar(255);not null" encrypt:"true" validate:"required,url" binding:"required,url" json:"imageUrl"`
 }
 
 // Constructor
@@ -46,4 +47,30 @@ func (c *CampaignImage) UpdateCampaignId(id string) {
 
 func (c *CampaignImage) BeforeCreate(tx *gorm.DB) (err error) {
 	return c.Validate()
+}
+
+// Encryption Methods ----------------------------------------------------
+
+func (c *CampaignImage) Encrypt(e encryption.Encryptor, key string) error {
+	encrypted, err := e.EncryptStruct(c, key)
+	if err != nil {
+		return err
+	}
+
+	if campaignImage, ok := encrypted.(*CampaignImage); ok {
+		*c = *campaignImage
+	}
+	return nil
+}
+
+func (c *CampaignImage) Decrypt(e encryption.Encryptor, key string) error {
+	encrypted, err := e.DecryptStruct(c, key)
+	if err != nil {
+		return err
+	}
+
+	if campaignImage, ok := encrypted.(*CampaignImage); ok {
+		*c = *campaignImage
+	}
+	return nil
 }

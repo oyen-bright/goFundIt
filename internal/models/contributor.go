@@ -10,7 +10,6 @@ import (
 
 // TODO: use DTO to bind the email and name
 // TODO: add notification settings - allow contributor to opt-in for notifications or not
-// TODO: consider required the userEmail via binding to make UpdateUserEmail() redundant
 
 // Original struct for reference
 // type Contributor struct {
@@ -87,13 +86,6 @@ func (c *Contributor) UpdateCampaignId(id string) {
 		return
 	}
 	c.CampaignID = id
-}
-
-func (c *Contributor) UpdateUserEmail() {
-	// if c.UserEmail != "" {
-	// 	return
-	// }
-	// c.UserEmail = c.Email
 }
 
 // Validation Methods

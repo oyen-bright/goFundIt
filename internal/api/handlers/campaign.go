@@ -36,7 +36,7 @@ func (h *CampaignHandler) HandleCreateCampaign(c *gin.Context) {
 // HandleGetCampaignByID handles fetching a campaign by ID
 func (h *CampaignHandler) HandleGetCampaignByID(c *gin.Context) {
 	campaignID := GetCampaignID(c)
-	campaign, err := h.service.GetCampaignByID(campaignID)
+	campaign, err := h.service.GetCampaignByID(campaignID, getCampaignKey(c))
 	if err != nil {
 		FromError(c, err)
 		return
@@ -55,7 +55,7 @@ func (h *CampaignHandler) HandleUpdateCampaignByID(c *gin.Context) {
 		return
 	}
 
-	campaign, err := h.service.UpdateCampaign(requestDTO, campaignID, userHandle)
+	campaign, err := h.service.UpdateCampaign(requestDTO, campaignID, userHandle, getCampaignKey(c))
 	if err != nil {
 		FromError(c, err)
 		return

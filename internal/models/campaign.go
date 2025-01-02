@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/go-playground/validator/v10"
+	"github.com/oyen-bright/goFundIt/pkg/encryption"
 	"github.com/oyen-bright/goFundIt/pkg/utils"
 	"gorm.io/gorm"
 )
@@ -19,8 +20,8 @@ const (
 type Campaign struct {
 	ID           string  `gorm:"type:text;primaryKey" validate:"-" binding:"-" json:"id"`
 	Key          string  `gorm:"-" validate:"-" binding:"-" json:"key"`
-	Title        string  `gorm:"type:varchar(255);not null" validate:"required,min=4" binding:"required" json:"title"`
-	Description  string  `gorm:"type:text" validate:"required,min=100" binding:"required,min=100" json:"description"`
+	Title        string  `gorm:"type:varchar(255);not null" encrypt:"true" validate:"required,min=4" binding:"required" json:"title"`
+	Description  string  `gorm:"type:text"  encrypt:"true" validate:"required,min=100" binding:"required,min=100" json:"description"`
 	TargetAmount float64 `gorm:"not null" validate:"required,gt=0" binding:"-" json:"targetAmount"`
 
 	//Payment
@@ -78,7 +79,6 @@ func (c *Campaign) FromBinding(CreatedBy User) {
 
 	for i := range c.Contributors {
 		c.Contributors[i].UpdateCampaignId(c.ID)
-		c.Contributors[i].UpdateUserEmail()
 	}
 
 	for i := range c.Images {
@@ -260,4 +260,31 @@ func generateKey() string {
 
 func generateCampaignId(title string) string {
 	return utils.GenerateRandomString(title[:2], 9)
+}
+
+// Encryption Methods ----------------------------------------------------
+
+func (c *Campaign) Encrypt(e encryption.Encryptor) error {
+	encrypted, err := e.EncryptStruct(c, c.Key)
+	if err != nil {
+		return err
+	}
+
+	if campaign, ok := encrypted.(*Campaign); ok {
+
+		*c = *campaign
+	}
+	return nil
+}
+
+func (c *Campaign) Decrypt(e encryption.Encryptor) error {
+	encrypted, err := e.DecryptStruct(c, c.Key)
+	if err != nil {
+		return err
+	}
+
+	if campaign, ok := encrypted.(*Campaign); ok {
+		*c = *campaign
+	}
+	return nil
 }

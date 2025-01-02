@@ -30,6 +30,7 @@ func setupAuthMiddleware(c *gin.Context) {
 	}
 	c.Set("claims", claims)
 	c.Set("Campaign-Key", "test-campaign-key")
+	c.Next()
 }
 
 func TestHandleGetActivitiesByCampaignID(t *testing.T) {
@@ -135,7 +136,7 @@ func TestHandleCreateActivity(t *testing.T) {
 					IsApproved:   false,
 					Contributors: nil,
 				}
-				m.EXPECT().CreateActivity(expectedActivity, "testuser", "campaign123").
+				m.EXPECT().CreateActivity(expectedActivity, "testuser", "campaign123", "test-campaign-key").
 					Return(returnedActivity, nil)
 			},
 			expectedStatus: http.StatusOK,
@@ -166,7 +167,7 @@ func TestHandleCreateActivity(t *testing.T) {
 					Title: "New Activity",
 					Cost:  100,
 				}
-				m.EXPECT().CreateActivity(expectedActivity, "testuser", "campaign123").
+				m.EXPECT().CreateActivity(expectedActivity, "testuser", "campaign123", "test-campaign-key").
 					Return(models.Activity{}, assert.AnError)
 			},
 			expectedStatus: http.StatusInternalServerError,

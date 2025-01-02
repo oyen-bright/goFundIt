@@ -46,7 +46,7 @@ func NewContributorService(
 func (s *contributorService) AddContributorToCampaign(contributor *models.Contributor, campaignId, campaignKey, userHandle string) error {
 
 	// Get campaign
-	campaign, err := s.campaignService.GetCampaignByID(campaignId)
+	campaign, err := s.campaignService.GetCampaignByID(campaignId, campaignKey)
 	if err != nil {
 		return err
 	}
@@ -147,9 +147,9 @@ func (s *contributorService) UpdateContributorByID(contributor *models.Contribut
 }
 
 // RemoveContributorFromCampaign removes a contributor from a campaign
-func (s *contributorService) RemoveContributorFromCampaign(contributorId uint, campaignId, userHandle string) error {
+func (s *contributorService) RemoveContributorFromCampaign(contributorId uint, campaignId, userHandle, key string) error {
 	// Get campaign
-	campaign, err := s.campaignService.GetCampaignByID(campaignId)
+	campaign, err := s.campaignService.GetCampaignByID(campaignId, key)
 	if err != nil {
 		return err
 	}

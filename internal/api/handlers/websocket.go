@@ -21,6 +21,7 @@ var upgrader = gorilla.Upgrader{
 	WriteBufferSize: 1024,
 	CheckOrigin: func(r *http.Request) bool {
 		//TODO: Add origin check
+
 		return true
 	},
 }
@@ -36,9 +37,8 @@ func (h *WebSocketHandler) HandleCampaignWebSocket(c *gin.Context) {
 	campaignID := GetCampaignID(c)
 	claims := c.MustGet("claims").(jwt.Claims)
 
-	//TODO: verify campaign key
 	// Verify campaign
-	if _, err := h.campaignService.GetCampaignByID(campaignID); err != nil {
+	if _, err := h.campaignService.GetCampaignByID(campaignID, getCampaignKey(c)); err != nil {
 		FromError(c, err)
 		return
 	}

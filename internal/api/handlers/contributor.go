@@ -49,7 +49,7 @@ func (h *ContributorHandler) HandleRemoveContributor(c *gin.Context) {
 		return
 	}
 
-	if err := h.service.RemoveContributorFromCampaign(contributorId, campaignID, claims.Handle); err != nil {
+	if err := h.service.RemoveContributorFromCampaign(contributorId, campaignID, claims.Handle, getCampaignKey(c)); err != nil {
 		FromError(c, err)
 		return
 	}

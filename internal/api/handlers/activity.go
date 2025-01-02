@@ -27,7 +27,7 @@ func (a *ActivityHandler) HandleCreateActivity(c *gin.Context) {
 		return
 	}
 
-	activity, err := a.service.CreateActivity(activity, claims.Handle, campaignID)
+	activity, err := a.service.CreateActivity(activity, claims.Handle, campaignID, getCampaignKey(c))
 	if err != nil {
 		FromError(c, err)
 		return
@@ -77,7 +77,7 @@ func (a *ActivityHandler) HandleApproveActivity(c *gin.Context) {
 		return
 	}
 
-	activity, err := a.service.ApproveActivity(activityID, userHandle)
+	activity, err := a.service.ApproveActivity(activityID, userHandle, getCampaignKey(c))
 	if err != nil {
 		FromError(c, err)
 		return
@@ -148,7 +148,7 @@ func (a *ActivityHandler) HandleOptInContributor(c *gin.Context) {
 		return
 	}
 
-	if err := a.service.OptInContributor(campaignID, claims.Email, activityID, contributorID); err != nil {
+	if err := a.service.OptInContributor(campaignID, claims.Email, getCampaignKey(c), activityID, contributorID); err != nil {
 		FromError(c, err)
 		return
 	}
@@ -171,7 +171,7 @@ func (a *ActivityHandler) HandleOptOutContributor(c *gin.Context) {
 		return
 	}
 
-	if err := a.service.OptOutContributor(campaignID, claims.Email, activityID, contributorID); err != nil {
+	if err := a.service.OptOutContributor(campaignID, claims.Email, getCampaignKey(c), activityID, contributorID); err != nil {
 		FromError(c, err)
 		return
 	}
@@ -188,7 +188,7 @@ func (a *ActivityHandler) HandleGetParticipants(c *gin.Context) {
 		return
 	}
 
-	participants, err := a.service.GetParticipants(activityID, campaignID)
+	participants, err := a.service.GetParticipants(activityID, campaignID, getCampaignKey(c))
 	if err != nil {
 		FromError(c, err)
 		return

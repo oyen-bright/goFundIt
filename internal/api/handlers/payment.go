@@ -25,7 +25,7 @@ func (p *PaymentHandler) HandleInitializePayment(c *gin.Context) {
 		return
 	}
 
-	payment, err := p.service.InitializePayment(contributorID)
+	payment, err := p.service.InitializePayment(contributorID, getCampaignKey(c))
 	if err != nil {
 		FromError(c, err)
 		return
@@ -56,7 +56,7 @@ func (p *PaymentHandler) HandleInitializeManualPayment(c *gin.Context) {
 		reference = tmpFile.Name()
 	}
 
-	payment, err := p.service.InitializeManualPayment(contributorID, reference, userEmail)
+	payment, err := p.service.InitializeManualPayment(contributorID, reference, userEmail, getCampaignKey(c))
 	if err != nil {
 		FromError(c, err)
 		return
@@ -80,7 +80,7 @@ func (p *PaymentHandler) HandleVerifyManualPayment(c *gin.Context) {
 	reference := c.Param("reference")
 	userHandle := getClaimsFromContext(c).Handle
 
-	err := p.service.VerifyManualPayment(reference, userHandle)
+	err := p.service.VerifyManualPayment(reference, userHandle, getCampaignKey(c))
 	if err != nil {
 		FromError(c, err)
 		return

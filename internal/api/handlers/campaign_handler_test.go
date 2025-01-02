@@ -103,6 +103,7 @@ func TestHandleCreateCampaign(t *testing.T) {
 
 			// Set claims in context
 			c.Set("claims", jwt.Claims{Handle: "test-user"})
+			c.Next()
 
 			// Call the handler
 			handler.HandleCreateCampaign(c)
@@ -138,7 +139,7 @@ func TestHandleGetCampaignByID(t *testing.T) {
 			name:       "Success",
 			campaignID: "test-campaign",
 			setupMock: func(m *mocks.MockCampaignService) {
-				m.EXPECT().GetCampaignByID("test-campaign").
+				m.EXPECT().GetCampaignByID("test-campaign", "test-key").
 					Return(&models.Campaign{Title: "Test Campaign"}, nil)
 			},
 			expectedStatus: http.StatusOK,
@@ -147,7 +148,7 @@ func TestHandleGetCampaignByID(t *testing.T) {
 			name:       "Campaign Not Found",
 			campaignID: "non-existent",
 			setupMock: func(m *mocks.MockCampaignService) {
-				m.EXPECT().GetCampaignByID("non-existent").
+				m.EXPECT().GetCampaignByID("non-existent", "test-key").
 					Return(nil, assert.AnError)
 			},
 			expectedStatus: http.StatusInternalServerError,
@@ -167,6 +168,8 @@ func TestHandleGetCampaignByID(t *testing.T) {
 			// Set up request
 			c.Request, _ = http.NewRequest(http.MethodGet, "/", nil)
 			c.Params = []gin.Param{{Key: "campaignID", Value: tt.campaignID}}
+			c.Set("Campaign-Key", "test-key")
+			c.Next()
 
 			handler.HandleGetCampaignByID(c)
 
@@ -195,7 +198,7 @@ func TestHandleUpdateCampaignByID(t *testing.T) {
 			campaignID:  "test-campaign",
 			requestBody: updateRequest,
 			setupMock: func(m *mocks.MockCampaignService) {
-				m.EXPECT().UpdateCampaign(mock.AnythingOfType("dto.CampaignUpdateRequest"), "test-campaign", "test-user").
+				m.EXPECT().UpdateCampaign(mock.AnythingOfType("dto.CampaignUpdateRequest"), "test-campaign", "test-user", "test-key").
 					Return(&models.Campaign{Title: "Updated Title"}, nil)
 			},
 			expectedStatus: http.StatusOK,
@@ -214,7 +217,7 @@ func TestHandleUpdateCampaignByID(t *testing.T) {
 			campaignID:  "test-campaign",
 			requestBody: updateRequest,
 			setupMock: func(m *mocks.MockCampaignService) {
-				m.EXPECT().UpdateCampaign(mock.AnythingOfType("dto.CampaignUpdateRequest"), "test-campaign", "test-user").
+				m.EXPECT().UpdateCampaign(mock.AnythingOfType("dto.CampaignUpdateRequest"), "test-campaign", "test-user", "test-key").
 					Return(nil, assert.AnError)
 			},
 			expectedStatus: http.StatusInternalServerError,
@@ -238,6 +241,7 @@ func TestHandleUpdateCampaignByID(t *testing.T) {
 
 			// Mock JWT claims
 			c.Set("claims", jwt.Claims{Handle: "test-user"})
+			c.Set("Campaign-Key", "test-key")
 
 			handler.HandleUpdateCampaignByID(c)
 
