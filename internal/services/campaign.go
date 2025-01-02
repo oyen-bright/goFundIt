@@ -1,7 +1,5 @@
 package services
 
-//TODO: implement encryption and decryption with campaign key
-
 import (
 	"fmt"
 	"strings"
@@ -11,6 +9,7 @@ import (
 	repositories "github.com/oyen-bright/goFundIt/internal/repositories/interfaces"
 	services "github.com/oyen-bright/goFundIt/internal/services/interfaces"
 	"github.com/oyen-bright/goFundIt/pkg/database"
+	"github.com/oyen-bright/goFundIt/pkg/encryption"
 	"github.com/oyen-bright/goFundIt/pkg/errs"
 	"github.com/oyen-bright/goFundIt/pkg/logger"
 	"github.com/oyen-bright/goFundIt/pkg/websocket"
@@ -21,6 +20,7 @@ type campaignService struct {
 	authService         services.AuthService
 	analyticsService    services.AnalyticsService
 	notificationService services.NotificationService
+	encryptor           encryption.Encryptor
 	broadcaster         services.EventBroadcaster
 	logger              logger.Logger
 	runAsync            func(func())
@@ -31,6 +31,8 @@ func NewCampaignService(
 	authService services.AuthService,
 	analyticsService services.AnalyticsService,
 	notificationService services.NotificationService,
+	encryptor encryption.Encryptor,
+
 	broadcast services.EventBroadcaster,
 	logger logger.Logger,
 ) services.CampaignService {
@@ -41,6 +43,7 @@ func NewCampaignService(
 		notificationService: notificationService,
 		broadcaster:         broadcast,
 		logger:              logger,
+		encryptor:           encryptor,
 		runAsync:            func(f func()) { go f() },
 	}
 }
@@ -92,7 +95,9 @@ func (s *campaignService) CreateCampaign(campaign *models.Campaign, userHandle s
 	campaign.FromBinding(user)
 
 	// Create campaign in database
+	campaign.Encrypt(s.encryptor)
 	*campaign, err = s.repo.Create(campaign)
+	campaign.Decrypt(s.encryptor)
 
 	if err != nil {
 		return models.Campaign{}, errs.InternalServerError(err).Log(s.logger)
@@ -109,9 +114,9 @@ func (s *campaignService) CreateCampaign(campaign *models.Campaign, userHandle s
 }
 
 // UpdateCampaign updates a campaign
-func (s *campaignService) UpdateCampaign(req dto.CampaignUpdateRequest, campaignID string, userHandle string) (*models.Campaign, error) {
+func (s *campaignService) UpdateCampaign(req dto.CampaignUpdateRequest, campaignID, key string, userHandle string) (*models.Campaign, error) {
 	// Validate Campaign
-	campaign, err := s.GetCampaignByID(campaignID)
+	campaign, err := s.GetCampaignByID(campaignID, key)
 	if err != nil {
 		return nil, err
 	}
@@ -123,7 +128,11 @@ func (s *campaignService) UpdateCampaign(req dto.CampaignUpdateRequest, campaign
 
 	// Update Campaign
 	campaign.Update(req.Title, req.Description, req.EndDate)
+	campaign.Key = key
+	campaign.Encrypt(s.encryptor)
 	*campaign, err = s.repo.Update(campaign)
+	campaign.Decrypt(s.encryptor)
+
 	if err != nil {
 		return nil, errs.InternalServerError(err).Log(s.logger)
 	}
@@ -155,9 +164,9 @@ func (s *campaignService) DeleteCampaign(campaignID string) error {
 
 // TODO: redundant user GetCampaignByIDWithAllRelatedData and select preloads
 // GetCampaignByID fetches campaign by ID
-func (s *campaignService) GetCampaignByID(id string) (*models.Campaign, error) {
+func (s *campaignService) GetCampaignByID(id, key string) (*models.Campaign, error) {
 	campaign, err := s.repo.GetByID(id)
-	//TODO:implement a better way
+	//TODO:implement a better way to handle this
 	campaign.UpdateTotalContributionsAmount()
 	if err != nil {
 		if database.Error(err).IsNotfound() {
@@ -165,6 +174,8 @@ func (s *campaignService) GetCampaignByID(id string) (*models.Campaign, error) {
 		}
 		return nil, errs.InternalServerError(err).Log(s.logger)
 	}
+	campaign.Key = key
+	campaign.Decrypt(s.encryptor)
 	return &campaign, nil
 }
 

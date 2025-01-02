@@ -98,7 +98,6 @@ func (c *commentService) DeleteComment(commentID string, userHandle string) erro
 	}
 
 	// Broadcast event
-	//TODO: Check if this is the right event to broadcast
 	go c.broadcaster.NewEvent(commentID, websocket.EventTypeCommentDeleted, commentID)
 
 	return nil

@@ -1,8 +1,6 @@
 package services
 
 import (
-	"log"
-
 	"github.com/oyen-bright/goFundIt/internal/models"
 	repositories "github.com/oyen-bright/goFundIt/internal/repositories/interfaces"
 	services "github.com/oyen-bright/goFundIt/internal/services/interfaces"
@@ -53,7 +51,6 @@ func (s *authService) RequestAuth(email, name string) (models.Otp, error) {
 func (s *authService) VerifyAuth(email, code, requestID string) (string, error) {
 	// Verify OTP
 	otp, err := s.otpService.VerifyOTP(email, code, requestID)
-	log.Println(otp, err)
 	if err != nil {
 		return "", err
 	}
@@ -172,7 +169,6 @@ func (s *authService) GetUserByEmail(email string) (*models.User, error) {
 func (s *authService) FindUserByEmail(email string) (*models.User, error) {
 
 	user, err := s.authRepo.FindByEmail(email)
-	log.Println("FindUserByEmail", "email", email, "error", err)
 
 	if err != nil {
 		if database.Error(err).IsNotfound() {

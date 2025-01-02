@@ -49,11 +49,12 @@ func TestAddContributorToCampaign(t *testing.T) {
 	repo, campaignService, _, authService, notificationService, broadcaster, _, service := setupContributorTest(t)
 
 	testCases := []struct {
-		name          string
-		contributor   *models.Contributor
-		campaignID    string
-		campaignKey   string
-		userHandle    string
+		name        string
+		contributor *models.Contributor
+		campaignID  string
+		campaignKey string
+		userHandle  string
+
 		setupMocks    func()
 		expectedError bool
 	}{
@@ -75,7 +76,7 @@ func TestAddContributorToCampaign(t *testing.T) {
 					},
 				}
 
-				campaignService.EXPECT().GetCampaignByID("campaign-123").Return(campaign, nil)
+				campaignService.EXPECT().GetCampaignByID("campaign-123", "key-123").Return(campaign, nil)
 				authService.EXPECT().FindUserByEmail("test@example.com").Return(nil, nil)
 				authService.EXPECT().CreateUser(mock.AnythingOfType("models.User")).Return(nil)
 				repo.EXPECT().Create(mock.AnythingOfType("*models.Contributor")).Return(nil)
@@ -86,14 +87,15 @@ func TestAddContributorToCampaign(t *testing.T) {
 			expectedError: false,
 		},
 		{
-			name: "Failure - Campaign Not Found",
+			name:        "Failure - Campaign Not Found",
+			campaignKey: "key-123",
 			contributor: &models.Contributor{
 				Name:  "Test User",
 				Email: "test@example.com",
 			},
 			campaignID: "invalid-id",
 			setupMocks: func() {
-				campaignService.EXPECT().GetCampaignByID("invalid-id").Return(nil, assert.AnError)
+				campaignService.EXPECT().GetCampaignByID("invalid-id", "key-123").Return(nil, assert.AnError)
 			},
 			expectedError: true,
 		},
@@ -264,6 +266,7 @@ func TestRemoveContributorFromCampaign(t *testing.T) {
 		contributorID uint
 		campaignID    string
 		userHandle    string
+		campaignKey   string
 		setupMocks    func()
 		expectedError bool
 	}{
@@ -272,6 +275,7 @@ func TestRemoveContributorFromCampaign(t *testing.T) {
 			contributorID: 1,
 			campaignID:    "campaign-123",
 			userHandle:    "creator",
+			campaignKey:   "key-123",
 			setupMocks: func() {
 				contributor := &models.Contributor{ID: 1, CampaignID: "campaign-123"}
 				campaign := &models.Campaign{
@@ -282,7 +286,7 @@ func TestRemoveContributorFromCampaign(t *testing.T) {
 					Contributors: []models.Contributor{*contributor},
 				}
 
-				campaignService.EXPECT().GetCampaignByID("campaign-123").Return(campaign, nil)
+				campaignService.EXPECT().GetCampaignByID("campaign-123", "key-123").Return(campaign, nil)
 				repo.EXPECT().Delete(contributor).Return(nil)
 				broadcaster.EXPECT().NewEvent("campaign-123", websocket.EventTypeContributorDeleted, mock.Anything)
 				campaignService.EXPECT().RecalculateTargetAmount("campaign-123")
@@ -294,6 +298,7 @@ func TestRemoveContributorFromCampaign(t *testing.T) {
 			contributorID: 1,
 			campaignID:    "campaign-123",
 			userHandle:    "not-creator",
+			campaignKey:   "key-123",
 			setupMocks: func() {
 				campaign := &models.Campaign{
 					ID: "campaign-123",
@@ -301,7 +306,7 @@ func TestRemoveContributorFromCampaign(t *testing.T) {
 						Handle: "creator",
 					},
 				}
-				campaignService.EXPECT().GetCampaignByID("campaign-123").Return(campaign, nil)
+				campaignService.EXPECT().GetCampaignByID("campaign-123", "key-123").Return(campaign, nil)
 			},
 			expectedError: true,
 		},
@@ -310,7 +315,7 @@ func TestRemoveContributorFromCampaign(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			tc.setupMocks()
-			err := service.RemoveContributorFromCampaign(tc.contributorID, tc.campaignID, tc.userHandle)
+			err := service.RemoveContributorFromCampaign(tc.contributorID, tc.campaignID, tc.userHandle, tc.campaignKey)
 			if tc.expectedError {
 				assert.Error(t, err)
 			} else {

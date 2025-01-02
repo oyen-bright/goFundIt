@@ -10,6 +10,7 @@ import (
 	"github.com/oyen-bright/goFundIt/internal/models"
 	mockRepo "github.com/oyen-bright/goFundIt/internal/repositories/mocks"
 	mockInterfaces "github.com/oyen-bright/goFundIt/internal/services/mocks"
+	encrypt "github.com/oyen-bright/goFundIt/pkg/encryption/mocks"
 	mockLogger "github.com/oyen-bright/goFundIt/pkg/logger/mocks"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -23,6 +24,7 @@ func setupCampaignService(t *testing.T) (
 	*mockInterfaces.MockNotificationService,
 	*mockInterfaces.MockEventBroadcaster,
 	*mockLogger.MockLogger,
+	*encrypt.MockEncryptor,
 ) {
 	mockRepo := mockRepo.NewMockCampaignRepository(t)
 	mockAuth := mockInterfaces.NewMockAuthService(t)
@@ -30,8 +32,10 @@ func setupCampaignService(t *testing.T) (
 	mockNotification := mockInterfaces.NewMockNotificationService(t)
 	mockBroadcaster := mockInterfaces.NewMockEventBroadcaster(t)
 	mockLogger := mockLogger.NewMockLogger(t)
+	mockEncryptor := encrypt.NewMockEncryptor(t)
 
 	service := &campaignService{
+		encryptor:           mockEncryptor,
 		repo:                mockRepo,
 		authService:         mockAuth,
 		analyticsService:    mockAnalytics,
@@ -41,17 +45,18 @@ func setupCampaignService(t *testing.T) (
 		runAsync:            func(f func()) { f() },
 	}
 
-	return service, mockRepo, mockAuth, mockAnalytics, mockNotification, mockBroadcaster, mockLogger
+	return service, mockRepo, mockAuth, mockAnalytics, mockNotification, mockBroadcaster, mockLogger, mockEncryptor
 }
 
 func TestCreateCampaign(t *testing.T) {
-	service, mockRepo, mockAuth, mockAnalytics, mockNotification, _, mockLogger := setupCampaignService(t)
+	service, mockRepo, mockAuth, mockAnalytics, mockNotification, _, mockLogger, encryptor := setupCampaignService(t)
 
 	t.Run("successful campaign creation", func(t *testing.T) {
-
+		campaignKey := "test_key"
 		// Test data
 		userHandle := "test_user"
 		campaign := &models.Campaign{
+			Key:         campaignKey,
 			Title:       "Test Campaign",
 			Description: "Test Description",
 			Contributors: []models.Contributor{
@@ -69,7 +74,11 @@ func TestCreateCampaign(t *testing.T) {
 			Return([]models.User{}, []string{"test@example.com"}, nil)
 		mockAuth.EXPECT().CreateUsers(mock.AnythingOfType("[]models.User")).Return([]models.User{}, nil)
 		mockAuth.EXPECT().GetUserByHandle(userHandle).Return(user, nil)
+
+		encryptor.EXPECT().EncryptStruct(mock.AnythingOfType("*models.Campaign"), mock.AnythingOfType("string")).Return(mock.AnythingOfType("*models.Campaign"), nil)
 		mockRepo.EXPECT().Create(campaign).Return(*campaign, nil)
+
+		encryptor.EXPECT().DecryptStruct(mock.AnythingOfType("*models.Campaign"), mock.AnythingOfType("string")).Return(mock.Anything, nil)
 
 		platformAnalytics := &models.PlatformAnalytics{}
 		mockAnalytics.EXPECT().GetCurrentData().Return(platformAnalytics)
@@ -118,10 +127,11 @@ func TestCreateCampaign(t *testing.T) {
 }
 
 func TestUpdateCampaign(t *testing.T) {
-	service, mockRepo, _, _, mockNotification, mockBroadcaster, mockLogger := setupCampaignService(t)
+	service, mockRepo, _, _, mockNotification, mockBroadcaster, mockLogger, encryptor := setupCampaignService(t)
 
 	t.Run("successful campaign update", func(t *testing.T) {
 		campaignID := "test_id"
+		campaignKey := "test_key"
 		userHandle := "test_user"
 
 		updatedTitle := "Updated Title"
@@ -135,7 +145,8 @@ func TestUpdateCampaign(t *testing.T) {
 		}
 
 		existingCampaign := &models.Campaign{
-			ID: campaignID,
+			ID:  campaignID,
+			Key: campaignKey,
 			CreatedBy: models.User{
 				Handle: userHandle,
 			},
@@ -143,12 +154,16 @@ func TestUpdateCampaign(t *testing.T) {
 
 		// Setup expectations
 		mockRepo.EXPECT().GetByID(campaignID).Return(*existingCampaign, nil)
+		encryptor.EXPECT().EncryptStruct(mock.AnythingOfType("*models.Campaign"), campaignKey).Return(mock.AnythingOfType("*models.Campaign"), nil)
+
 		mockRepo.EXPECT().Update(mock.AnythingOfType("*models.Campaign")).Return(*existingCampaign, nil)
+		encryptor.EXPECT().DecryptStruct(mock.AnythingOfType("*models.Campaign"), campaignKey).Return(mock.Anything, nil)
+
 		mockBroadcaster.EXPECT().NewEvent(campaignID, mock.Anything, mock.Anything)
 		mockNotification.EXPECT().NotifyCampaignUpdate(mock.AnythingOfType("*models.Campaign"), "").Return(nil)
 
 		// Execute
-		result, err := service.UpdateCampaign(updateReq, campaignID, userHandle)
+		result, err := service.UpdateCampaign(updateReq, campaignID, campaignKey, userHandle)
 
 		// Assert
 		assert.NoError(t, err)
@@ -162,41 +177,46 @@ func TestUpdateCampaign(t *testing.T) {
 		mockRepo.EXPECT().GetByID("non-existent").Return(models.Campaign{}, fmt.Errorf("not found"))
 		mockLogger.EXPECT().Error(mock.Anything, mock.Anything, mock.Anything).Return()
 
-		_, err := service.UpdateCampaign(updateReq, "non-existent", "user123")
+		_, err := service.UpdateCampaign(updateReq, "non-existent", "campaign-key", "user123")
 		assert.Error(t, err)
 	})
 
 	t.Run("error - unauthorized update", func(t *testing.T) {
 		campaignID := "test-id"
 		updatedTitle := "Updated Title"
+		campaignKey := "test_key"
 
 		updateReq := dto.CampaignUpdateRequest{Title: &updatedTitle}
 		existingCampaign := models.Campaign{
 			ID:        campaignID,
+			Key:       campaignKey,
 			CreatedBy: models.User{Handle: "different-user"},
 		}
 
 		mockRepo.EXPECT().GetByID(campaignID).Return(existingCampaign, nil)
+		encryptor.EXPECT().DecryptStruct(mock.AnythingOfType("*models.Campaign"), campaignKey).Return(mock.Anything, nil)
 
-		_, err := service.UpdateCampaign(updateReq, campaignID, "unauthorized-user")
+		_, err := service.UpdateCampaign(updateReq, campaignID, campaignKey, "unauthorized-user")
 		assert.Error(t, err)
 		assert.Contains(t, err.Error(), "Unauthorized")
 	})
 }
 
 func TestGetCampaignByID(t *testing.T) {
-	service, mockRepo, _, _, _, _, _ := setupCampaignService(t)
+	service, mockRepo, _, _, _, _, _, encryptor := setupCampaignService(t)
 
 	t.Run("successful campaign retrieval", func(t *testing.T) {
 		campaignID := "test_id"
+		campaignKey := "test_key"
 		expectedCampaign := models.Campaign{
 			ID:    campaignID,
 			Title: "Test Campaign",
 		}
 
 		mockRepo.EXPECT().GetByID(campaignID).Return(expectedCampaign, nil)
+		encryptor.EXPECT().DecryptStruct(mock.AnythingOfType("*models.Campaign"), campaignKey).Return(mock.Anything, nil)
 
-		result, err := service.GetCampaignByID(campaignID)
+		result, err := service.GetCampaignByID(campaignID, campaignKey)
 
 		assert.NoError(t, err)
 		assert.Equal(t, expectedCampaign.ID, result.ID)
@@ -206,7 +226,7 @@ func TestGetCampaignByID(t *testing.T) {
 }
 
 func TestGetActiveCampaigns(t *testing.T) {
-	service, mockRepo, _, _, _, _, _ := setupCampaignService(t)
+	service, mockRepo, _, _, _, _, _, _ := setupCampaignService(t)
 
 	t.Run("successful active campaigns retrieval", func(t *testing.T) {
 		expectedCampaigns := []models.Campaign{
@@ -227,7 +247,7 @@ func TestGetActiveCampaigns(t *testing.T) {
 }
 
 func TestDeleteCampaign(t *testing.T) {
-	service, mockRepo, _, _, _, _, mockLogger := setupCampaignService(t)
+	service, mockRepo, _, _, _, _, mockLogger, _ := setupCampaignService(t)
 
 	t.Run("successful deletion", func(t *testing.T) {
 		campaignID := "test-id"
@@ -251,7 +271,7 @@ func TestDeleteCampaign(t *testing.T) {
 }
 
 func TestGetCampaignByIDWithContributors(t *testing.T) {
-	service, mockRepo, _, _, _, _, mockLogger := setupCampaignService(t)
+	service, mockRepo, _, _, _, _, mockLogger, _ := setupCampaignService(t)
 
 	t.Run("successful retrieval with contributors", func(t *testing.T) {
 		campaignID := "test-id"
@@ -283,7 +303,7 @@ func TestGetCampaignByIDWithContributors(t *testing.T) {
 }
 
 func TestGetCampaignByIDWithAllRelatedData(t *testing.T) {
-	service, mockRepo, _, _, _, _, _ := setupCampaignService(t)
+	service, mockRepo, _, _, _, _, _, _ := setupCampaignService(t)
 
 	t.Run("successful retrieval with all data", func(t *testing.T) {
 		campaignID := "test-id"
@@ -305,7 +325,7 @@ func TestGetCampaignByIDWithAllRelatedData(t *testing.T) {
 }
 
 func TestGetExpiredCampaigns(t *testing.T) {
-	service, mockRepo, _, _, _, _, mockLogger := setupCampaignService(t)
+	service, mockRepo, _, _, _, _, mockLogger, _ := setupCampaignService(t)
 
 	t.Run("successful retrieval of expired campaigns", func(t *testing.T) {
 		expectedCampaigns := []models.Campaign{
@@ -333,7 +353,7 @@ func TestGetExpiredCampaigns(t *testing.T) {
 }
 
 func TestGetNearEndCampaigns(t *testing.T) {
-	service, mockRepo, _, _, _, _, mockLogger := setupCampaignService(t)
+	service, mockRepo, _, _, _, _, mockLogger, _ := setupCampaignService(t)
 
 	t.Run("successful retrieval of near-end campaigns", func(t *testing.T) {
 		expectedCampaigns := []models.Campaign{
@@ -359,7 +379,7 @@ func TestGetNearEndCampaigns(t *testing.T) {
 }
 
 func TestRecalculateTargetAmount(t *testing.T) {
-	service, mockRepo, _, _, _, mockBroadcaster, _ := setupCampaignService(t)
+	service, mockRepo, _, _, _, mockBroadcaster, _, _ := setupCampaignService(t)
 
 	t.Run("successful recalculation", func(t *testing.T) {
 		campaignID := "test-id"

@@ -40,6 +40,7 @@ func TestCreateActivity(t *testing.T) {
 		activity    models.Activity
 		userHandle  string
 		campaignID  string
+		campaignKey string
 		setupMocks  func()
 		wantErr     bool
 		expectedErr string
@@ -51,11 +52,12 @@ func TestCreateActivity(t *testing.T) {
 				Cost:      100,
 				CreatedBy: models.User{Handle: "user1"},
 			},
-			userHandle: "user1",
-			campaignID: "campaign1",
+			userHandle:  "user1",
+			campaignKey: "campaignKey",
+			campaignID:  "campaign1",
 			setupMocks: func() {
 				// Mock GetCampaignByID
-				mockCampaign.EXPECT().GetCampaignByID("campaign1").Return(
+				mockCampaign.EXPECT().GetCampaignByID("campaign1", "campaignKey").Return(
 					&models.Campaign{
 						ID:           "campaign1",
 						CreatedBy:    models.User{Handle: "user1"},
@@ -107,10 +109,11 @@ func TestCreateActivity(t *testing.T) {
 				Title: "Test Activity",
 				Cost:  100,
 			},
-			userHandle: "user2",
-			campaignID: "campaign1",
+			userHandle:  "user2",
+			campaignID:  "campaign1",
+			campaignKey: "campaignKey",
 			setupMocks: func() {
-				mockCampaign.EXPECT().GetCampaignByID("campaign1").Return(
+				mockCampaign.EXPECT().GetCampaignByID("campaign1", "campaignKey").Return(
 					&models.Campaign{
 						ID:           "campaign1",
 						CreatedBy:    models.User{Handle: "user1"},
@@ -138,7 +141,7 @@ func TestCreateActivity(t *testing.T) {
 
 			tt.setupMocks()
 
-			result, err := service.CreateActivity(tt.activity, tt.userHandle, tt.campaignID)
+			result, err := service.CreateActivity(tt.activity, tt.userHandle, tt.campaignID, tt.campaignKey)
 
 			if tt.wantErr {
 				assert.Error(t, err)
@@ -181,13 +184,15 @@ func TestApproveActivity(t *testing.T) {
 		activityID  uint
 		userHandle  string
 		setupMocks  func()
+		campaignKey string
 		wantErr     bool
 		expectedErr string
 	}{
 		{
-			name:       "successful approval",
-			activityID: 1,
-			userHandle: "owner",
+			name:        "successful approval",
+			activityID:  1,
+			campaignKey: "campaign-key",
+			userHandle:  "owner",
 			setupMocks: func() {
 				// Mock GetByID
 				mockRepo.EXPECT().GetByID(uint(1)).Return(
@@ -199,7 +204,7 @@ func TestApproveActivity(t *testing.T) {
 				)
 
 				// Mock GetCampaignByID
-				mockCampaign.EXPECT().GetCampaignByID("campaign1").Return(
+				mockCampaign.EXPECT().GetCampaignByID("campaign1", "campaign-key").Return(
 					&models.Campaign{
 						ID:        "campaign1",
 						CreatedBy: models.User{Handle: "owner"},
@@ -225,9 +230,10 @@ func TestApproveActivity(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name:       "unauthorized approval",
-			activityID: 1,
-			userHandle: "notowner",
+			name:        "unauthorized approval",
+			activityID:  1,
+			campaignKey: "campaign-key",
+			userHandle:  "notowner",
 			setupMocks: func() {
 				mockRepo.EXPECT().GetByID(uint(1)).Return(
 					models.Activity{
@@ -237,7 +243,7 @@ func TestApproveActivity(t *testing.T) {
 					}, nil,
 				)
 
-				mockCampaign.EXPECT().GetCampaignByID("campaign1").Return(
+				mockCampaign.EXPECT().GetCampaignByID("campaign1", "campaign-key").Return(
 					&models.Campaign{
 						ID:        "campaign1",
 						CreatedBy: models.User{Handle: "owner"},
@@ -253,7 +259,7 @@ func TestApproveActivity(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.setupMocks()
 
-			activity, err := service.ApproveActivity(tt.activityID, tt.userHandle)
+			activity, err := service.ApproveActivity(tt.activityID, tt.userHandle, tt.campaignKey)
 
 			if tt.wantErr {
 				assert.Error(t, err)
@@ -296,6 +302,7 @@ func TestOptInContributor(t *testing.T) {
 		activityID    uint
 		contributorID uint
 		setupMocks    func()
+		campaignKey   string
 		wantErr       bool
 		expectedErr   string
 	}{
@@ -303,10 +310,11 @@ func TestOptInContributor(t *testing.T) {
 			name:          "successful opt-in",
 			campaignID:    "campaign1",
 			userEmail:     "user@test.com",
+			campaignKey:   "campaign-key",
 			activityID:    1,
 			contributorID: 1,
 			setupMocks: func() {
-				mockCampaign.EXPECT().GetCampaignByID("campaign1").Return(
+				mockCampaign.EXPECT().GetCampaignByID("campaign1", "campaign-key").Return(
 					&models.Campaign{
 						ID: "campaign1",
 						Activities: []models.Activity{
@@ -332,10 +340,11 @@ func TestOptInContributor(t *testing.T) {
 			name:          "opt-in fails - already paid",
 			campaignID:    "campaign1",
 			userEmail:     "user@test.com",
+			campaignKey:   "campaign-key",
 			activityID:    1,
 			contributorID: 1,
 			setupMocks: func() {
-				mockCampaign.EXPECT().GetCampaignByID("campaign1").Return(
+				mockCampaign.EXPECT().GetCampaignByID("campaign1", "campaign-key").Return(
 					&models.Campaign{
 						ID: "campaign1",
 						Activities: []models.Activity{
@@ -359,7 +368,7 @@ func TestOptInContributor(t *testing.T) {
 			mockCampaign.ExpectedCalls = nil
 			tt.setupMocks()
 
-			err := service.OptInContributor(tt.campaignID, tt.userEmail, tt.activityID, tt.contributorID)
+			err := service.OptInContributor(tt.campaignID, tt.userEmail, tt.campaignKey, tt.activityID, tt.contributorID)
 
 			if tt.wantErr {
 				assert.Error(t, err)
@@ -400,15 +409,17 @@ func TestOptOutContributor(t *testing.T) {
 		setupMocks    func()
 		wantErr       bool
 		expectedErr   string
+		campaignKey   string
 	}{
 		{
 			name:          "successful opt-out",
 			campaignID:    "campaign1",
 			userEmail:     "test@example.com",
 			activityID:    1,
+			campaignKey:   "campaign-key",
 			contributorID: 1,
 			setupMocks: func() {
-				mockCampaign.EXPECT().GetCampaignByID("campaign1").Return(
+				mockCampaign.EXPECT().GetCampaignByID("campaign1", "campaign-key").Return(
 					&models.Campaign{
 						ID: "campaign1",
 						Activities: []models.Activity{
@@ -442,8 +453,9 @@ func TestOptOutContributor(t *testing.T) {
 			userEmail:     "test@example.com",
 			activityID:    1,
 			contributorID: 2,
+			campaignKey:   "campaign-key",
 			setupMocks: func() {
-				mockCampaign.EXPECT().GetCampaignByID("campaign1").Return(
+				mockCampaign.EXPECT().GetCampaignByID("campaign1", "campaign-key").Return(
 					&models.Campaign{
 						ID: "campaign1",
 						Activities: []models.Activity{
@@ -464,8 +476,9 @@ func TestOptOutContributor(t *testing.T) {
 			userEmail:     "wrong@example.com",
 			activityID:    1,
 			contributorID: 1,
+			campaignKey:   "campaign-key",
 			setupMocks: func() {
-				mockCampaign.EXPECT().GetCampaignByID("campaign1").Return(
+				mockCampaign.EXPECT().GetCampaignByID("campaign1", "campaign-key").Return(
 					&models.Campaign{
 						ID: "campaign1",
 						Activities: []models.Activity{
@@ -485,9 +498,10 @@ func TestOptOutContributor(t *testing.T) {
 			campaignID:    "campaign1",
 			userEmail:     "test@example.com",
 			activityID:    1,
+			campaignKey:   "campaign-key",
 			contributorID: 1,
 			setupMocks: func() {
-				mockCampaign.EXPECT().GetCampaignByID("campaign1").Return(
+				mockCampaign.EXPECT().GetCampaignByID("campaign1", "campaign-key").Return(
 					&models.Campaign{
 						ID: "campaign1",
 						Activities: []models.Activity{
@@ -515,7 +529,7 @@ func TestOptOutContributor(t *testing.T) {
 			mockCampaign.ExpectedCalls = nil
 			tt.setupMocks()
 
-			err := service.OptOutContributor(tt.campaignID, tt.userEmail, tt.activityID, tt.contributorID)
+			err := service.OptOutContributor(tt.campaignID, tt.userEmail, tt.campaignKey, tt.activityID, tt.contributorID)
 
 			if tt.wantErr {
 				assert.Error(t, err)

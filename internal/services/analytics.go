@@ -1,4 +1,4 @@
-// TODO: refactor the whole service
+// TODO: refactor the whole service, don't use in-memory data for analytics
 package services
 
 import (

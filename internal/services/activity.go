@@ -44,9 +44,9 @@ func NewActivityService(
 }
 
 // CreateActivity handles the creation of a new activity
-func (s *activityService) CreateActivity(activity models.Activity, userHandle, campaignID string) (models.Activity, error) {
+func (s *activityService) CreateActivity(activity models.Activity, userHandle, campaignID, key string) (models.Activity, error) {
 	// Validate campaign and user
-	campaign, user, err := s.validateCampaignAndUser(campaignID, userHandle)
+	campaign, user, err := s.validateCampaignAndUser(campaignID, userHandle, key)
 	if err != nil {
 		return models.Activity{}, err
 	}
@@ -95,7 +95,7 @@ func (s *activityService) CreateActivity(activity models.Activity, userHandle, c
 }
 
 // ApproveActivity implements interfaces.ActivityService.
-func (s *activityService) ApproveActivity(activityID uint, userHandle string) (*models.Activity, error) {
+func (s *activityService) ApproveActivity(activityID uint, userHandle, key string) (*models.Activity, error) {
 
 	// validate activity
 	activity, err := s.repo.GetByID(activityID)
@@ -108,7 +108,7 @@ func (s *activityService) ApproveActivity(activityID uint, userHandle string) (*
 	}
 
 	// Validate user
-	campaign, err := s.campaignService.GetCampaignByID(activity.CampaignID)
+	campaign, err := s.campaignService.GetCampaignByID(activity.CampaignID, key)
 	if err != nil {
 		return nil, err
 	}
@@ -180,7 +180,7 @@ func (s *activityService) UpdateActivity(activity *models.Activity, userHandle s
 	// Broadcast update
 	go s.broadcaster.NewEvent(activity.CampaignID, websocket.EventTypeActivityUpdated, activity)
 
-	//TODO: need campaign contributors
+	//TODO: need campaign contributors to send notification
 	//Send notification
 	// s.notificationService.NotifyActivityUpdate(activity, )
 
@@ -209,10 +209,10 @@ func (s *activityService) DeleteActivityByID(activityID uint, campaignID, userHa
 }
 
 // OptInContributor opts in a contributor to an activity
-func (s *activityService) OptInContributor(campaignID, userEmail string, activityID, contributorID uint) error {
+func (s *activityService) OptInContributor(campaignID, userEmail, key string, activityID, contributorID uint) error {
 
 	// Validate campaign and user
-	campaign, err := s.campaignService.GetCampaignByID(campaignID)
+	campaign, err := s.campaignService.GetCampaignByID(campaignID, key)
 	if err != nil {
 		return err
 	}
@@ -242,9 +242,9 @@ func (s *activityService) OptInContributor(campaignID, userEmail string, activit
 }
 
 // OptOutContributor opts out a contributor from an activity
-func (s *activityService) OptOutContributor(campaignID, userEmail string, activityID, contributorID uint) error {
+func (s *activityService) OptOutContributor(campaignID, userEmail, key string, activityID, contributorID uint) error {
 	// Validate campaign and user
-	campaign, err := s.campaignService.GetCampaignByID(campaignID)
+	campaign, err := s.campaignService.GetCampaignByID(campaignID, key)
 	if err != nil {
 		return err
 	}
@@ -270,10 +270,10 @@ func (s *activityService) OptOutContributor(campaignID, userEmail string, activi
 }
 
 // GetParticipants retrieves all contributors for a specific activity
-func (s *activityService) GetParticipants(activityID uint, campaignID string) ([]models.Contributor, error) {
+func (s *activityService) GetParticipants(activityID uint, campaignID, key string) ([]models.Contributor, error) {
 
 	// Validate campaign and user
-	campaign, err := s.campaignService.GetCampaignByID(campaignID)
+	campaign, err := s.campaignService.GetCampaignByID(campaignID, key)
 	if err != nil {
 		return nil, err
 	}
@@ -291,8 +291,8 @@ func (s *activityService) GetParticipants(activityID uint, campaignID string) ([
 
 // Helper methods ----------------------------------------------
 
-func (s *activityService) validateCampaignAndUser(campaignID, userHandle string) (*models.Campaign, *models.User, error) {
-	campaign, err := s.campaignService.GetCampaignByID(campaignID)
+func (s *activityService) validateCampaignAndUser(campaignID, userHandle, key string) (*models.Campaign, *models.User, error) {
+	campaign, err := s.campaignService.GetCampaignByID(campaignID, key)
 	if err != nil {
 		return nil, nil, err
 	}
