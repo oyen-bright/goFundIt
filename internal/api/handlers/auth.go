@@ -2,7 +2,7 @@ package handlers
 
 import (
 	"github.com/gin-gonic/gin"
-	dto "github.com/oyen-bright/goFundIt/internal/api/dto/user"
+	dto "github.com/oyen-bright/goFundIt/internal/api/dto/auth"
 	"github.com/oyen-bright/goFundIt/internal/models"
 	services "github.com/oyen-bright/goFundIt/internal/services/interfaces"
 )
@@ -17,12 +17,22 @@ func NewAuthHandler(service services.AuthService) *AuthHandler {
 	}
 }
 
+// @Summary Authenticate User
+// @Description Initiates the authentication process for a user by sending a verification code to their email address. Requires user's name and email in request body.
+// @Tags auth
+// @Accept json
+// @Produce json
+// @Param X-API-Key header string true "API Key"
+// @Param request body models.User true "Auth Credentials"
+// @Success 200 {object} SuccessResponse{data=models.Otp} "Please check your email for the OTP."
+// @Failure 400 {object} BadRequestResponse{errors=[]ValidationError} "Invalid inputs, please check and try again"
+// @Failure 401 {object} UnauthorizedResponse "Unauthorized"
+// @Router /auth [post]
 func (a *AuthHandler) HandleAuth(context *gin.Context) {
+
+	//TODO: use dto.AuthRequest
 	var user models.User
 
-	//Validate Request
-	//Email- required, email
-	//Name- optional, string
 	if err := context.BindJSON(&user); err != nil {
 		BadRequest(context, "Invalid inputs, please check and try again", ExtractValidationErrors(err))
 		return
@@ -35,10 +45,21 @@ func (a *AuthHandler) HandleAuth(context *gin.Context) {
 	}
 
 	Success(context, "Please check your email for the OTP.", otp.ToJSON())
-
 }
 
+// @Summary Verify OTP
+// @Description Validates the verification code sent to user's email. Requires email, verification code, and request ID for verification
+// @Tags auth
+// @Accept json
+// @Produce json
+// @Param X-API-Key header string true "API Key"
+// @Param request body dto.VerifyAuthRequest true "Verification Data"
+// @Success 200 {object} SuccessResponse{data=dto.VerifyAuthResponse} "Authenticated"
+// @Failure 400 {object} BadRequestResponse{errors=[]ValidationError} "Invalid inputs, please check and try again"
+// @Failure 401 {object} UnauthorizedResponse "Unauthorized"
+// @Router /auth/verify [post]
 func (a *AuthHandler) HandleVerifyAuth(context *gin.Context) {
+	//TODO: use dto.verifyAuthRequest
 	var _otp models.Otp
 
 	//Validate Request
@@ -57,13 +78,23 @@ func (a *AuthHandler) HandleVerifyAuth(context *gin.Context) {
 		return
 	}
 
-	Success(context, "Authenticated", gin.H{
-		"token": token,
+	Success(context, "Authenticated", dto.VerifyAuthResponse{
+		Token: token,
 	})
 
 }
 
-// HandleSaveFCMToken saves the FCM token for a user
+// @Summary Save FCM Token
+// @Description Saves the FCM token for push notifications
+// @Tags auth
+// @Accept json
+// @Produce json
+// @Security ApiKeyAuth
+// @Security BearerAuth
+// @Param request body dto.FCMUpdateRequest true "FCM Token"
+// @Success 200 {object} SuccessResponse "FCM token saved"
+// @Failure 400 {object} BadRequestResponse{errors=[]ValidationError} "Invalid inputs, please check and try again"
+// @Router /fcm/save-token [post]
 func (a *AuthHandler) HandleSaveFCMToken(c *gin.Context) {
 	userHandle := getClaimsFromContext(c).Handle
 

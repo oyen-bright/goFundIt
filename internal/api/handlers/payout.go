@@ -3,40 +3,56 @@ package handlers
 import (
 	"github.com/gin-gonic/gin"
 	dto "github.com/oyen-bright/goFundIt/internal/api/dto/payout"
-	"github.com/oyen-bright/goFundIt/internal/services/interfaces"
+	services "github.com/oyen-bright/goFundIt/internal/services/interfaces"
 )
 
 type PayoutHandler struct {
-	PayoutService interfaces.PayoutService
+	service services.PayoutService
 }
 
-func NewPayoutHandler(payoutService interfaces.PayoutService) *PayoutHandler {
+func NewPayoutHandler(service services.PayoutService) *PayoutHandler {
 	return &PayoutHandler{
-		PayoutService: payoutService,
+		service: service,
 	}
 }
 
-// GetBankList retrieves a list of banks supported by platform
-func (h *PayoutHandler) HandleGetBankList(c *gin.Context) {
-	banks, err := h.PayoutService.GetBankList()
+// @Summary Get Bank List
+// @Description Retrieves list of available banks for payout
+// @Tags payout
+// @Accept json
+// @Produce json
+// @Security ApiKeyAuth
+// @Success 200 {object} SuccessResponse{data=[]paystack.Bank} "Bank list retrieved successfully"
+// @Failure 400 {object} BadRequestResponse "Invalid request"
+// @Failure 401 {object} UnauthorizedResponse "Unauthorized"
+// @Router /payout/bank-list [get]
+func (p *PayoutHandler) HandleGetBankList(c *gin.Context) {
+	banks, err := p.service.GetBankList()
 	if err != nil {
 		FromError(c, err)
 		return
 	}
-
 	Success(c, "Bank list retrieved successfully", banks)
 }
 
-// VerifyAccount verifies an account number and bank code
-func (h *PayoutHandler) HandleVerifyAccount(c *gin.Context) {
-
+// @Summary Verify Bank Account
+// @Description Verifies a bank account for payout
+// @Tags payout
+// @Accept json
+// @Produce json
+// @Security ApiKeyAuth
+// @Param request body dto.VerifyAccountRequest true "Account verification details"
+// @Success 200 {object} SuccessResponse{data=paystack.ResolveAccountResponse} "Account verified successfully"
+// @Failure 400 {object} BadRequestResponse{errors=[]ValidationError} "Invalid account details"
+// @Failure 401 {object} UnauthorizedResponse "Unauthorized"
+// @Router /payout/verify/bank-account [post]
+func (p *PayoutHandler) HandleVerifyAccount(c *gin.Context) {
 	var req dto.VerifyAccountRequest
-	if err := c.BindJSON(&req); err != nil {
-		BadRequest(c, "Invalid request", ExtractValidationErrors(err))
+	if err := bindJSON(c, &req); err != nil {
 		return
 	}
 
-	account, err := h.PayoutService.VerifyAccount(req)
+	account, err := p.service.VerifyAccount(req)
 	if err != nil {
 		FromError(c, err)
 		return
@@ -45,17 +61,30 @@ func (h *PayoutHandler) HandleVerifyAccount(c *gin.Context) {
 	Success(c, "Account verified successfully", account)
 }
 
-// InitializePayout initializes a payout for a campaign
-func (h *PayoutHandler) HandleInitializePayout(c *gin.Context) {
-	campaignID := GetCampaignID(c)
-	claims := getClaimsFromContext(c)
+// @Summary Initialize Payout
+// @Description Initializes a payout for a campaign
+// @Tags payout
+// @Accept json
+// @Produce json
+// @Security ApiKeyAuth
+// @Security BearerAuth
+// @Param campaignID path string true "Campaign ID"
+// @Param request body dto.PayoutRequest true "Payout details"
+// @Success 200 {object} SuccessResponse{data=models.Payout} "Payout initialized successfully"
+// @Failure 400 {object} BadRequestResponse{errors=[]ValidationError} "Invalid payout details"
+// @Failure 401 {object} UnauthorizedResponse "Unauthorized"
+// @Failure 404 {object} response "Campaign not found"
+// @Router /payout/{campaignID} [post]
+func (p *PayoutHandler) HandleInitializePayout(c *gin.Context) {
 	var req dto.PayoutRequest
-	if err := c.BindJSON(&req); err != nil {
-		BadRequest(c, "Invalid request", ExtractValidationErrors(err))
+	if err := bindJSON(c, &req); err != nil {
 		return
 	}
 
-	payout, err := h.PayoutService.InitializePayout(campaignID, claims.Handle, req)
+	campaignID := GetCampaignID(c)
+	userHandle := getClaimsFromContext(c).Handle
+
+	payout, err := p.service.InitializePayout(campaignID, userHandle, req)
 	if err != nil {
 		FromError(c, err)
 		return
@@ -64,17 +93,26 @@ func (h *PayoutHandler) HandleInitializePayout(c *gin.Context) {
 	Success(c, "Payout initialized successfully", payout)
 }
 
-// HandleInitializeManualPayout initializes a manual payout for a campaign
-func (h *PayoutHandler) HandleInitializeManualPayout(c *gin.Context) {
-	campaignID := GetCampaignID(c)
-	claims := getClaimsFromContext(c)
-	var req dto.PayoutRequest
-	if err := c.BindJSON(&req); err != nil {
-		BadRequest(c, "Invalid request", ExtractValidationErrors(err))
-		return
-	}
+// @Summary Initialize Manual Payout
+// @Description Initializes a manual payout for a campaign
+// @Tags payout
+// @Accept json
+// @Produce json
+// @Security ApiKeyAuth
+// @Security BearerAuth
+// @Param campaignID path string true "Campaign ID"
+// @Param request body dto.PayoutRequest true "Manual payout details"
+// @Success 200 {object} SuccessResponse{data=models.Payout} "Manual payout initialized successfully"
+// @Failure 400 {object} BadRequestResponse{errors=[]ValidationError} "Invalid payout details"
+// @Failure 401 {object} UnauthorizedResponse "Unauthorized"
+// @Failure 404 {object} response "Campaign not found"
+// @Router /payout/manual/{campaignID} [post]
+func (p *PayoutHandler) HandleInitializeManualPayout(c *gin.Context) {
 
-	payout, err := h.PayoutService.InitializeManualPayout(campaignID, claims.Handle)
+	campaignID := GetCampaignID(c)
+	userHandle := getClaimsFromContext(c).Handle
+
+	payout, err := p.service.InitializeManualPayout(campaignID, userHandle)
 	if err != nil {
 		FromError(c, err)
 		return
@@ -83,15 +121,25 @@ func (h *PayoutHandler) HandleInitializeManualPayout(c *gin.Context) {
 	Success(c, "Manual payout initialized successfully", payout)
 }
 
-// HandleGetPayoutByCampaignID initialize
-func (h *PayoutHandler) HandleGetPayoutByCampaignID(c *gin.Context) {
+// @Summary Get Campaign Payout
+// @Description Retrieves payout information for a campaign
+// @Tags payout
+// @Accept json
+// @Produce json
+// @Security ApiKeyAuth
+// @Security BearerAuth
+// @Param campaignID path string true "Campaign ID"
+// @Success 200 {object} SuccessResponse{data=models.Payout} "Payout information retrieved successfully"
+// @Failure 401 {object} UnauthorizedResponse "Unauthorized"
+// @Failure 404 {object} response "Campaign not found"
+// @Router /payout/{campaignID} [get]
+func (p *PayoutHandler) HandleGetPayoutByCampaignID(c *gin.Context) {
 	campaignID := GetCampaignID(c)
 
-	payout, err := h.PayoutService.GetPayoutByCampaignID(campaignID)
-
+	payout, err := p.service.GetPayoutByCampaignID(campaignID)
 	if err != nil {
 		FromError(c, err)
 		return
 	}
-	Success(c, "Success", payout)
+	Success(c, "Payout information retrieved successfully", payout)
 }

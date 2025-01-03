@@ -16,7 +16,19 @@ func NewActivityHandler(service services.ActivityService) *ActivityHandler {
 	}
 }
 
-// HandleCreateActivity handles the creation of a new activity
+// @Summary Create Activity
+// @Description Creates a new activity for a campaign
+// @Tags activity
+// @Accept json
+// @Produce json
+// @Security ApiKeyAuth
+// @Security BearerAuth
+// @Param campaignID path string true "Campaign ID"
+// @Param request body dto.ActivityRequest true "Activity Details"
+// @Success 200 {object} SuccessResponse{data=models.Activity} "Activity created successfully"
+// @Failure 400 {object} BadRequestResponse{errors=[]ValidationError} "Invalid inputs"
+// @Failure 401 {object} UnauthorizedResponse "Unauthorized"
+// @Router /activity/{campaignID} [post]
 func (a *ActivityHandler) HandleCreateActivity(c *gin.Context) {
 	var activity models.Activity
 	claims := getClaimsFromContext(c)
@@ -36,7 +48,18 @@ func (a *ActivityHandler) HandleCreateActivity(c *gin.Context) {
 	Success(c, "Activity created successfully", activity)
 }
 
-// HandleGetActivitiesByCampaignID handles fetching all activities for a campaign
+// @Summary Get Activities
+// @Description Retrieves all activities for a campaign
+// @Tags activity
+// @Accept json
+// @Produce json
+// @Security ApiKeyAuth
+// @Security BearerAuth
+// @Param campaignID path string true "Campaign ID"
+// @Success 200 {object} SuccessResponse{data=[]models.Activity} "Activities fetched successfully"
+// @Failure 401 {object} UnauthorizedResponse "Unauthorized"
+// @Failure 404 {object} response "Campaign not found"
+// @Router /activity/{campaignID} [get]
 func (a *ActivityHandler) HandleGetActivitiesByCampaignID(c *gin.Context) {
 	campaignID := GetCampaignID(c)
 
@@ -49,7 +72,20 @@ func (a *ActivityHandler) HandleGetActivitiesByCampaignID(c *gin.Context) {
 	Success(c, "Activities fetched successfully", activities)
 }
 
-// HandleGetActivityByID handles fetching a single activity by its ID
+// @Summary Get Activity
+// @Description Retrieves a specific activity by ID
+// @Tags activity
+// @Accept json
+// @Produce json
+// @Security ApiKeyAuth
+// @Security BearerAuth
+// @Param campaignID path string true "Campaign ID"
+// @Param activityID path string true "Activity ID"
+// @Success 200 {object} SuccessResponse{data=models.Activity} "Activity fetched successfully"
+// @Failure 400 {object} BadRequestResponse "Invalid Activity ID"
+// @Failure 401 {object} UnauthorizedResponse "Unauthorized"
+// @Failure 404 {object} response "Activity not found"
+// @Router /activity/{campaignID}/{activityID} [get]
 func (a *ActivityHandler) HandleGetActivityByID(c *gin.Context) {
 	campaignID := GetCampaignID(c)
 	activityID, err := parseActivityID(c)
@@ -67,7 +103,19 @@ func (a *ActivityHandler) HandleGetActivityByID(c *gin.Context) {
 	Success(c, "Activity fetched successfully", activity)
 }
 
-// HandleApproveActivity handles activity approval
+// @Summary Approve Activity
+// @Description Approves an activity in a campaign
+// @Tags activity
+// @Accept json
+// @Produce json
+// @Security ApiKeyAuth
+// @Security BearerAuth
+// @Param campaignID path string true "Campaign ID"
+// @Param activityID path string true "Activity ID"
+// @Success 200 {object} SuccessResponse{data=models.Activity} "Activity approved successfully"
+// @Failure 400 {object} BadRequestResponse "Invalid Activity ID"
+// @Failure 401 {object} UnauthorizedResponse "Unauthorized"
+// @Router /activity/{campaignID}/{activityID}/approve [post]
 func (a *ActivityHandler) HandleApproveActivity(c *gin.Context) {
 	userHandle := getClaimsFromContext(c).Handle
 
@@ -86,7 +134,20 @@ func (a *ActivityHandler) HandleApproveActivity(c *gin.Context) {
 	Success(c, "Activity approved successfully", activity)
 }
 
-// HandleUpdateActivity handles updating an existing activity
+// @Summary Update Activity
+// @Description Updates an existing activity
+// @Tags activity
+// @Accept json
+// @Produce json
+// @Security ApiKeyAuth
+// @Security BearerAuth
+// @Param campaignID path string true "Campaign ID"
+// @Param activityID path string true "Activity ID"
+// @Param request body dto.UpdateActivityRequest true "Update Activity Details"
+// @Success 200 {object} SuccessResponse{data=models.Activity} "Activity updated successfully"
+// @Failure 400 {object} BadRequestResponse{errors=[]ValidationError} "Invalid inputs"
+// @Failure 401 {object} UnauthorizedResponse "Unauthorized"
+// @Router /activity/{campaignID}/{activityID} [patch]
 func (a *ActivityHandler) HandleUpdateActivity(c *gin.Context) {
 	var activity models.Activity
 	claims := getClaimsFromContext(c)
@@ -114,7 +175,19 @@ func (a *ActivityHandler) HandleUpdateActivity(c *gin.Context) {
 	Success(c, "Activity updated successfully", activity)
 }
 
-// HandleDeleteActivityByID handles deleting an activity
+// @Summary Delete Activity
+// @Description Deletes an activity from a campaign
+// @Tags activity
+// @Accept json
+// @Produce json
+// @Security ApiKeyAuth
+// @Security BearerAuth
+// @Param campaignID path string true "Campaign ID"
+// @Param activityID path string true "Activity ID"
+// @Success 200 {object} SuccessResponse "Activity deleted successfully"
+// @Failure 400 {object} BadRequestResponse "Invalid Activity ID"
+// @Failure 401 {object} UnauthorizedResponse "Unauthorized"
+// @Router /activity/{campaignID}/{activityID} [delete]
 func (a *ActivityHandler) HandleDeleteActivityByID(c *gin.Context) {
 	claims := getClaimsFromContext(c)
 	campaignID := GetCampaignID(c)
@@ -133,7 +206,20 @@ func (a *ActivityHandler) HandleDeleteActivityByID(c *gin.Context) {
 	Success(c, "Activity deleted successfully", nil)
 }
 
-// HandleOptInContributor handles opting in a contributor to an activity
+// @Summary Opt In Contributor
+// @Description Opts in a contributor to an activity
+// @Tags activity
+// @Accept json
+// @Produce json
+// @Security ApiKeyAuth
+// @Security BearerAuth
+// @Param campaignID path string true "Campaign ID"
+// @Param activityID path string true "Activity ID"
+// @Param contributorID path string true "Contributor ID"
+// @Success 200 {object} SuccessResponse "Contributor opted in successfully"
+// @Failure 400 {object} BadRequestResponse "Invalid IDs"
+// @Failure 401 {object} UnauthorizedResponse "Unauthorized"
+// @Router /activity/{campaignID}/{activityID}/participants/{contributorID} [post]
 func (a *ActivityHandler) HandleOptInContributor(c *gin.Context) {
 	claims := getClaimsFromContext(c)
 	campaignID := GetCampaignID(c)
@@ -156,7 +242,20 @@ func (a *ActivityHandler) HandleOptInContributor(c *gin.Context) {
 	Success(c, "Contributor opted in successfully", nil)
 }
 
-// HandleOptOutContributor handles opting out a contributor from an activity
+// @Summary Opt Out Contributor
+// @Description Opts out a contributor from an activity
+// @Tags activity
+// @Accept json
+// @Produce json
+// @Security ApiKeyAuth
+// @Security BearerAuth
+// @Param campaignID path string true "Campaign ID"
+// @Param activityID path string true "Activity ID"
+// @Param contributorID path string true "Contributor ID"
+// @Success 200 {object} SuccessResponse "Contributor opted out successfully"
+// @Failure 400 {object} BadRequestResponse "Invalid IDs"
+// @Failure 401 {object} UnauthorizedResponse "Unauthorized"
+// @Router /activity/{campaignID}/{activityID}/participants/{contributorID} [delete]
 func (a *ActivityHandler) HandleOptOutContributor(c *gin.Context) {
 	claims := getClaimsFromContext(c)
 	campaignID := GetCampaignID(c)
@@ -179,7 +278,19 @@ func (a *ActivityHandler) HandleOptOutContributor(c *gin.Context) {
 	Success(c, "Contributor opted out successfully", nil)
 }
 
-// HandleGetParticipants handles fetching all participants for an activity
+// @Summary Get Participants
+// @Description Retrieves all participants for an activity
+// @Tags activity
+// @Accept json
+// @Produce json
+// @Security ApiKeyAuth
+// @Security BearerAuth
+// @Param campaignID path string true "Campaign ID"
+// @Param activityID path string true "Activity ID"
+// @Success 200 {object} SuccessResponse{data=[]models.Contributor} "Participants fetched successfully"
+// @Failure 400 {object} BadRequestResponse "Invalid Activity ID"
+// @Failure 401 {object} UnauthorizedResponse "Unauthorized"
+// @Router /activity/{campaignID}/{activityID}/participants [get]
 func (a *ActivityHandler) HandleGetParticipants(c *gin.Context) {
 	campaignID := GetCampaignID(c)
 	activityID, err := parseActivityID(c)

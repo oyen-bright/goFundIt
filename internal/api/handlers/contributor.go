@@ -17,7 +17,20 @@ func NewContributorHandler(service services.ContributorService) *ContributorHand
 	}
 }
 
-// HandleAddContributor handles adding contributor to a campaign
+// @Summary Add Contributor
+// @Description Registers a new contributor to the campaign
+// @Tags contributors
+// @Accept json
+// @Produce json
+// @Security ApiKeyAuth
+// @Security BearerAuth
+// @Param campaignID path string true "Campaign ID"
+// @Param request body dto.CreateContributorRequest true "Contributor Details"
+// @Success 200 {object} SuccessResponse{data=models.Contributor} "Contributor added to Campaign"
+// @Failure 400 {object} BadRequestResponse{errors=[]ValidationError} "Invalid inputs"
+// @Failure 401 {object} UnauthorizedResponse "Unauthorized"
+// @Failure 404 {object} response "Campaign not found"
+// @Router /contributor/{campaignID} [post]
 func (h *ContributorHandler) HandleAddContributor(c *gin.Context) {
 	claims := getClaimsFromContext(c)
 	campaignID := GetCampaignID(c)
@@ -38,7 +51,20 @@ func (h *ContributorHandler) HandleAddContributor(c *gin.Context) {
 
 }
 
-// HandleRemoveContributor handles removing a contributor from a campaign
+// @Summary Remove Contributor
+// @Description Removes a contributor from the campaign
+// @Tags contributors
+// @Accept json
+// @Produce json
+// @Security ApiKeyAuth
+// @Security BearerAuth
+// @Param campaignID path string true "Campaign ID"
+// @Param contributorID path string true "Contributor ID"
+// @Success 200 {object} SuccessResponse "Contributor removed from Campaign"
+// @Failure 400 {object} BadRequestResponse "Invalid contributor ID"
+// @Failure 401 {object} UnauthorizedResponse "Unauthorized"
+// @Failure 404 {object} response "Contributor or Campaign not found"
+// @Router /contributor/{campaignID}/{contributorID} [delete]
 func (h *ContributorHandler) HandleRemoveContributor(c *gin.Context) {
 	claims := getClaimsFromContext(c)
 	campaignID := GetCampaignID(c)
@@ -57,7 +83,21 @@ func (h *ContributorHandler) HandleRemoveContributor(c *gin.Context) {
 
 }
 
-// HandleEditContributor handles editing contributor data
+// @Summary Edit Contributor
+// @Description Modifies a contributor's information
+// @Tags contributors
+// @Accept json
+// @Produce json
+// @Security ApiKeyAuth
+// @Security BearerAuth
+// @Param campaignID path string true "Campaign ID"
+// @Param contributorID path string true "Contributor ID"
+// @Param request body dto.ContributorEditRequest true "Updated Contributor Details"
+// @Success 200 {object} SuccessResponse{data=models.Contributor} "Contributor updated successfully"
+// @Failure 400 {object} BadRequestResponse{errors=[]ValidationError} "Invalid inputs"
+// @Failure 401 {object} UnauthorizedResponse "Unauthorized"
+// @Failure 404 {object} response "Contributor not found"
+// @Router /contributor/{campaignID}/{contributorID} [patch]
 func (h *ContributorHandler) HandleEditContributor(c *gin.Context) {
 	var requestDTO dto.ContributorEditRequest
 	var contributor models.Contributor
@@ -85,7 +125,18 @@ func (h *ContributorHandler) HandleEditContributor(c *gin.Context) {
 
 }
 
-// HandleGetContributorsByCampaignID handles fetching all contributors to a campaign
+// @Summary Get All Contributors
+// @Description Lists all contributors participating in the campaign
+// @Tags contributors
+// @Accept json
+// @Produce json
+// @Security ApiKeyAuth
+// @Security BearerAuth
+// @Param campaignID path string true "Campaign ID"
+// @Success 200 {object} SuccessResponse{data=[]models.Contributor} "Contributors retrieved successfully"
+// @Failure 401 {object} UnauthorizedResponse "Unauthorized"
+// @Failure 404 {object} response "Campaign not found"
+// @Router /contributor/{campaignID} [get]
 func (h *ContributorHandler) HandleGetContributorsByCampaignID(c *gin.Context) {
 	campaignID := GetCampaignID(c)
 
@@ -99,7 +150,20 @@ func (h *ContributorHandler) HandleGetContributorsByCampaignID(c *gin.Context) {
 
 }
 
-// HandleGetContributorByID handles fetching a contributor by the contributor ID
+// @Summary Get Contributor
+// @Description Retrieves detailed information about a specific contributor
+// @Tags contributors
+// @Accept json
+// @Produce json
+// @Security ApiKeyAuth
+// @Security BearerAuth
+// @Param campaignID path string true "Campaign ID"
+// @Param contributorID path string true "Contributor ID"
+// @Success 200 {object} SuccessResponse{data=models.Contributor} "Contributor retrieved successfully"
+// @Failure 400 {object} BadRequestResponse "Invalid contributor ID"
+// @Failure 401 {object} UnauthorizedResponse "Unauthorized"
+// @Failure 404 {object} response "Contributor not found"
+// @Router /contributor/{campaignID}/{contributorID} [get]
 func (h *ContributorHandler) HandleGetContributorByID(c *gin.Context) {
 	contributorId, err := parseContributorID(c)
 	if err != nil {

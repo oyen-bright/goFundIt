@@ -10,7 +10,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func setupAnalyticsTest() (*mocks.MockAnalyticsService, *AnalyticsHandle, *gin.Engine) {
+func setupAnalyticsTest() (*mocks.MockAnalyticsService, *AnalyticsHandler, *gin.Engine) {
 	gin.SetMode(gin.TestMode)
 	mockService := mocks.NewMockAnalyticsService(new(testing.T))
 	handler := NewAnalyticsHandler(mockService)

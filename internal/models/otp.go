@@ -16,13 +16,13 @@ const (
 )
 
 type Otp struct {
-	ID        uint      `gorm:"primaryKey"`
-	Email     string    `gorm:"index;not null" encrypt:"true" binding:"required,email"`
-	Code      string    `gorm:"not null"`
-	Name      string    `encrypt:"true"`
+	ID        uint      `gorm:"primaryKey" json:"-"`
+	Email     string    `gorm:"index;not null" encrypt:"true" binding:"required,email" json:"email"`
+	Code      string    `gorm:"not null" json:"code"`
+	Name      string    `encrypt:"true" json:"-"`
 	RequestId string    `gorm:"not null"`
 	ExpiresAt time.Time `gorm:"index;not null"`
-	CreatedAt time.Time
+	CreatedAt time.Time `json:"-"`
 }
 
 // Constructor
