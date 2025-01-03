@@ -1,5 +1,59 @@
 package main
 
+// @title GoFundIt API
+// @version 1.0
+// @description GoFundIt is a crowdfunding platform API that enables users to create and manage fundraising campaigns.
+// @termsOfService http://swagger.io/terms/
+
+// @contact.name API Support
+// @contact.url https://gofundit.com/support
+// @contact.email support@gofundit.com
+
+// @license.name Apache 2.0
+// @license.url http://www.apache.org/licenses/LICENSE-2.0.html
+
+// @host localhost:8080
+// @BasePath /api/v1
+// @schemes http https
+
+// @securityDefinitions.apikey ApiKeyAuth
+// @in header
+// @name X-API-Key
+// @description API Key for accessing the API endpoints
+
+// @securityDefinitions.apikey BearerAuth
+// @in header
+// @name Authorization
+// @description JWT token for authenticated requests. Use the format: Bearer <token>
+
+// @securityDefinitions.apikey CampaignKeyAuth
+// @in header
+// @name Campaign-Key
+// @description Campaign Key required for campaign-specific operations
+
+// @tag.name auth
+// @tag.description Authentication operations including login, OTP verification, and FCM token management
+
+// @tag.name campaign
+// @tag.description Campaign management operations including creation, updates, and retrieval
+
+// @tag.name activity
+// @tag.description Activity tracking and management within campaigns
+
+// @tag.name payment
+// @tag.description Payment processing operations including initialization and verification
+
+// @tag.name payout
+// @tag.description Payout management for campaign funds
+
+// @tag.name suggestion
+// @tag.description AI-powered suggestions and recommendations for campaign activities
+
+// @tag.name comment
+// @tag.description Manage activity comments and replies.Features:- Create/Update/Delete comments- Thread management- Reply system- Comment retrieval
+
+// @Security ApiKeyAuth
+
 import (
 	"log"
 	"os"
@@ -8,6 +62,7 @@ import (
 
 	"github.com/getsentry/sentry-go"
 	"github.com/gin-gonic/gin"
+	doc "github.com/oyen-bright/goFundIt/cmd/docs"
 	"github.com/oyen-bright/goFundIt/config"
 	"github.com/oyen-bright/goFundIt/config/providers"
 	"github.com/oyen-bright/goFundIt/internal/ai/gemini"
@@ -26,6 +81,9 @@ import (
 	"github.com/oyen-bright/goFundIt/pkg/websocket"
 
 	"gorm.io/gorm"
+
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
 func initialize() (*config.AppConfig, *gorm.DB) {
@@ -145,6 +203,15 @@ func main() {
 
 	// Initialize Gin Router
 	router := gin.Default()
+
+	// Configure Swagger
+	doc.SwaggerInfo.BasePath = "/"
+	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler,
+		ginSwagger.URL("/swagger/doc.json"), // Update URL path
+		ginSwagger.DefaultModelsExpandDepth(1),
+		ginSwagger.DocExpansion("list"),
+		ginSwagger.PersistAuthorization(true),
+	))
 
 	// Setup Routes
 	routes.SetupRoutes(routes.Config{

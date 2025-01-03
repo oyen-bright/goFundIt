@@ -1,0 +1,2538 @@
+basePath: /api/v1
+definitions:
+  dto.ActivityRequest:
+    description: Activity creation/update request structure
+    properties:
+      cost:
+        description: |-
+          Cost of the activity (must be greater than 0)
+          @example 1500.50
+        type: number
+      imageUrl:
+        description: |-
+          Optional URL for activity image
+          @example "https://example.com/images/tree-planting.jpg"
+        type: string
+      isMandatory:
+        description: |-
+          Whether this activity is mandatory for the campaign
+          @example true
+        type: boolean
+      subtitle:
+        description: |-
+          Optional subtitle for additional context
+          @example "Phase 1 of reforestation project"
+        type: string
+      title:
+        description: |-
+          Activity title (minimum 4 characters)
+          @example "Plant Trees in Local Park"
+        minLength: 4
+        type: string
+    required:
+    - cost
+    - title
+    type: object
+  dto.CampaignRequest:
+    description: Campaign creation request structure
+    properties:
+      activities:
+        description: '@Description CampaignActivities'
+        items:
+          $ref: '#/definitions/models.Activity'
+        type: array
+      contributors:
+        description: '@Description Campaign contributors'
+        items:
+          $ref: '#/definitions/models.Contributor'
+        type: array
+      cryptoToken:
+        allOf:
+        - $ref: '#/definitions/models.CryptoToken'
+        description: |-
+          @Description Crypto token (required if paymentMethod is crypto)
+          @example "ETH"
+      description:
+        description: |-
+          @Description Detailed campaign description
+          @example "This campaign aims to protect and preserve our forest ecosystems..."
+        minLength: 100
+        type: string
+      endDate:
+        description: |-
+          @Description Campaign end date (must be after start date)
+          @example "2025-02-03T13:51:06Z"
+        type: string
+      fiatCurrency:
+        allOf:
+        - $ref: '#/definitions/models.FiatCurrency'
+        description: |-
+          @Description Fiat currency code (required if paymentMethod is fiat)
+          @example "USD"
+      images:
+        description: '@Description Campaign images'
+        items:
+          $ref: '#/definitions/models.CampaignImage'
+        type: array
+      paymentMethod:
+        allOf:
+        - $ref: '#/definitions/models.PaymentMethod'
+        description: |-
+          @Description Payment method (fiat/crypto/manual)
+          @example "fiat"
+        enum:
+        - fiat
+        - crypto
+        - manual
+      startDate:
+        description: |-
+          @Description Campaign start date
+          @example "2025-01-03T13:51:06Z"
+        type: string
+      title:
+        description: |-
+          @Description Campaign title
+          @example "Save the Forests"
+        minLength: 4
+        type: string
+    required:
+    - activities
+    - contributors
+    - description
+    - endDate
+    - images
+    - paymentMethod
+    - startDate
+    - title
+    type: object
+  dto.CampaignUpdateRequest:
+    properties:
+      description:
+        type: string
+      endDate:
+        type: string
+      title:
+        type: string
+    type: object
+  dto.ContributorEditRequest:
+    properties:
+      name:
+        minLength: 3
+        type: string
+    required:
+    - name
+    type: object
+  dto.CreateCommentRequest:
+    description: Request structure for creating a new comment
+    properties:
+      activityID:
+        description: |-
+          ID of the activity this comment belongs to
+          @example 123
+        type: integer
+      content:
+        description: |-
+          Content of the comment
+          @example "This is a great project! Looking forward to contributing."
+        type: string
+      parentId:
+        description: |-
+          Optional ID of the parent comment if this is a reply
+          @example "comment-123-abc"
+        type: string
+    required:
+    - activityID
+    - content
+    type: object
+  dto.CreateContributorRequest:
+    description: Request structure for creating a new contributor
+    properties:
+      amount:
+        description: |-
+          Amount of the contribution
+          @example 100.50
+          @minimum 0
+        minimum: 0
+        type: number
+      campaignId:
+        description: |-
+          ID of the campaign the contribution is for
+          @example "campaign-123-abc"
+        type: string
+      email:
+        description: |-
+          Email address of the contributor
+          @example "john.doe@example.com"
+        type: string
+      name:
+        description: |-
+          Optional name of the contributor
+          @example "John Doe"
+        minLength: 3
+        type: string
+    required:
+    - amount
+    - campaignId
+    - email
+    type: object
+  dto.FCMUpdateRequest:
+    description: FCM token update request payload
+    properties:
+      fcmtoken:
+        example: your-fcm-token-here
+        type: string
+    required:
+    - fcmtoken
+    type: object
+  dto.InitializePaymentResponse:
+    properties:
+      payment_link:
+        example: https://payment-gateway.com/pay/PAY-REF-123456789
+        type: string
+      payment_status:
+        enum:
+        - pending
+        - completed
+        - failed
+        example: pending
+        type: string
+      reference:
+        example: PAY-REF-123456789
+        type: string
+    required:
+    - payment_link
+    - payment_status
+    - reference
+    type: object
+  dto.PayoutRequest:
+    properties:
+      accountName:
+        minLength: 3
+        type: string
+      accountNumber:
+        type: string
+      bankCode:
+        type: string
+      bankName:
+        minLength: 3
+        type: string
+    required:
+    - accountName
+    - accountNumber
+    - bankCode
+    - bankName
+    type: object
+  dto.SuggestionRequest:
+    properties:
+      content:
+        description: Content for generating suggestions
+        example: Trip to London for a day at midnight
+        type: string
+    required:
+    - content
+    type: object
+  dto.UpdateActivityRequest:
+    description: Activity update request structure
+    properties:
+      cost:
+        description: |-
+          Cost of the activity (must be greater than 0)
+          @example 1500.50
+        type: number
+      image_url:
+        description: |-
+          Optional URL for activity image
+          @example "https://example.com/images/tree-planting.jpg"
+        type: string
+      is_approved:
+        description: |-
+          Approval status of the activity
+          @example false
+        type: boolean
+      is_mandatory:
+        description: |-
+          Whether this activity is mandatory for the campaign
+          @example true
+        type: boolean
+      subtitle:
+        description: |-
+          Optional subtitle for additional context
+          @example "Phase 1 of reforestation project"
+        type: string
+      title:
+        description: |-
+          Activity title (minimum 4 characters)
+          @example "Plant Trees in Local Park"
+        minLength: 4
+        type: string
+    required:
+    - cost
+    - title
+    type: object
+  dto.UpdateCommentRequest:
+    description: Request structure for creating a new comment
+    properties:
+      content:
+        description: |-
+          Content of the comment
+          @example "This is a great project! Looking forward to contributing."
+        type: string
+    required:
+    - content
+    type: object
+  dto.VerifyAccountRequest:
+    properties:
+      accountNumber:
+        type: string
+      bankCode:
+        type: string
+    required:
+    - accountNumber
+    - bankCode
+    type: object
+  dto.VerifyAuthRequest:
+    properties:
+      code:
+        description: |-
+          @Description OTP code
+          @example 123456
+        type: string
+      email:
+        description: |-
+          @Description User's email
+          @example user@example.com
+        type: string
+      requestId:
+        type: string
+    required:
+    - code
+    - email
+    type: object
+  dto.VerifyAuthResponse:
+    properties:
+      token:
+        example: eyJeiroijsffr...
+        type: string
+    type: object
+  handlers.BadRequestResponse:
+    description: Bad request error response structure
+    properties:
+      errors:
+        description: |-
+          Validation errors (optional)
+          @example [{"field":"field","error":"must be a valid data"}]
+      message:
+        description: |-
+          Error message
+          @example Invalid input provided
+        type: string
+      status:
+        description: |-
+          Status will always be "Bad Request"
+          @example Bad Request
+        enum:
+        - Bad Request
+        example: Bad Request
+        type: string
+    type: object
+  handlers.SuccessResponse:
+    description: Successful API response structure
+    properties:
+      data:
+        description: |-
+          Response data (optional)
+          @example null
+      message:
+        description: |-
+          Response message describing the success
+          @example Operation completed successfully
+        type: string
+      status:
+        description: |-
+          Status will always be "OK"
+          @example OK
+        enum:
+        - OK
+        example: OK
+        type: string
+    type: object
+  handlers.UnauthorizedResponse:
+    description: Unauthorized error response structure
+    properties:
+      message:
+        description: |-
+          Will always be "Unauthorized"
+          @example Unauthorized
+        enum:
+        - Unauthorized
+        example: Unauthorized
+        type: string
+      status:
+        description: |-
+          Status will always be false for unauthorized
+          @example false
+        enum:
+        - Unauthorized
+        example: Unauthorized
+        type: string
+    type: object
+  handlers.ValidationError:
+    properties:
+      error:
+        example: must be a valid field
+        type: string
+      field:
+        example: field
+        type: string
+    type: object
+  handlers.response:
+    properties:
+      data:
+        description: Response data (optional)
+      errors:
+        description: Error details (optional)
+      message:
+        description: |-
+          Response message
+          @example Operation completed successfully
+        type: string
+      status:
+        description: |-
+          Response status
+          @example OK
+        type: string
+    type: object
+  models.Activity:
+    properties:
+      campaignId:
+        type: string
+      contributors:
+        items:
+          $ref: '#/definitions/models.Contributor'
+        type: array
+      cost:
+        type: number
+      id:
+        type: integer
+      imageUrl:
+        type: string
+      isApproved:
+        type: boolean
+      isMandatory:
+        type: boolean
+      subtitle:
+        type: string
+      title:
+        minLength: 4
+        type: string
+    required:
+    - campaignId
+    - cost
+    - title
+    type: object
+  models.ActivitySuggestion:
+    properties:
+      activityName:
+        type: string
+      estimatedCost:
+        type: string
+    type: object
+  models.Campaign:
+    properties:
+      activities:
+        items:
+          $ref: '#/definitions/models.Activity'
+        type: array
+      contributors:
+        items:
+          $ref: '#/definitions/models.Contributor'
+        type: array
+      createdByHandle:
+        type: string
+      cryptoToken:
+        $ref: '#/definitions/models.CryptoToken'
+      description:
+        minLength: 100
+        type: string
+      endDate:
+        type: string
+      fiatCurrency:
+        $ref: '#/definitions/models.FiatCurrency'
+      id:
+        type: string
+      images:
+        description: Relations
+        items:
+          $ref: '#/definitions/models.CampaignImage'
+        type: array
+      key:
+        type: string
+      paymentMethod:
+        allOf:
+        - $ref: '#/definitions/models.PaymentMethod'
+        description: Payment
+        enum:
+        - fiat
+        - crypto
+        - manual
+      payout:
+        allOf:
+        - $ref: '#/definitions/models.Payout'
+        description: Payout
+      startDate:
+        type: string
+      targetAmount:
+        type: number
+      title:
+        minLength: 4
+        type: string
+    required:
+    - activities
+    - contributors
+    - createdByHandle
+    - description
+    - endDate
+    - images
+    - paymentMethod
+    - startDate
+    - targetAmount
+    - title
+    type: object
+  models.CampaignImage:
+    properties:
+      id:
+        type: integer
+      imageUrl:
+        type: string
+    required:
+    - imageUrl
+    type: object
+  models.Comment:
+    properties:
+      activityID:
+        type: integer
+      content:
+        type: string
+      createdAt:
+        type: string
+      createdBy:
+        $ref: '#/definitions/models.User'
+      id:
+        type: string
+      parentId:
+        type: string
+      replies:
+        items:
+          $ref: '#/definitions/models.Comment'
+        type: array
+    required:
+    - activityID
+    - content
+    type: object
+  models.Contributor:
+    properties:
+      activities:
+        items:
+          $ref: '#/definitions/models.Activity'
+        type: array
+      amount:
+        minimum: 0
+        type: number
+      campaignId:
+        type: string
+      email:
+        type: string
+      id:
+        type: integer
+      name:
+        minLength: 3
+        type: string
+      payment:
+        $ref: '#/definitions/models.Payment'
+    required:
+    - amount
+    - campaignId
+    type: object
+  models.CryptoAccount:
+    properties:
+      address:
+        type: string
+      cryptoToken:
+        $ref: '#/definitions/models.CryptoToken'
+    type: object
+  models.CryptoToken:
+    enum:
+    - USDT
+    - USDC
+    - BUSD
+    - DAI
+    type: string
+    x-enum-varnames:
+    - USDT
+    - USDC
+    - BUSD
+    - DAI
+  models.FiatAccount:
+    properties:
+      accountName:
+        type: string
+      accountNumber:
+        type: string
+      bankCode:
+        type: string
+      bankName:
+        type: string
+      currency:
+        type: string
+    type: object
+  models.FiatCurrency:
+    enum:
+    - GHS
+    - NGN
+    type: string
+    x-enum-varnames:
+    - GHS
+    - NGN
+  models.ManualPaymentProof:
+    properties:
+      url:
+        type: string
+    type: object
+  models.Otp:
+    properties:
+      code:
+        type: string
+      email:
+        type: string
+      expiresAt:
+        type: string
+      requestId:
+        type: string
+    required:
+    - email
+    type: object
+  models.Payment:
+    properties:
+      amount:
+        type: number
+      authorization_url:
+        description: PaymentURL
+        type: string
+      campaignId:
+        type: string
+      contributorId:
+        type: integer
+      createdAt:
+        type: string
+      gatewayResponse:
+        type: string
+      paymentMethod:
+        $ref: '#/definitions/models.PaymentMethod'
+      paymentProof:
+        $ref: '#/definitions/models.ManualPaymentProof'
+      paymentStatus:
+        $ref: '#/definitions/models.PaymentStatus'
+      reference:
+        type: string
+    type: object
+  models.PaymentMethod:
+    enum:
+    - fiat
+    - crypto
+    - manual
+    type: string
+    x-enum-varnames:
+    - PaymentMethodFiat
+    - PaymentMethodCrypto
+    - PaymentMethodManual
+  models.PaymentStatus:
+    enum:
+    - pending
+    - succeeded
+    - failed
+    - pending_approval
+    type: string
+    x-enum-varnames:
+    - PaymentStatusPending
+    - PaymentStatusSucceeded
+    - PaymentStatusFailed
+    - PaymentStatusPendingApproval
+  models.Payout:
+    properties:
+      amount:
+        type: number
+      campaignId:
+        type: string
+      completedAt:
+        type: string
+      cryptoAccount:
+        $ref: '#/definitions/models.CryptoAccount'
+      failureReason:
+        type: string
+      fiatAccount:
+        $ref: '#/definitions/models.FiatAccount'
+      payoutMethod:
+        $ref: '#/definitions/models.PaymentMethod'
+      processedAt:
+        type: string
+      reference:
+        type: string
+      status:
+        $ref: '#/definitions/models.PayoutStatus'
+    type: object
+  models.PayoutStatus:
+    enum:
+    - pending
+    - processing
+    - completed
+    - failed
+    type: string
+    x-enum-varnames:
+    - PayoutStatusPending
+    - PayoutStatusProcessing
+    - PayoutStatusCompleted
+    - PayoutStatusFailed
+  models.User:
+    description: Authentication request payload
+    properties:
+      email:
+        type: string
+      name:
+        type: string
+    required:
+    - email
+    type: object
+  paystack.Bank:
+    properties:
+      code:
+        type: string
+      country:
+        type: string
+      currency:
+        type: string
+      name:
+        type: string
+    type: object
+  paystack.PaystackWebhookEvent:
+    properties:
+      data:
+        properties:
+          amount:
+            type: number
+          channel:
+            type: string
+          created_at:
+            type: string
+          currency:
+            type: string
+          customer:
+            properties:
+              customer_code:
+                type: string
+              email:
+                type: string
+            type: object
+          id:
+            type: integer
+          metadata:
+            properties:
+              campaign_id:
+                type: string
+              contributor_id:
+                type: string
+            type: object
+          paid_at:
+            type: string
+          reference:
+            type: string
+          status:
+            type: string
+        type: object
+      event:
+        type: string
+    type: object
+  paystack.ResolveAccountResponse:
+    properties:
+      data:
+        properties:
+          account_name:
+            type: string
+          account_number:
+            type: string
+        type: object
+      message:
+        type: string
+      status:
+        type: boolean
+    type: object
+host: localhost:8080
+info:
+  contact:
+    email: support@gofundit.com
+    name: API Support
+    url: https://gofundit.com/support
+  description: GoFundIt is a crowdfunding platform API that enables users to create
+    and manage fundraising campaigns.
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  termsOfService: http://swagger.io/terms/
+  title: GoFundIt API
+  version: "1.0"
+paths:
+  /activity/{campaignID}:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves all activities for a campaign
+      parameters:
+      - description: Campaign ID
+        in: path
+        name: campaignID
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Activities fetched successfully
+          schema:
+            allOf:
+            - $ref: '#/definitions/handlers.SuccessResponse'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/models.Activity'
+                  type: array
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handlers.UnauthorizedResponse'
+        "404":
+          description: Campaign not found
+          schema:
+            $ref: '#/definitions/handlers.response'
+      security:
+      - ApiKeyAuth: []
+      - BearerAuth: []
+      summary: Get Activities
+      tags:
+      - activity
+    post:
+      consumes:
+      - application/json
+      description: Creates a new activity for a campaign
+      parameters:
+      - description: Campaign ID
+        in: path
+        name: campaignID
+        required: true
+        type: string
+      - description: Activity Details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.ActivityRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Activity created successfully
+          schema:
+            allOf:
+            - $ref: '#/definitions/handlers.SuccessResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/models.Activity'
+              type: object
+        "400":
+          description: Invalid inputs
+          schema:
+            allOf:
+            - $ref: '#/definitions/handlers.BadRequestResponse'
+            - properties:
+                errors:
+                  items:
+                    $ref: '#/definitions/handlers.ValidationError'
+                  type: array
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handlers.UnauthorizedResponse'
+      security:
+      - ApiKeyAuth: []
+      - BearerAuth: []
+      summary: Create Activity
+      tags:
+      - activity
+  /activity/{campaignID}/{activityID}:
+    delete:
+      consumes:
+      - application/json
+      description: Deletes an activity from a campaign
+      parameters:
+      - description: Campaign ID
+        in: path
+        name: campaignID
+        required: true
+        type: string
+      - description: Activity ID
+        in: path
+        name: activityID
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Activity deleted successfully
+          schema:
+            $ref: '#/definitions/handlers.SuccessResponse'
+        "400":
+          description: Invalid Activity ID
+          schema:
+            $ref: '#/definitions/handlers.BadRequestResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handlers.UnauthorizedResponse'
+      security:
+      - ApiKeyAuth: []
+      - BearerAuth: []
+      summary: Delete Activity
+      tags:
+      - activity
+    get:
+      consumes:
+      - application/json
+      description: Retrieves a specific activity by ID
+      parameters:
+      - description: Campaign ID
+        in: path
+        name: campaignID
+        required: true
+        type: string
+      - description: Activity ID
+        in: path
+        name: activityID
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Activity fetched successfully
+          schema:
+            allOf:
+            - $ref: '#/definitions/handlers.SuccessResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/models.Activity'
+              type: object
+        "400":
+          description: Invalid Activity ID
+          schema:
+            $ref: '#/definitions/handlers.BadRequestResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handlers.UnauthorizedResponse'
+        "404":
+          description: Activity not found
+          schema:
+            $ref: '#/definitions/handlers.response'
+      security:
+      - ApiKeyAuth: []
+      - BearerAuth: []
+      summary: Get Activity
+      tags:
+      - activity
+    patch:
+      consumes:
+      - application/json
+      description: Updates an existing activity
+      parameters:
+      - description: Campaign ID
+        in: path
+        name: campaignID
+        required: true
+        type: string
+      - description: Activity ID
+        in: path
+        name: activityID
+        required: true
+        type: string
+      - description: Update Activity Details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateActivityRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Activity updated successfully
+          schema:
+            allOf:
+            - $ref: '#/definitions/handlers.SuccessResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/models.Activity'
+              type: object
+        "400":
+          description: Invalid inputs
+          schema:
+            allOf:
+            - $ref: '#/definitions/handlers.BadRequestResponse'
+            - properties:
+                errors:
+                  items:
+                    $ref: '#/definitions/handlers.ValidationError'
+                  type: array
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handlers.UnauthorizedResponse'
+      security:
+      - ApiKeyAuth: []
+      - BearerAuth: []
+      summary: Update Activity
+      tags:
+      - activity
+  /activity/{campaignID}/{activityID}/approve:
+    post:
+      consumes:
+      - application/json
+      description: Approves an activity in a campaign
+      parameters:
+      - description: Campaign ID
+        in: path
+        name: campaignID
+        required: true
+        type: string
+      - description: Activity ID
+        in: path
+        name: activityID
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Activity approved successfully
+          schema:
+            allOf:
+            - $ref: '#/definitions/handlers.SuccessResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/models.Activity'
+              type: object
+        "400":
+          description: Invalid Activity ID
+          schema:
+            $ref: '#/definitions/handlers.BadRequestResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handlers.UnauthorizedResponse'
+      security:
+      - ApiKeyAuth: []
+      - BearerAuth: []
+      summary: Approve Activity
+      tags:
+      - activity
+  /activity/{campaignID}/{activityID}/comments:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves all comments associated with a specific activity
+      parameters:
+      - description: Campaign ID
+        in: path
+        name: campaignID
+        required: true
+        type: string
+      - description: Activity ID
+        in: path
+        name: activityID
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Comments retrieved successfully
+          schema:
+            allOf:
+            - $ref: '#/definitions/handlers.SuccessResponse'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/models.Comment'
+                  type: array
+              type: object
+        "400":
+          description: Invalid Activity ID
+          schema:
+            $ref: '#/definitions/handlers.BadRequestResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handlers.UnauthorizedResponse'
+      security:
+      - ApiKeyAuth: []
+      - BearerAuth: []
+      summary: Get Activity Comments
+      tags:
+      - comment
+    post:
+      consumes:
+      - application/json
+      description: Posts a new comment or reply on an activity
+      parameters:
+      - description: Campaign ID
+        in: path
+        name: campaignID
+        required: true
+        type: string
+      - description: Activity ID
+        in: path
+        name: activityID
+        required: true
+        type: string
+      - description: Comment Details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateCommentRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Comment created successfully
+          schema:
+            allOf:
+            - $ref: '#/definitions/handlers.SuccessResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/models.Comment'
+              type: object
+        "400":
+          description: Invalid inputs
+          schema:
+            allOf:
+            - $ref: '#/definitions/handlers.BadRequestResponse'
+            - properties:
+                errors:
+                  items:
+                    $ref: '#/definitions/handlers.ValidationError'
+                  type: array
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handlers.UnauthorizedResponse'
+      security:
+      - ApiKeyAuth: []
+      - BearerAuth: []
+      summary: Create Comment
+      tags:
+      - comment
+  /activity/{campaignID}/{activityID}/comments/{commentID}:
+    delete:
+      consumes:
+      - application/json
+      description: Deletes a specific comment
+      parameters:
+      - description: Campaign ID
+        in: path
+        name: campaignID
+        required: true
+        type: string
+      - description: Activity ID
+        in: path
+        name: activityID
+        required: true
+        type: string
+      - description: Comment ID
+        in: path
+        name: commentID
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Comment deleted successfully
+          schema:
+            $ref: '#/definitions/handlers.SuccessResponse'
+        "400":
+          description: Invalid request
+          schema:
+            $ref: '#/definitions/handlers.BadRequestResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handlers.UnauthorizedResponse'
+        "404":
+          description: Comment not found
+          schema:
+            $ref: '#/definitions/handlers.response'
+      security:
+      - ApiKeyAuth: []
+      - BearerAuth: []
+      summary: Delete Comment
+      tags:
+      - comment
+    patch:
+      consumes:
+      - application/json
+      description: Modifies the content of an existing comment
+      parameters:
+      - description: Campaign ID
+        in: path
+        name: campaignID
+        required: true
+        type: string
+      - description: Activity ID
+        in: path
+        name: activityID
+        required: true
+        type: string
+      - description: Comment ID
+        in: path
+        name: commentID
+        required: true
+        type: string
+      - description: Updated Comment Content
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateCommentRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Comment updated successfully
+          schema:
+            allOf:
+            - $ref: '#/definitions/handlers.SuccessResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/models.Comment'
+              type: object
+        "400":
+          description: Invalid inputs
+          schema:
+            allOf:
+            - $ref: '#/definitions/handlers.BadRequestResponse'
+            - properties:
+                errors:
+                  items:
+                    $ref: '#/definitions/handlers.ValidationError'
+                  type: array
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handlers.UnauthorizedResponse'
+        "404":
+          description: Comment not found
+          schema:
+            $ref: '#/definitions/handlers.response'
+      security:
+      - ApiKeyAuth: []
+      - BearerAuth: []
+      summary: Update Comment
+      tags:
+      - comment
+  /activity/{campaignID}/{activityID}/participants:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves all participants for an activity
+      parameters:
+      - description: Campaign ID
+        in: path
+        name: campaignID
+        required: true
+        type: string
+      - description: Activity ID
+        in: path
+        name: activityID
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Participants fetched successfully
+          schema:
+            allOf:
+            - $ref: '#/definitions/handlers.SuccessResponse'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/models.Contributor'
+                  type: array
+              type: object
+        "400":
+          description: Invalid Activity ID
+          schema:
+            $ref: '#/definitions/handlers.BadRequestResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handlers.UnauthorizedResponse'
+      security:
+      - ApiKeyAuth: []
+      - BearerAuth: []
+      summary: Get Participants
+      tags:
+      - activity
+  /activity/{campaignID}/{activityID}/participants/{contributorID}:
+    delete:
+      consumes:
+      - application/json
+      description: Opts out a contributor from an activity
+      parameters:
+      - description: Campaign ID
+        in: path
+        name: campaignID
+        required: true
+        type: string
+      - description: Activity ID
+        in: path
+        name: activityID
+        required: true
+        type: string
+      - description: Contributor ID
+        in: path
+        name: contributorID
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Contributor opted out successfully
+          schema:
+            $ref: '#/definitions/handlers.SuccessResponse'
+        "400":
+          description: Invalid IDs
+          schema:
+            $ref: '#/definitions/handlers.BadRequestResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handlers.UnauthorizedResponse'
+      security:
+      - ApiKeyAuth: []
+      - BearerAuth: []
+      summary: Opt Out Contributor
+      tags:
+      - activity
+    post:
+      consumes:
+      - application/json
+      description: Opts in a contributor to an activity
+      parameters:
+      - description: Campaign ID
+        in: path
+        name: campaignID
+        required: true
+        type: string
+      - description: Activity ID
+        in: path
+        name: activityID
+        required: true
+        type: string
+      - description: Contributor ID
+        in: path
+        name: contributorID
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Contributor opted in successfully
+          schema:
+            $ref: '#/definitions/handlers.SuccessResponse'
+        "400":
+          description: Invalid IDs
+          schema:
+            $ref: '#/definitions/handlers.BadRequestResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handlers.UnauthorizedResponse'
+      security:
+      - ApiKeyAuth: []
+      - BearerAuth: []
+      summary: Opt In Contributor
+      tags:
+      - activity
+  /analytics/process:
+    get:
+      consumes:
+      - application/json
+      description: Triggers immediate processing of analytics data and sends results
+        via email
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Analytics processed and sent to email
+          schema:
+            $ref: '#/definitions/handlers.SuccessResponse'
+        "400":
+          description: Processing failed
+          schema:
+            $ref: '#/definitions/handlers.BadRequestResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handlers.UnauthorizedResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/handlers.response'
+      security:
+      - ApiKeyAuth: []
+      - BearerAuth: []
+      summary: Process Analytics Now
+      tags:
+      - analytics
+  /auth:
+    post:
+      consumes:
+      - application/json
+      description: Initiates the authentication process for a user by sending a verification
+        code to their email address. Requires user's name and email in request body.
+      parameters:
+      - description: API Key
+        in: header
+        name: X-API-Key
+        required: true
+        type: string
+      - description: Auth Credentials
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.User'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Please check your email for the OTP.
+          schema:
+            allOf:
+            - $ref: '#/definitions/handlers.SuccessResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/models.Otp'
+              type: object
+        "400":
+          description: Invalid inputs, please check and try again
+          schema:
+            allOf:
+            - $ref: '#/definitions/handlers.BadRequestResponse'
+            - properties:
+                errors:
+                  items:
+                    $ref: '#/definitions/handlers.ValidationError'
+                  type: array
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handlers.UnauthorizedResponse'
+      summary: Authenticate User
+      tags:
+      - auth
+  /auth/verify:
+    post:
+      consumes:
+      - application/json
+      description: Validates the verification code sent to user's email. Requires
+        email, verification code, and request ID for verification
+      parameters:
+      - description: API Key
+        in: header
+        name: X-API-Key
+        required: true
+        type: string
+      - description: Verification Data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.VerifyAuthRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Authenticated
+          schema:
+            allOf:
+            - $ref: '#/definitions/handlers.SuccessResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.VerifyAuthResponse'
+              type: object
+        "400":
+          description: Invalid inputs, please check and try again
+          schema:
+            allOf:
+            - $ref: '#/definitions/handlers.BadRequestResponse'
+            - properties:
+                errors:
+                  items:
+                    $ref: '#/definitions/handlers.ValidationError'
+                  type: array
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handlers.UnauthorizedResponse'
+      summary: Verify OTP
+      tags:
+      - auth
+  /campaign/{campaignID}:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves a campaign by its ID
+      parameters:
+      - description: Campaign ID
+        in: path
+        name: campaignID
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Campaign retrieved successfully
+          schema:
+            allOf:
+            - $ref: '#/definitions/handlers.SuccessResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/models.Campaign'
+              type: object
+        "400":
+          description: Invalid campaign ID
+          schema:
+            allOf:
+            - $ref: '#/definitions/handlers.BadRequestResponse'
+            - properties:
+                errors:
+                  items:
+                    $ref: '#/definitions/handlers.ValidationError'
+                  type: array
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handlers.UnauthorizedResponse'
+        "404":
+          description: Campaign not found
+          schema:
+            $ref: '#/definitions/handlers.response'
+      security:
+      - ApiKeyAuth: []
+      - BearerAuth: []
+      summary: Get Campaign
+      tags:
+      - campaign
+    patch:
+      consumes:
+      - application/json
+      description: Updates an existing campaign by its ID
+      parameters:
+      - description: Campaign ID
+        in: path
+        name: campaignID
+        required: true
+        type: string
+      - description: Update Campaign Details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CampaignUpdateRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Campaign updated successfully
+          schema:
+            allOf:
+            - $ref: '#/definitions/handlers.SuccessResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/models.Campaign'
+              type: object
+        "400":
+          description: Invalid inputs
+          schema:
+            allOf:
+            - $ref: '#/definitions/handlers.BadRequestResponse'
+            - properties:
+                errors:
+                  items:
+                    $ref: '#/definitions/handlers.ValidationError'
+                  type: array
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handlers.UnauthorizedResponse'
+        "404":
+          description: Campaign not found
+          schema:
+            $ref: '#/definitions/handlers.response'
+      security:
+      - ApiKeyAuth: []
+      - BearerAuth: []
+      summary: Update Campaign
+      tags:
+      - campaign
+  /campaign/create:
+    post:
+      consumes:
+      - application/json
+      description: Creates a new campaign with the provided details
+      parameters:
+      - description: Campaign Details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CampaignRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Campaign created successfully
+          schema:
+            allOf:
+            - $ref: '#/definitions/handlers.SuccessResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/models.Campaign'
+              type: object
+        "400":
+          description: Invalid inputs, please check and try again
+          schema:
+            allOf:
+            - $ref: '#/definitions/handlers.BadRequestResponse'
+            - properties:
+                errors:
+                  items:
+                    $ref: '#/definitions/handlers.ValidationError'
+                  type: array
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handlers.UnauthorizedResponse'
+      security:
+      - ApiKeyAuth: []
+      - BearerAuth: []
+      summary: Create Campaign
+      tags:
+      - campaign
+  /comments/{comment_id}/replies:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves all reply comments for a given parent comment ID
+      parameters:
+      - description: Comment ID
+        in: path
+        name: comment_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successfully retrieved replies
+          schema:
+            allOf:
+            - $ref: '#/definitions/handlers.SuccessResponse'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/models.Comment'
+                  type: array
+              type: object
+        "400":
+          description: Invalid comment ID
+          schema:
+            $ref: '#/definitions/handlers.BadRequestResponse'
+        "404":
+          description: Comment not found
+          schema:
+            $ref: '#/definitions/handlers.BadRequestResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/handlers.response'
+      summary: Get replies for a comment
+      tags:
+      - comment
+  /contributor/{campaignID}:
+    get:
+      consumes:
+      - application/json
+      description: Lists all contributors participating in the campaign
+      parameters:
+      - description: Campaign ID
+        in: path
+        name: campaignID
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Contributors retrieved successfully
+          schema:
+            allOf:
+            - $ref: '#/definitions/handlers.SuccessResponse'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/models.Contributor'
+                  type: array
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handlers.UnauthorizedResponse'
+        "404":
+          description: Campaign not found
+          schema:
+            $ref: '#/definitions/handlers.response'
+      security:
+      - ApiKeyAuth: []
+      - BearerAuth: []
+      summary: Get All Contributors
+      tags:
+      - contributors
+    post:
+      consumes:
+      - application/json
+      description: Registers a new contributor to the campaign
+      parameters:
+      - description: Campaign ID
+        in: path
+        name: campaignID
+        required: true
+        type: string
+      - description: Contributor Details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateContributorRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Contributor added to Campaign
+          schema:
+            allOf:
+            - $ref: '#/definitions/handlers.SuccessResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/models.Contributor'
+              type: object
+        "400":
+          description: Invalid inputs
+          schema:
+            allOf:
+            - $ref: '#/definitions/handlers.BadRequestResponse'
+            - properties:
+                errors:
+                  items:
+                    $ref: '#/definitions/handlers.ValidationError'
+                  type: array
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handlers.UnauthorizedResponse'
+        "404":
+          description: Campaign not found
+          schema:
+            $ref: '#/definitions/handlers.response'
+      security:
+      - ApiKeyAuth: []
+      - BearerAuth: []
+      summary: Add Contributor
+      tags:
+      - contributors
+  /contributor/{campaignID}/{contributorID}:
+    delete:
+      consumes:
+      - application/json
+      description: Removes a contributor from the campaign
+      parameters:
+      - description: Campaign ID
+        in: path
+        name: campaignID
+        required: true
+        type: string
+      - description: Contributor ID
+        in: path
+        name: contributorID
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Contributor removed from Campaign
+          schema:
+            $ref: '#/definitions/handlers.SuccessResponse'
+        "400":
+          description: Invalid contributor ID
+          schema:
+            $ref: '#/definitions/handlers.BadRequestResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handlers.UnauthorizedResponse'
+        "404":
+          description: Contributor or Campaign not found
+          schema:
+            $ref: '#/definitions/handlers.response'
+      security:
+      - ApiKeyAuth: []
+      - BearerAuth: []
+      summary: Remove Contributor
+      tags:
+      - contributors
+    get:
+      consumes:
+      - application/json
+      description: Retrieves detailed information about a specific contributor
+      parameters:
+      - description: Campaign ID
+        in: path
+        name: campaignID
+        required: true
+        type: string
+      - description: Contributor ID
+        in: path
+        name: contributorID
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Contributor retrieved successfully
+          schema:
+            allOf:
+            - $ref: '#/definitions/handlers.SuccessResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/models.Contributor'
+              type: object
+        "400":
+          description: Invalid contributor ID
+          schema:
+            $ref: '#/definitions/handlers.BadRequestResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handlers.UnauthorizedResponse'
+        "404":
+          description: Contributor not found
+          schema:
+            $ref: '#/definitions/handlers.response'
+      security:
+      - ApiKeyAuth: []
+      - BearerAuth: []
+      summary: Get Contributor
+      tags:
+      - contributors
+    patch:
+      consumes:
+      - application/json
+      description: Modifies a contributor's information
+      parameters:
+      - description: Campaign ID
+        in: path
+        name: campaignID
+        required: true
+        type: string
+      - description: Contributor ID
+        in: path
+        name: contributorID
+        required: true
+        type: string
+      - description: Updated Contributor Details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.ContributorEditRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Contributor updated successfully
+          schema:
+            allOf:
+            - $ref: '#/definitions/handlers.SuccessResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/models.Contributor'
+              type: object
+        "400":
+          description: Invalid inputs
+          schema:
+            allOf:
+            - $ref: '#/definitions/handlers.BadRequestResponse'
+            - properties:
+                errors:
+                  items:
+                    $ref: '#/definitions/handlers.ValidationError'
+                  type: array
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handlers.UnauthorizedResponse'
+        "404":
+          description: Contributor not found
+          schema:
+            $ref: '#/definitions/handlers.response'
+      security:
+      - ApiKeyAuth: []
+      - BearerAuth: []
+      summary: Edit Contributor
+      tags:
+      - contributors
+  /fcm/save-token:
+    post:
+      consumes:
+      - application/json
+      description: Saves the FCM token for push notifications
+      parameters:
+      - description: FCM Token
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.FCMUpdateRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: FCM token saved
+          schema:
+            $ref: '#/definitions/handlers.SuccessResponse'
+        "400":
+          description: Invalid inputs, please check and try again
+          schema:
+            allOf:
+            - $ref: '#/definitions/handlers.BadRequestResponse'
+            - properties:
+                errors:
+                  items:
+                    $ref: '#/definitions/handlers.ValidationError'
+                  type: array
+              type: object
+      security:
+      - ApiKeyAuth: []
+      - BearerAuth: []
+      summary: Save FCM Token
+      tags:
+      - auth
+  /payment/contributor/{contributorID}:
+    post:
+      consumes:
+      - application/json
+      description: Initializes a payment for a contributor
+      parameters:
+      - description: Contributor ID
+        in: path
+        name: contributorID
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Payment initialized successfully
+          schema:
+            allOf:
+            - $ref: '#/definitions/handlers.SuccessResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.InitializePaymentResponse'
+              type: object
+        "400":
+          description: Invalid contributor ID
+          schema:
+            $ref: '#/definitions/handlers.BadRequestResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handlers.UnauthorizedResponse'
+        "404":
+          description: Contributor not found
+          schema:
+            $ref: '#/definitions/handlers.response'
+      security:
+      - ApiKeyAuth: []
+      - BearerAuth: []
+      summary: Initialize Payment
+      tags:
+      - payment
+  /payment/manual/contributor/{contributorID}:
+    post:
+      consumes:
+      - multipart/form-data
+      description: Initializes a manual payment for a contributor with optional reference
+        file
+      parameters:
+      - description: Contributor ID
+        in: path
+        name: contributorID
+        required: true
+        type: string
+      - description: Reference file for manual payment
+        in: formData
+        name: reference
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Manual payment initialized
+          schema:
+            allOf:
+            - $ref: '#/definitions/handlers.SuccessResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/models.Payment'
+              type: object
+        "400":
+          description: Invalid request
+          schema:
+            $ref: '#/definitions/handlers.BadRequestResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handlers.UnauthorizedResponse'
+        "404":
+          description: Contributor not found
+          schema:
+            $ref: '#/definitions/handlers.response'
+      security:
+      - ApiKeyAuth: []
+      - BearerAuth: []
+      summary: Initialize Manual Payment
+      tags:
+      - payment
+  /payment/manual/verify/{reference}:
+    post:
+      consumes:
+      - application/json
+      description: Verifies a manual payment using the reference
+      parameters:
+      - description: Payment reference
+        in: path
+        name: reference
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Manual payment verified
+          schema:
+            $ref: '#/definitions/handlers.SuccessResponse'
+        "400":
+          description: Invalid reference
+          schema:
+            $ref: '#/definitions/handlers.BadRequestResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handlers.UnauthorizedResponse'
+        "404":
+          description: Payment not found
+          schema:
+            $ref: '#/definitions/handlers.response'
+      security:
+      - ApiKeyAuth: []
+      - BearerAuth: []
+      summary: Verify Manual Payment
+      tags:
+      - payment
+  /payment/paystack/webhook:
+    post:
+      consumes:
+      - application/json
+      description: Processes incoming Paystack webhook events
+      parameters:
+      - description: Paystack signature
+        in: header
+        name: X-Paystack-Signature
+        required: true
+        type: string
+      - description: Webhook event data
+        in: body
+        name: event
+        required: true
+        schema:
+          $ref: '#/definitions/paystack.PaystackWebhookEvent'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Webhook processed successfully
+          schema:
+            $ref: '#/definitions/handlers.SuccessResponse'
+        "400":
+          description: Invalid webhook data
+          schema:
+            $ref: '#/definitions/handlers.BadRequestResponse'
+      summary: Handle Paystack Webhook
+      tags:
+      - payment
+  /payment/verify/{reference}:
+    post:
+      consumes:
+      - application/json
+      description: Verifies a payment using the reference
+      parameters:
+      - description: Payment reference
+        in: path
+        name: reference
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Payment verified
+          schema:
+            $ref: '#/definitions/handlers.SuccessResponse'
+        "400":
+          description: Invalid reference
+          schema:
+            $ref: '#/definitions/handlers.BadRequestResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handlers.UnauthorizedResponse'
+        "404":
+          description: Payment not found
+          schema:
+            $ref: '#/definitions/handlers.response'
+      security:
+      - ApiKeyAuth: []
+      - BearerAuth: []
+      summary: Verify Payment
+      tags:
+      - payment
+  /payout/{campaignID}:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves payout information for a campaign
+      parameters:
+      - description: Campaign ID
+        in: path
+        name: campaignID
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Payout information retrieved successfully
+          schema:
+            allOf:
+            - $ref: '#/definitions/handlers.SuccessResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/models.Payout'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handlers.UnauthorizedResponse'
+        "404":
+          description: Campaign not found
+          schema:
+            $ref: '#/definitions/handlers.response'
+      security:
+      - ApiKeyAuth: []
+      - BearerAuth: []
+      summary: Get Campaign Payout
+      tags:
+      - payout
+    post:
+      consumes:
+      - application/json
+      description: Initializes a payout for a campaign
+      parameters:
+      - description: Campaign ID
+        in: path
+        name: campaignID
+        required: true
+        type: string
+      - description: Payout details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.PayoutRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Payout initialized successfully
+          schema:
+            allOf:
+            - $ref: '#/definitions/handlers.SuccessResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/models.Payout'
+              type: object
+        "400":
+          description: Invalid payout details
+          schema:
+            allOf:
+            - $ref: '#/definitions/handlers.BadRequestResponse'
+            - properties:
+                errors:
+                  items:
+                    $ref: '#/definitions/handlers.ValidationError'
+                  type: array
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handlers.UnauthorizedResponse'
+        "404":
+          description: Campaign not found
+          schema:
+            $ref: '#/definitions/handlers.response'
+      security:
+      - ApiKeyAuth: []
+      - BearerAuth: []
+      summary: Initialize Payout
+      tags:
+      - payout
+  /payout/bank-list:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves list of available banks for payout
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Bank list retrieved successfully
+          schema:
+            allOf:
+            - $ref: '#/definitions/handlers.SuccessResponse'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/paystack.Bank'
+                  type: array
+              type: object
+        "400":
+          description: Invalid request
+          schema:
+            $ref: '#/definitions/handlers.BadRequestResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handlers.UnauthorizedResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Get Bank List
+      tags:
+      - payout
+  /payout/manual/{campaignID}:
+    post:
+      consumes:
+      - application/json
+      description: Initializes a manual payout for a campaign
+      parameters:
+      - description: Campaign ID
+        in: path
+        name: campaignID
+        required: true
+        type: string
+      - description: Manual payout details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.PayoutRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Manual payout initialized successfully
+          schema:
+            allOf:
+            - $ref: '#/definitions/handlers.SuccessResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/models.Payout'
+              type: object
+        "400":
+          description: Invalid payout details
+          schema:
+            allOf:
+            - $ref: '#/definitions/handlers.BadRequestResponse'
+            - properties:
+                errors:
+                  items:
+                    $ref: '#/definitions/handlers.ValidationError'
+                  type: array
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handlers.UnauthorizedResponse'
+        "404":
+          description: Campaign not found
+          schema:
+            $ref: '#/definitions/handlers.response'
+      security:
+      - ApiKeyAuth: []
+      - BearerAuth: []
+      summary: Initialize Manual Payout
+      tags:
+      - payout
+  /payout/verify/bank-account:
+    post:
+      consumes:
+      - application/json
+      description: Verifies a bank account for payout
+      parameters:
+      - description: Account verification details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.VerifyAccountRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Account verified successfully
+          schema:
+            allOf:
+            - $ref: '#/definitions/handlers.SuccessResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/paystack.ResolveAccountResponse'
+              type: object
+        "400":
+          description: Invalid account details
+          schema:
+            allOf:
+            - $ref: '#/definitions/handlers.BadRequestResponse'
+            - properties:
+                errors:
+                  items:
+                    $ref: '#/definitions/handlers.ValidationError'
+                  type: array
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handlers.UnauthorizedResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Verify Bank Account
+      tags:
+      - payout
+  /suggestions/activity:
+    post:
+      consumes:
+      - application/json
+      description: Generates activity suggestions based on provided content text
+      parameters:
+      - description: Content for suggestion generation
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.SuggestionRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Activity suggestions retrieved successfully
+          schema:
+            allOf:
+            - $ref: '#/definitions/handlers.SuccessResponse'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/models.ActivitySuggestion'
+                  type: array
+              type: object
+        "400":
+          description: Invalid inputs
+          schema:
+            allOf:
+            - $ref: '#/definitions/handlers.BadRequestResponse'
+            - properties:
+                errors:
+                  items:
+                    $ref: '#/definitions/handlers.ValidationError'
+                  type: array
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handlers.UnauthorizedResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Get Activity Suggestions by Text
+      tags:
+      - suggestion
+  /suggestions/activity/{campaignID}:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves a list of suggested activities for a specific campaign
+      parameters:
+      - description: Campaign ID
+        in: path
+        name: campaignID
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Activity suggestions retrieved successfully
+          schema:
+            allOf:
+            - $ref: '#/definitions/handlers.SuccessResponse'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/models.ActivitySuggestion'
+                  type: array
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handlers.UnauthorizedResponse'
+        "404":
+          description: Campaign not found
+          schema:
+            $ref: '#/definitions/handlers.response'
+      security:
+      - ApiKeyAuth: []
+      - BearerAuth: []
+      summary: Get Campaign Activity Suggestions
+      tags:
+      - suggestion
+  /ws/campaign/{campaignID}:
+    get:
+      consumes:
+      - application/json
+      description: Establishes a WebSocket connection for real-time updates about
+        campaign activities
+      parameters:
+      - description: Campaign ID
+        in: path
+        name: campaignID
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "101":
+          description: Switching Protocols
+          schema:
+            type: string
+        "400":
+          description: Invalid campaign ID
+          schema:
+            $ref: '#/definitions/handlers.BadRequestResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handlers.UnauthorizedResponse'
+        "404":
+          description: Campaign not found
+          schema:
+            $ref: '#/definitions/handlers.response'
+      security:
+      - ApiKeyAuth: []
+      - BearerAuth: []
+      summary: Campaign WebSocket Connection
+      tags:
+      - websocket
+schemes:
+- http
+- https
+security:
+- ApiKeyAuth: []
+securityDefinitions:
+  ApiKeyAuth:
+    description: API Key for accessing the API endpoints
+    in: header
+    name: X-API-Key
+    type: apiKey
+  BearerAuth:
+    description: 'JWT token for authenticated requests. Use the format: Bearer <token>'
+    in: header
+    name: Authorization
+    type: apiKey
+  CampaignKeyAuth:
+    description: Campaign Key required for campaign-specific operations
+    in: header
+    name: Campaign-Key
+    type: apiKey
+swagger: "2.0"
+tags:
+- description: Authentication operations including login, OTP verification, and FCM
+    token management
+  name: auth
+- description: Campaign management operations including creation, updates, and retrieval
+  name: campaign
+- description: Activity tracking and management within campaigns
+  name: activity
+- description: Payment processing operations including initialization and verification
+  name: payment
+- description: Payout management for campaign funds
+  name: payout
+- description: AI-powered suggestions and recommendations for campaign activities
+  name: suggestion
+- description: Manage activity comments and replies.Features:- Create/Update/Delete
+    comments- Thread management- Reply system- Comment retrieval
+  name: comment
