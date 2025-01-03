@@ -15,21 +15,21 @@ func bindJSON(c *gin.Context, obj interface{}) error {
 	return nil
 }
 
-func ExtractValidationErrors(err error) []map[string]interface{} {
-	var errors []map[string]interface{}
+func ExtractValidationErrors(err error) []ValidationError {
+	var errors []ValidationError
 
 	if validationErrors, ok := err.(validator.ValidationErrors); ok {
 		for _, validationError := range validationErrors {
-			errors = append(errors, map[string]interface{}{
-				"field":   validationError.StructField(),
-				"message": validationError.Error(),
-				// "extras":  []interface{}{validationError.ActualTag(), validationError.Value()},
+			errors = append(errors, ValidationError{
+				Field: validationError.Field(),
+				Error: validationError.Error(),
 			})
 		}
 	} else {
-		return []map[string]interface{}{
-			{"message": err.Error()},
-		}
+		errors = append(errors, ValidationError{
+			Field: "general",
+			Error: err.Error(),
+		})
 	}
 
 	return errors
