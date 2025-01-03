@@ -2,12 +2,12 @@ package main
 
 // @title GoFundIt API
 // @version 1.0
-// @description GoFundIt is a crowdfunding platform API that enables users to create and manage fundraising campaigns.
+// @description GoFundIt is a collaborative platform enabling families and friends to plan and fund group activities, such as vacations and events. Features end-to-end encryption, secure payment handling, and flexible contribution options.
 // @termsOfService http://swagger.io/terms/
 
 // @contact.name API Support
 // @contact.url https://gofundit.com/support
-// @contact.email support@gofundit.com
+// @contact.email oyeniyibright@gmail.com
 
 // @license.name Apache 2.0
 // @license.url http://www.apache.org/licenses/LICENSE-2.0.html
@@ -32,25 +32,34 @@ package main
 // @description Campaign Key required for campaign-specific operations
 
 // @tag.name auth
-// @tag.description Authentication operations including login, OTP verification, and FCM token management
+// @tag.description Secure authentication with end-to-end encryption, including login and OTP verification
 
 // @tag.name campaign
-// @tag.description Campaign management operations including creation, updates, and retrieval
+// @tag.description Group activity and event campaign management with encrypted data storage
+
+// @tag.name contributor
+// @tag.description Manage group members and their contributions with secure payment handling
 
 // @tag.name activity
-// @tag.description Activity tracking and management within campaigns
+// @tag.description Track and manage group activities and events securely
 
 // @tag.name payment
-// @tag.description Payment processing operations including initialization and verification
+// @tag.description Secure payment processing with flexible contribution options
 
 // @tag.name payout
-// @tag.description Payout management for campaign funds
+// @tag.description Safe fund distribution for group activities
 
 // @tag.name suggestion
-// @tag.description AI-powered suggestions and recommendations for campaign activities
+// @tag.description AI-powered suggestions for group activities and event planning
 
 // @tag.name comment
-// @tag.description Manage activity comments and replies.Features:- Create/Update/Delete comments- Thread management- Reply system- Comment retrieval
+// @tag.description Encrypted group communication with comments and replies
+
+// @tag.name analytic
+// @tag.description Secure analytics for group activity performance
+
+// @tag.name websocket
+// @tag.description Real-time encrypted updates for group coordination
 
 // @Security ApiKeyAuth
 
@@ -62,7 +71,7 @@ import (
 
 	"github.com/getsentry/sentry-go"
 	"github.com/gin-gonic/gin"
-	doc "github.com/oyen-bright/goFundIt/cmd/docs"
+	doc "github.com/oyen-bright/goFundIt/cmd/docs/swagger"
 	"github.com/oyen-bright/goFundIt/config"
 	"github.com/oyen-bright/goFundIt/config/providers"
 	"github.com/oyen-bright/goFundIt/internal/ai/gemini"

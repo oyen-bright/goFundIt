@@ -768,11 +768,12 @@ definitions:
 host: localhost:8080
 info:
   contact:
-    email: support@gofundit.com
+    email: oyeniyibright@gmail.com
     name: API Support
     url: https://gofundit.com/support
-  description: GoFundIt is a crowdfunding platform API that enables users to create
-    and manage fundraising campaigns.
+  description: GoFundIt is a collaborative platform enabling families and friends
+    to plan and fund group activities, such as vacations and events. Features end-to-end
+    encryption, secure payment handling, and flexible contribution options.
   license:
     name: Apache 2.0
     url: http://www.apache.org/licenses/LICENSE-2.0.html
@@ -1731,7 +1732,7 @@ paths:
       - BearerAuth: []
       summary: Get All Contributors
       tags:
-      - contributors
+      - contributor
     post:
       consumes:
       - application/json
@@ -1784,7 +1785,7 @@ paths:
       - BearerAuth: []
       summary: Add Contributor
       tags:
-      - contributors
+      - contributor
   /contributor/{campaignID}/{contributorID}:
     delete:
       consumes:
@@ -1928,7 +1929,7 @@ paths:
       - BearerAuth: []
       summary: Edit Contributor
       tags:
-      - contributors
+      - contributor
   /fcm/save-token:
     post:
       consumes:
@@ -2520,19 +2521,24 @@ securityDefinitions:
     type: apiKey
 swagger: "2.0"
 tags:
-- description: Authentication operations including login, OTP verification, and FCM
-    token management
+- description: Secure authentication with end-to-end encryption, including login and
+    OTP verification
   name: auth
-- description: Campaign management operations including creation, updates, and retrieval
+- description: Group activity and event campaign management with encrypted data storage
   name: campaign
-- description: Activity tracking and management within campaigns
+- description: Manage group members and their contributions with secure payment handling
+  name: contributor
+- description: Track and manage group activities and events securely
   name: activity
-- description: Payment processing operations including initialization and verification
+- description: Secure payment processing with flexible contribution options
   name: payment
-- description: Payout management for campaign funds
+- description: Safe fund distribution for group activities
   name: payout
-- description: AI-powered suggestions and recommendations for campaign activities
+- description: AI-powered suggestions for group activities and event planning
   name: suggestion
-- description: Manage activity comments and replies.Features:- Create/Update/Delete
-    comments- Thread management- Reply system- Comment retrieval
+- description: Encrypted group communication with comments and replies
   name: comment
+- description: Secure analytics for group activity performance
+  name: analytic
+- description: Real-time encrypted updates for group coordination
+  name: websocket

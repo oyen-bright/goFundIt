@@ -19,7 +19,7 @@ func NewContributorHandler(service services.ContributorService) *ContributorHand
 
 // @Summary Add Contributor
 // @Description Registers a new contributor to the campaign
-// @Tags contributors
+// @Tags contributor
 // @Accept json
 // @Produce json
 // @Security ApiKeyAuth
@@ -85,7 +85,7 @@ func (h *ContributorHandler) HandleRemoveContributor(c *gin.Context) {
 
 // @Summary Edit Contributor
 // @Description Modifies a contributor's information
-// @Tags contributors
+// @Tags contributor
 // @Accept json
 // @Produce json
 // @Security ApiKeyAuth
@@ -127,7 +127,7 @@ func (h *ContributorHandler) HandleEditContributor(c *gin.Context) {
 
 // @Summary Get All Contributors
 // @Description Lists all contributors participating in the campaign
-// @Tags contributors
+// @Tags contributor
 // @Accept json
 // @Produce json
 // @Security ApiKeyAuth
