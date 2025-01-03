@@ -1,9 +1,8 @@
 package middlewares
 
 import (
-	"net/http"
-
 	"github.com/gin-gonic/gin"
+	"github.com/oyen-bright/goFundIt/internal/api/handlers"
 )
 
 func CampaignKey() gin.HandlerFunc {
@@ -11,7 +10,8 @@ func CampaignKey() gin.HandlerFunc {
 		campaignKey := c.GetHeader("Campaign-Key")
 
 		if campaignKey == "" {
-			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": "Unauthorized"})
+			handlers.Unauthorized(c, "Unauthorized", nil)
+			c.Abort()
 			return
 		}
 		c.Set("Campaign-Key", campaignKey)

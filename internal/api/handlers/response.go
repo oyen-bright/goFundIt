@@ -7,16 +7,71 @@ import (
 	"github.com/oyen-bright/goFundIt/pkg/errs"
 )
 
-type ValidationError struct {
-	Field string `json:"field"`
-	Error string `json:"error"`
+// SuccessResponse represents a successful API response
+// @Description Successful API response structure
+type SuccessResponse struct {
+	// Status will always be "OK"
+	// @example OK
+	Status string `json:"status" example:"OK" enums:"OK"`
+
+	// Response message describing the success
+	// @example Operation completed successfully
+	Message string `json:"message"`
+
+	// Response data (optional)
+	// @example null
+	Data interface{} `json:"data,omitempty"`
 }
 
+// BadRequestResponse represents a 400 error response
+// @Description Bad request error response structure
+type BadRequestResponse struct {
+	// Status will always be "Bad Request"
+	// @example Bad Request
+	Status string `json:"status" example:"Bad Request" enums:"Bad Request"`
+
+	// Error message
+	// @example Invalid input provided
+	Message string `json:"message"`
+
+	// Validation errors (optional)
+	// @example [{"field":"field","error":"must be a valid data"}]
+	Errors interface{} `json:"errors,omitempty"`
+}
+
+// UnauthorizedResponse represents a 401 error response
+// @Description Unauthorized error response structure
+type UnauthorizedResponse struct {
+	// Status will always be false for unauthorized
+	// @example false
+	Status string `json:"status" example:"Unauthorized" enums:"Unauthorized"`
+
+	// Will always be "Unauthorized"
+	// @example Unauthorized
+	Message string `json:"message" example:"Unauthorized" enums:"Unauthorized"`
+}
+
+// ValidationError represents a field validation error
+type ValidationError struct {
+	Field string `json:"field" example:"field"`
+	Error string `json:"error" example:"must be a valid field"`
+}
+
+// Response represents the standard API response structure
 type response struct {
-	Status  string      `json:"status"`
-	Message string      `json:"message"`
-	Data    interface{} `json:"data,omitempty"`
-	Errors  interface{} `json:"errors,omitempty"`
+	// Response status
+	// @example OK
+	Status string `json:"status"`
+
+	// Response message
+	// @example Operation completed successfully
+	Message string `json:"message"`
+
+	// Response data (optional)
+	Data interface{} `json:"data,omitempty"`
+
+	// Error details (optional)
+	Errors interface{} `json:"errors,omitempty"`
 }
 
 func DefaultResponse(c *gin.Context, statusCode int, message string, data interface{}, err interface{}) {
@@ -37,7 +92,7 @@ func Created(c *gin.Context, message string, data interface{}) {
 }
 
 func BadRequest(c *gin.Context, message string, errors interface{}) {
-	c.JSON(http.StatusBadRequest, response{
+	c.JSON(http.StatusBadRequest, BadRequestResponse{
 		Status:  http.StatusText(http.StatusBadRequest),
 		Message: message,
 		Errors:  errors,
@@ -45,10 +100,10 @@ func BadRequest(c *gin.Context, message string, errors interface{}) {
 }
 
 func Unauthorized(c *gin.Context, message string, errors interface{}) {
-	c.JSON(http.StatusUnauthorized, response{
+	c.JSON(http.StatusUnauthorized, UnauthorizedResponse{
 		Status:  http.StatusText(http.StatusUnauthorized),
 		Message: message,
-		Errors:  errors,
+		// Errors:  errors,
 	})
 }
 

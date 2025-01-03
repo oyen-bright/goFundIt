@@ -18,7 +18,7 @@ type Config struct {
 	WebSocketHandler   *handlers.WebSocketHandler
 	PaymentHandler     *handlers.PaymentHandler
 	PayoutHandler      *handlers.PayoutHandler
-	AnalyticsHandler   *handlers.AnalyticsHandle
+	AnalyticsHandler   *handlers.AnalyticsHandler
 	PaystackKey        string
 	XAPIKey            string
 	JWT                jwt.Jwt

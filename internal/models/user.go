@@ -17,10 +17,13 @@ import (
 //     }
 
 // Struct definition
+
+// User represents the authentication request payload
+// @Description Authentication request payload
 type User struct {
 	ID            uint          `gorm:"primaryKey" json:"-"`
 	Email         string        `gorm:"uniqueIndex;not null" encrypt:"true" binding:"required,email,lowercase"  validate:"email"`
-	Handle        string        `gorm:"uniqueIndex;not null"`
+	Handle        string        `gorm:"uniqueIndex;not null" binding:"-" swaggerignore:"true"`
 	Name          *string       `gorm:"" encrypt:"true"`
 	Verified      bool          `gorm:"not null" json:"-"`
 	FCMToken      *string       `gorm:"" json:"-"`

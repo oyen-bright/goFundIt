@@ -1,15 +1,15 @@
 package middlewares
 
 import (
-	"net/http"
-
 	"github.com/gin-gonic/gin"
+	"github.com/oyen-bright/goFundIt/internal/api/handlers"
 )
 
 func APIKey(key string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		if c.GetHeader("X-API-KEY") != key {
-			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"message": "Unauthorized"})
+			handlers.Unauthorized(c, "Unauthorized", nil)
+			c.Abort()
 			return
 		}
 		c.Next()
