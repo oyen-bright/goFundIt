@@ -53,7 +53,7 @@ func (h *ContributorHandler) HandleAddContributor(c *gin.Context) {
 
 // @Summary Remove Contributor
 // @Description Removes a contributor from the campaign
-// @Tags contributors
+// @Tags contributor
 // @Accept json
 // @Produce json
 // @Security ApiKeyAuth
@@ -152,7 +152,7 @@ func (h *ContributorHandler) HandleGetContributorsByCampaignID(c *gin.Context) {
 
 // @Summary Get Contributor
 // @Description Retrieves detailed information about a specific contributor
-// @Tags contributors
+// @Tags contributor
 // @Accept json
 // @Produce json
 // @Security ApiKeyAuth

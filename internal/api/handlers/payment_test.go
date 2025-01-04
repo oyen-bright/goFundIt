@@ -31,7 +31,7 @@ func TestPaymentHandler_HandleInitializePayment(t *testing.T) {
 			contributorID: "1",
 			setupMock: func(mockService *mocks.MockPaymentService) {
 				payment := &models.Payment{}
-				mockService.On("InitializePayment", uint(1)).Return(payment, nil)
+				mockService.On("InitializePayment", uint(1), "123").Return(payment, nil)
 			},
 			expectedStatusCode: http.StatusOK,
 			expectedMessage:    "Payment initialized",
@@ -49,7 +49,7 @@ func TestPaymentHandler_HandleInitializePayment(t *testing.T) {
 			name:          "Service Error",
 			contributorID: "1",
 			setupMock: func(mockService *mocks.MockPaymentService) {
-				mockService.On("InitializePayment", uint(1)).Return(nil, errors.New("service error"))
+				mockService.On("InitializePayment", uint(1), "123").Return(nil, errors.New("service error"))
 			},
 			expectedStatusCode: http.StatusInternalServerError,
 			expectedMessage:    "service error",
@@ -64,6 +64,7 @@ func TestPaymentHandler_HandleInitializePayment(t *testing.T) {
 
 			w := httptest.NewRecorder()
 			c, _ := gin.CreateTestContext(w)
+			c.Set("Campaign-Key", "123")
 			c.Params = []gin.Param{{Key: "contributorID", Value: tt.contributorID}}
 
 			handler.HandleInitializePayment(c)

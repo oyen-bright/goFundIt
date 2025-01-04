@@ -246,7 +246,7 @@ func (suite *PayoutHandlerTestSuite) TestHandleGetPayoutByCampaignID() {
 			},
 			expectedStatus: http.StatusOK,
 			expectedBody: map[string]interface{}{
-				"message": "Success", "status": "OK",
+				"message": "Payout information retrieved successfully", "status": "OK",
 				"data": map[string]interface{}{
 					"amount": 0.0, "campaignId": "", "completedAt": interface{}(nil), "failureReason": interface{}(nil), "payoutMethod": "", "processedAt": interface{}(nil), "reference": "", "status": ""},
 			},

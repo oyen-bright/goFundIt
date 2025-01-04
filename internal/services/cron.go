@@ -36,6 +36,7 @@ func (n *cronService) StartCronJobs() error {
 			n.cleanUpExpiredCampaign()
 		})
 	})
+	n.logger.Info("Cleanup job scheduled - running at midnight UTC daily", nil)
 	if err != nil {
 		return fmt.Errorf("failed to schedule cleanup job: %w", err)
 	}
@@ -46,6 +47,7 @@ func (n *cronService) StartCronJobs() error {
 			n.checkContributionReminders()
 		})
 	})
+	n.logger.Info("Contribution reminders job scheduled - running every 3 days at midnight UTC", nil)
 	if err != nil {
 		return fmt.Errorf("failed to schedule contribution reminders job: %w", err)
 	}
@@ -56,6 +58,8 @@ func (n *cronService) StartCronJobs() error {
 			n.checkCampaignDeadline()
 		})
 	})
+	n.logger.Info("Campaign deadline check job scheduled - running at midnight UTC daily", nil)
+
 	if err != nil {
 		return fmt.Errorf("failed to schedule campaign deadline reminders job: %w", err)
 	}

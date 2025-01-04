@@ -30,17 +30,22 @@ type Logger interface {
 }
 
 type logger struct {
-	enabled bool
+	enabled         bool
+	localLogEnabled bool
 }
 
-func New(SentryEnabled bool) Logger {
+func New(SentryEnabled bool, localLogEnabled bool) Logger {
 	return &logger{
-		enabled: SentryEnabled,
+		enabled:         SentryEnabled,
+		localLogEnabled: localLogEnabled,
 	}
 }
 
 func (l *logger) Info(message string, fields map[string]interface{}) {
-	log.Println(message)
+
+	if l.localLogEnabled {
+		log.Println(message)
+	}
 
 	if !l.enabled {
 		return

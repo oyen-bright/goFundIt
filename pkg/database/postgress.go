@@ -17,13 +17,17 @@ type Config struct {
 	Port     int
 }
 
-func Init(cfg Config) (*gorm.DB, error) {
+func Init(cfg Config, isDevelopment bool) (*gorm.DB, error) {
 	// Setup PostgreSQL connection using the provided configuration
 	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%d sslmode=disable",
 		cfg.Host, cfg.User, cfg.Password, cfg.DBName, cfg.Port,
 	)
+	logMode := logger.Warn
+	if isDevelopment {
+		logMode = logger.Info
+	}
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{
-		Logger: logger.Default.LogMode(logger.Info),
+		Logger: logger.Default.LogMode(logMode),
 	})
 
 	if err != nil {

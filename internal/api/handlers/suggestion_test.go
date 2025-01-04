@@ -28,7 +28,7 @@ func TestHandleGetActivitySuggestions(t *testing.T) {
 			name:       "Success",
 			campaignID: "123",
 			setupMock: func(m *interfaces.MockSuggestionService) {
-				m.On("GetActivitySuggestions", "123").Return([]models.ActivitySuggestion{
+				m.On("GetActivitySuggestions", "123", "123").Return([]models.ActivitySuggestion{
 					{Title: "title", EstimatedPrice: "cost"},
 				}, nil)
 			},
@@ -39,7 +39,7 @@ func TestHandleGetActivitySuggestions(t *testing.T) {
 			name:       "Error",
 			campaignID: "123",
 			setupMock: func(m *interfaces.MockSuggestionService) {
-				m.On("GetActivitySuggestions", "123").Return(nil, errors.New("service error"))
+				m.On("GetActivitySuggestions", "123", "123").Return(nil, errors.New("service error"))
 			},
 			expectedStatus: http.StatusInternalServerError,
 		},
@@ -54,6 +54,7 @@ func TestHandleGetActivitySuggestions(t *testing.T) {
 			w := httptest.NewRecorder()
 			c, _ := gin.CreateTestContext(w)
 			c.Params = append(c.Params, gin.Param{Key: "campaignID", Value: tt.campaignID})
+			c.Set("Campaign-Key", tt.campaignID)
 
 			handler.HandleGetActivitySuggestions(c)
 
