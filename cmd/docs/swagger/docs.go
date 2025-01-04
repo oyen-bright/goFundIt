@@ -1088,13 +1088,6 @@ const docTemplate = `{
                 "summary": "Authenticate User",
                 "parameters": [
                     {
-                        "type": "string",
-                        "description": "API Key",
-                        "name": "X-API-Key",
-                        "in": "header",
-                        "required": true
-                    },
-                    {
                         "description": "Auth Credentials",
                         "name": "request",
                         "in": "body",
@@ -1167,13 +1160,6 @@ const docTemplate = `{
                 ],
                 "summary": "Verify OTP",
                 "parameters": [
-                    {
-                        "type": "string",
-                        "description": "API Key",
-                        "name": "X-API-Key",
-                        "in": "header",
-                        "required": true
-                    },
                     {
                         "description": "Verification Data",
                         "name": "request",
@@ -3984,7 +3970,7 @@ const docTemplate = `{
 var SwaggerInfo = &swag.Spec{
 	Version:          "1.0",
 	Host:             "localhost:8080",
-	BasePath:         "/api/v1",
+	BasePath:         "/",
 	Schemes:          []string{"http", "https"},
 	Title:            "GoFundIt API",
 	Description:      "GoFundIt is a collaborative platform enabling families and friends to plan and fund group activities, such as vacations and events. Features end-to-end encryption, secure payment handling, and flexible contribution options.",

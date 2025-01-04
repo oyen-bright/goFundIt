@@ -20,7 +20,7 @@
         "version": "1.0"
     },
     "host": "localhost:8080",
-    "basePath": "/api/v1",
+    "basePath": "/",
     "paths": {
         "/activity/{campaignID}": {
             "get": {
@@ -1086,13 +1086,6 @@
                 "summary": "Authenticate User",
                 "parameters": [
                     {
-                        "type": "string",
-                        "description": "API Key",
-                        "name": "X-API-Key",
-                        "in": "header",
-                        "required": true
-                    },
-                    {
                         "description": "Auth Credentials",
                         "name": "request",
                         "in": "body",
@@ -1165,13 +1158,6 @@
                 ],
                 "summary": "Verify OTP",
                 "parameters": [
-                    {
-                        "type": "string",
-                        "description": "API Key",
-                        "name": "X-API-Key",
-                        "in": "header",
-                        "required": true
-                    },
                     {
                         "description": "Verification Data",
                         "name": "request",

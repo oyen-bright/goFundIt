@@ -13,7 +13,7 @@ package main
 // @license.url http://www.apache.org/licenses/LICENSE-2.0.html
 
 // @host localhost:8080
-// @BasePath /api/v1
+// @BasePath /
 // @schemes http https
 
 // @securityDefinitions.apikey ApiKeyAuth
@@ -65,6 +65,7 @@ package main
 
 import (
 	"os"
+	"strings"
 	"time"
 
 	"github.com/getsentry/sentry-go"
@@ -212,6 +213,9 @@ func main() {
 
 	// Configure Swagger
 	doc.SwaggerInfo.BasePath = "/"
+	if host := os.Getenv("Endpoint"); host != "" {
+		doc.SwaggerInfo.Host = host
+	}
 
 	// Redirect root to Swagger docs
 	router.GET("/", func(c *gin.Context) {
@@ -244,11 +248,16 @@ func main() {
 	})
 
 	// Start Server
+	//TODO: fix : issue with port
 	port := os.Getenv("PORT")
+
 	if port == "" {
-		port = cfg.ServerPort
+		port = ":" + cfg.ServerPort
 	}
-	if err := router.Run(":" + port); err != nil {
+	if !strings.HasPrefix(port, ":") {
+		port = ":" + port
+	}
+	if err := router.Run(port); err != nil {
 		panic("Failed to start server: " + err.Error())
 	}
 }

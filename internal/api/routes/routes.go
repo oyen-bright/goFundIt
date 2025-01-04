@@ -4,6 +4,7 @@ import (
 	"time"
 
 	sentrygin "github.com/getsentry/sentry-go/gin"
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/oyen-bright/goFundIt/internal/api/handlers"
 	"github.com/oyen-bright/goFundIt/internal/api/middlewares"
@@ -28,6 +29,16 @@ type Config struct {
 }
 
 func SetupRoutes(cfg Config) {
+
+	// Add CORS middleware
+	cfg.Router.Use(cors.New(cors.Config{
+		AllowOrigins:     []string{"*"},
+		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
+		AllowHeaders:     []string{"Origin", "Content-Type", "Accept", "Authorization", "X-API-Key"},
+		ExposeHeaders:    []string{"Content-Length"},
+		AllowCredentials: true,
+		MaxAge:           12 * time.Hour,
+	}))
 
 	// Add Sentry middleware
 	cfg.Router.Use(sentrygin.New(sentrygin.Options{

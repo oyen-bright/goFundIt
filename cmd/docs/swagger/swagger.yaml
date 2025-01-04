@@ -1,4 +1,4 @@
-basePath: /api/v1
+basePath: /
 definitions:
   dto.ActivityRequest:
     description: Activity creation/update request structure
@@ -1419,11 +1419,6 @@ paths:
       description: Initiates the authentication process for a user by sending a verification
         code to their email address. Requires user's name and email in request body.
       parameters:
-      - description: API Key
-        in: header
-        name: X-API-Key
-        required: true
-        type: string
       - description: Auth Credentials
         in: body
         name: request
@@ -1467,11 +1462,6 @@ paths:
       description: Validates the verification code sent to user's email. Requires
         email, verification code, and request ID for verification
       parameters:
-      - description: API Key
-        in: header
-        name: X-API-Key
-        required: true
-        type: string
       - description: Verification Data
         in: body
         name: request

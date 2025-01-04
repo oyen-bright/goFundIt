@@ -22,7 +22,6 @@ func NewAuthHandler(service services.AuthService) *AuthHandler {
 // @Tags auth
 // @Accept json
 // @Produce json
-// @Param X-API-Key header string true "API Key"
 // @Param request body models.User true "Auth Credentials"
 // @Success 200 {object} SuccessResponse{data=models.Otp} "Please check your email for the OTP."
 // @Failure 400 {object} BadRequestResponse{errors=[]ValidationError} "Invalid inputs, please check and try again"
@@ -52,7 +51,6 @@ func (a *AuthHandler) HandleAuth(context *gin.Context) {
 // @Tags auth
 // @Accept json
 // @Produce json
-// @Param X-API-Key header string true "API Key"
 // @Param request body dto.VerifyAuthRequest true "Verification Data"
 // @Success 200 {object} SuccessResponse{data=dto.VerifyAuthResponse} "Authenticated"
 // @Failure 400 {object} BadRequestResponse{errors=[]ValidationError} "Invalid inputs, please check and try again"
