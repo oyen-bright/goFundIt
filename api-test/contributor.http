@@ -1,0 +1,61 @@
+### Environment Variables
+@authToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MCwiZW1haWwiOiJicmlnaHRAa3JvdHJ1c3QuY29tIiwiaGFuZGxlIjoiQlJLTFdSIiwiZXhwIjoxNzM1MTM3NDQ3fQ.r7rsPoN-4evxoAdM885_aYBrY9jrKqDRKTzztmoGImM
+
+### Common Headers
+@contentType = application/json
+@apiKey = {{X_API_KEY}}
+@campaignId = TRPNRUXPQ
+
+
+### Add Contributor to Campaign
+POST {{baseUrl}}/contributor/{{campaignId}}
+Content-Type: {{contentType}}
+X-API-KEY: {{apiKey}}
+Campaign-Key: {{campaignId}}
+Authorization: Bearer {{authToken}}
+
+{
+    "amount": 2000,
+    "Email": "bright+1@krotrust.com"
+}
+
+
+
+### Update Contributor from Campaign
+PATCH   {{baseUrl}}/contributor/{{campaignId}}/2
+Content-Type: {{contentType}}
+X-API-KEY: {{apiKey}}
+Campaign-Key: {{campaignId}}
+Authorization: Bearer {{authToken}}
+
+{
+    "name": "itsAhaman",
+    "email": "bright@krotrust.com"
+}
+
+
+
+### Remove Contributor from Campaign
+DELETE  {{baseUrl}}/contributor/{{campaignId}}/1
+Content-Type: {{contentType}}
+X-API-KEY: {{apiKey}}
+Campaign-Key: {{campaignId}}
+Authorization: Bearer {{authToken}}
+
+
+
+### Get Campaign contributors
+GET  {{baseUrl}}/contributor/{{campaignId}}
+Content-Type: {{contentType}}
+X-API-KEY: {{apiKey}}
+Campaign-Key: {{campaignId}}
+Authorization: Bearer {{authToken}}
+
+
+
+### Get contributor by ID
+GET  {{baseUrl}}/contributor/{{campaignId}}/1
+Content-Type: {{contentType}}
+X-API-KEY: {{apiKey}}
+Campaign-Key: {{campaignId}}
+Authorization: Bearer {{authToken}}

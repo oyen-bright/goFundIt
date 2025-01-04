@@ -1,0 +1,83 @@
+### Environment Variables
+@authToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MCwiZW1haWwiOiJicmlnaHRAa3JvdHJ1c3QuY29tIiwiaGFuZGxlIjoiQlJLTFdSIiwiZXhwIjoxNzM1MTM3NDQ3fQ.r7rsPoN-4evxoAdM885_aYBrY9jrKqDRKTzztmoGImM
+
+### Common Headers
+@contentType = application/json
+@apiKey = {{X_API_KEY}}
+@ContributorID = 2
+@ActivityID = 5
+@campaignId = TRPNRUXPQ
+
+### Create New Activity
+POST {{baseUrl}}/activity/{{campaignId}}
+Content-Type: {{contentType}}
+X-API-KEY: {{apiKey}}
+Campaign-Key: {{campaignId}}
+Authorization: Bearer {{authToken}}
+
+{
+    "title": "Sling dope",
+    "cost": 1000,
+    "isMandatory": true
+}
+
+### Update Activity
+PATCH {{baseUrl}}/activity/{{campaignId}}/{{ActivityID}}
+Content-Type: {{contentType}}
+X-API-KEY: {{apiKey}}
+Campaign-Key: {{campaignId}}
+Authorization: Bearer {{authToken}}
+
+{
+    "title": "Updated the activity aprove",
+    "cost": 5000,
+      "isApproved": true
+}
+
+### Get All Activities for Campaign
+GET {{baseUrl}}/activity/{{campaignId}}
+Content-Type: {{contentType}}
+X-API-KEY: {{apiKey}}
+Campaign-Key: {{campaignId}}
+Authorization: Bearer {{authToken}}
+
+
+### Get Single Activity
+GET {{baseUrl}}/activity/{{campaignId}}/{{ActivityID}}
+Content-Type: {{contentType}}
+X-API-KEY: {{apiKey}}
+Campaign-Key: {{campaignId}}
+Authorization: Bearer {{authToken}}
+
+
+### Delete Activity
+DELETE {{baseUrl}}/activity/{{campaignId}}/{{ActivityID}}
+Content-Type: {{contentType}}
+X-API-KEY: {{apiKey}}
+Campaign-Key: {{campaignId}}
+Authorization: Bearer {{authToken}}
+
+
+### Opt In Activity
+POST {{baseUrl}}/activity/{{campaignId}}/{{ActivityID}}/participants/{{ContributorID}}
+Content-Type: {{contentType}}
+X-API-KEY: {{apiKey}}
+Campaign-Key: {{campaignId}}
+Authorization: Bearer {{authToken}}
+
+
+### Opt Out Activity
+DELETE  {{baseUrl}}/activity/{{campaignId}}/{{ActivityID}}/participants/{{ContributorID}}
+Content-Type: {{contentType}}
+X-API-KEY: {{apiKey}}
+Campaign-Key: {{campaignId}}
+Authorization: Bearer {{authToken}}
+
+
+
+### Get All Participants for Activity
+GET {{baseUrl}}/activity/{{campaignId}}/{{ActivityID}}/participants
+Content-Type: {{contentType}}
+X-API-KEY: {{apiKey}}
+Campaign-Key: {{campaignId}}
+Authorization: Bearer {{authToken}}

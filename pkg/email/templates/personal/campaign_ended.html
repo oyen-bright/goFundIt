@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../css/styles.css">
+    <title>Campaign Ended Notification</title>
+    <style>
+        h1 {
+            color: #ff6f61;
+            font-size: 24px;
+            margin: 0 0 20px 0;
+            font-family: Arial, sans-serif;
+        }
+
+        p {
+            color: #333333;
+            font-size: 16px;
+            line-height: 1.6;
+            margin: 0 0 20px 0;
+            font-family: Arial, sans-serif;
+        }
+
+
+        .footer {
+            margin-top: 30px;
+            font-size: 15px;
+            color: #777777;
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            padding: 15px;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+
+<body style="margin: 0; padding: 0; background-color: #f4f4f9; font-family: 'Courier New', Courier, Arial, sans-serif;">
+    <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+            <td align="center" style="padding: 20px;">
+                <table width="600" cellpadding="0" cellspacing="0" border="0"
+                    style="background-color: #ffffff; border-radius: 8px;">
+                    <tr>
+                        <td align="center" style="padding: 30px;">
+                            <h2>Campaign Has Ended</h2>
+
+                            <p>Dear Contributor,</p>
+
+                            <p>The campaign "<strong>{{.campaignTitle}}</strong>" has officially ended on {{.endDate}}.
+                            </p>
+
+                            <div class="code">
+                                Your Contribution: ${{.contribution}}
+                            </div>
+
+                            <p><strong>Campaign Summary:</strong></p>
+                            <ul>
+                                <li>Total Amount Raised: ${{.totalRaised}}</li>
+                                <li>End Date: {{.endDate}}</li>
+                            </ul>
+
+                            <p>Thank you for being part of this campaign! Your contribution has helped make this
+                                campaign possible.</p>
+
+                            <p>What happens next:</p>
+                            <ol>
+                                <li>The campaign owner will be notified to collect the funds</li>
+                                <li>You'll receive a notification once the payout has been processed</li>
+                                <li>Campaign data will be archived for record-keeping</li>
+                            </ol>
+
+                            <p>We appreciate your participation in our platform!</p>
+
+                            <div class="footer">
+                                <p>This is an automated notification from GoFund It</p>
+                                <p>© {{.currentYear}} GoFund It. All rights reserved.</p>
+                            </div>
+                            </div>
+</body>
+
+</html>

@@ -1,88 +1,104 @@
 package config
 
 import (
-	"errors"
 	"flag"
 	"fmt"
-	"strconv"
 
-	"github.com/joho/godotenv"
+	"github.com/oyen-bright/goFundIt/config/environment"
+	"github.com/oyen-bright/goFundIt/config/providers"
+	"github.com/oyen-bright/goFundIt/pkg/database"
+	"github.com/oyen-bright/goFundIt/pkg/email"
+	"github.com/spf13/viper"
 )
 
-type Config struct {
-	Environment Environment
-	Port        int
+type AppConfig struct {
+	Environment                    environment.Environment
+	EmailProvider                  providers.EmailProvider
+	FirebaseServiceAccountFilePath string `mapstructure:"firebase_service_account_file_path"`
+	ServerPort                     string `mapstructure:"port"`
+	GeminiKey                      string `mapstructure:"gemini_key"`
+	PaystackKey                    string `mapstructure:"paystack_key"`
+	EmailConfig                    email.EmailConfig
+	CloudinaryURL                  string `mapstructure:"cloudinary_url"`
+	AnalyticsReportEmail           string `mapstructure:"analytics_report_email"`
+	DBConfig                       database.Config
+	EncryptionKeys                 []string `mapstructure:"encryption_keys"` // Changed from string to []string
+	XAPIKey                        string   `mapstructure:"x_api_key"`
+	JWTSecret                      string   `mapstructure:"jwt_secret"`
 }
 
-// LoadConfig loads the configuration for the application based on the environment.
-// - It parses the environment flag.
-// - Initializes the environment.
-// - Loads the corresponding .env file.
-// - If no flag for env is provided, it defaults to "" which is Development.
-// - To set env flag, run the application with -env=stg or -env=prod.
-// - Returns a Config struct with the environment and default port.
-//
-// Returns:
-//   - *Config: A pointer to the Config struct containing the environment and port.
-//   - error: An error if any occurs during the loading of the configuration.
-func LoadConfig() (*Config, error) {
+type EmailConfigYAML struct {
+	Host           string `mapstructure:"host"`
+	Port           int    `mapstructure:"port"`
+	Username       string `mapstructure:"username"`
+	Password       string `mapstructure:"password"`
+	Name           string `mapstructure:"name"`
+	SendgridAPIKey string `mapstructure:"sendgrid_api_key"`
+}
 
-	var env string
-	var environment Environment
+type DatabaseConfigYAML struct {
+	Name     string `mapstructure:"name"`
+	User     string `mapstructure:"user"`
+	Password string `mapstructure:"password"`
+	Host     string `mapstructure:"host"`
+	Port     int    `mapstructure:"port"`
+}
 
-	envFlag := flag.String("env", "", "Environment the application is running in")
+func LoadConfig() (*AppConfig, error) {
+	env := parseEnvFlag()
+	environment := environment.NewEnvironmentConfig(env).Current
+
+	v := viper.New()
+	v.SetConfigType("yaml")
+	v.SetConfigName(fmt.Sprintf("config.%s", env))
+
+	v.AddConfigPath(".")
+	v.AddConfigPath("config")
+	v.AddConfigPath("../config")
+	v.AddConfigPath("../../config")
+
+	if err := v.ReadInConfig(); err != nil {
+		return nil, fmt.Errorf("failed to read config file: %w", err)
+	}
+
+	var emailCfg EmailConfigYAML
+	if err := v.UnmarshalKey("email", &emailCfg); err != nil {
+		return nil, fmt.Errorf("failed to parse email config: %w", err)
+	}
+
+	var dbCfg DatabaseConfigYAML
+	if err := v.UnmarshalKey("database", &dbCfg); err != nil {
+		return nil, fmt.Errorf("failed to parse database config: %w", err)
+	}
+
+	var config AppConfig
+	if err := v.Unmarshal(&config); err != nil {
+		return nil, fmt.Errorf("failed to parse config: %w", err)
+	}
+
+	config.Environment = environment
+	config.EmailProvider = providers.NewEmailProvider(providers.SMTP)
+	config.EmailConfig = email.EmailConfig{
+		Host:           emailCfg.Host,
+		Port:           emailCfg.Port,
+		From:           emailCfg.Name,
+		Username:       emailCfg.Username,
+		Password:       emailCfg.Password,
+		SendGridAPIKey: emailCfg.SendgridAPIKey,
+	}
+	config.DBConfig = database.Config{
+		Host:     dbCfg.Host,
+		Port:     dbCfg.Port,
+		Password: dbCfg.Password,
+		DBName:   dbCfg.Name,
+		User:     dbCfg.User,
+	}
+
+	return &config, nil
+}
+
+func parseEnvFlag() string {
+	envFlag := flag.String("env", "dev", "Environment the application is running in")
 	flag.Parse()
-
-	env = *envFlag
-	environment.init(env)
-
-	envPath := ".env." + environment.String()
-	envData, err := loadEnv(envPath)
-	if err != nil {
-		return nil, err
-	}
-
-	port, err := strconv.Atoi(envData["PORT"])
-	if err != nil {
-		return nil, err
-	}
-
-	return &Config{
-		Environment: environment,
-		Port:        port,
-	}, nil
-}
-
-// loadEnv loads environment variables from a specified file and ensures that
-// all required environment variables are present.
-//
-// Parameters:
-//   - envPath: The path to the environment file to load.
-//
-// Returns:
-//   - A map containing the environment variables and their values.
-//   - An error if there is an issue loading the environment file or if any
-//     required environment variables are missing.
-//
-// Required Environment Variables:
-//   - PORT: The port number on which the application should run.
-func loadEnv(envPath string) (map[string]string, error) {
-	requiredEnvs := []string{"PORT"}
-
-	err := godotenv.Load(envPath)
-	if err != nil {
-		return nil, err
-	}
-
-	envData, err := godotenv.Read(envPath)
-	if err != nil {
-		return nil, err
-	}
-	for _, env := range requiredEnvs {
-		fmt.Println(env)
-		if _, isAvailable := envData[env]; !isAvailable {
-			return nil, errors.New("Missing required environment variable: " + env)
-		}
-	}
-	return envData, nil
+	return *envFlag
 }

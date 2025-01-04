@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../css/styles.css">
+    <title>Campaign Data Export</title>
+    <style>
+        h1 {
+            color: #ff6f61;
+            font-size: 24px;
+            margin: 0 0 20px 0;
+            font-family: Arial, sans-serif;
+        }
+
+        p {
+            color: #333333;
+            font-size: 16px;
+            line-height: 1.6;
+            margin: 0 0 20px 0;
+            font-family: Arial, sans-serif;
+        }
+
+
+        .footer {
+            margin-top: 30px;
+            font-size: 15px;
+            color: #777777;
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            padding: 15px;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+
+<body style="margin: 0; padding: 0; background-color: #f4f4f9; font-family: 'Courier New', Courier, Arial, sans-serif;">
+    <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+            <td align="center" style="padding: 20px;">
+                <table width="600" cellpadding="0" cellspacing="0" border="0"
+                    style="background-color: #ffffff; border-radius: 8px;">
+                    <tr>
+                        <td align="center" style="padding: 30px;">
+                            <h1>Campaign Data Export</h2>
+                                <p>Dear Campaign Owner,</p>
+
+                                <p>Your campaign "{{.CampaignName}}" which ended on {{.EndDate}} has been archived from
+                                    our
+                                    system.</p>
+
+                                <p>As part of our data retention policy, we have exported all your campaign data and
+                                    attached it to this email.
+                                    The attached JSON file contains a complete record of your campaign, including:</p>
+
+                                <ul>
+                                    <li>Campaign details and statistics</li>
+                                    <li>Contributor information</li>
+                                    <li>Payment records</li>
+                                    <li>Activity history</li>
+                                </ul>
+
+                                <p>Campaign Summary:</p>
+                                <ul>
+                                    <li>Total Amount Contributed: {{.TotalAmount}}</li>
+                                </ul>
+
+                                <p>The attached JSON file contains all the detailed information about your campaign.
+                                    We recommend keeping this file for your records.</p>
+
+                                <p>Thank you for using our platform!</p>
+
+                                <p>Best regards,<br>
+                                    The GoFundIt Team</p>
+                                </div>
+                                <div class="footer">
+                                    Thank you for using GoFundIt!
+                                </div>
+                        </td>
+                    </tr>
+            </td>
+        </tr>
+    </table>
+</body>
+
+
+</html>

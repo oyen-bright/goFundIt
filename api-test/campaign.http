@@ -1,0 +1,66 @@
+### Environment Variables
+@authToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJicmlnaHRAa3JvdHJ1c3QuY29tIiwiaGFuZGxlIjoiQlJFREpTIiwiZXhwIjoxNzM1NDI0NjkwfQ._hrKbCdsnea35_HU1zcRfEHBKBFVd4E60w3pZg8pMpw
+### Common Headers
+@contentType = application/json
+@apiKey = {{X_API_KEY}}
+
+@campaignId = TRPNRUXPQ
+
+### Create New Campaign
+POST {{baseUrl}}/campaign/create
+Content-Type: {{contentType}}
+X-API-KEY: {{apiKey}}
+Authorization: Bearer {{authToken}}
+
+{
+    "title": "Trip to New York",
+    "description": "Exciting journey to explore the Big Apple! Experience the vibrant culture, iconic landmarks, and unforgettable moments in New York City.",
+    "images": [
+        {
+            "ImageUrl": "https://example.com/newyork.jpg"
+        }
+    ],
+    "PaymentMethod": "manual",
+    "fiatCurrency": "NGN",
+    "Activities": [
+        {
+            "title": "Times Square Visit",
+            "cost": 100,
+            "IsMandatory": true,
+            "isApproved": true
+        },
+        {
+            "title": "Statue of Liberty Tour",
+            "cost": 150,
+            "IsMandatory": true,
+            "isApproved": true
+        },
+        {
+            "title": "Broadway Show",
+            "cost": 200,
+            "IsMandatory": false,
+            "isApproved": true
+        },
+        {
+            "title": "Central Park Tour",
+            "cost": 50,
+            "IsMandatory": false,
+            "isApproved": true
+        }
+    ],
+    "Contributors": [
+        {
+            "amount": 2000,
+            "Email": "bright@krotrust.com"
+        }
+    ],
+    "StartDate": "2025-01-01T00:00:00Z",
+    "EndDate":"2025-01-03T00:00:00Z"
+}
+
+###
+
+GET {{baseUrl}}/campaign/{{campaignId}}
+X-API-KEY: {{apiKey}}
+Campaign-Key: {{campaignId}}
+Authorization: Bearer {{authToken}}

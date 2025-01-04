@@ -1,3 +1,30 @@
 {
-  "cSpell.words": ["godotenv"]
+  "cSpell.words": [
+    "ciphertext",
+    "Encryptor",
+    "genai",
+    "godotenv",
+    "gomail",
+    "gonic",
+    "gorm",
+    "minlength",
+    "oyen",
+    "Paystack",
+    "postgress",
+    "Refencrcen",
+    "sendgrid",
+    "upgrader",
+    "varchar"
+  ],
+  "sqltools.connections": [
+    {
+      "previewLimit": 50,
+      "server": "localhost",
+      "port": 5432,
+      "driver": "PostgreSQL",
+      "name": "Gofundit",
+      "database": "gofundit",
+      "username": "postgres"
+    }
+  ]
 }

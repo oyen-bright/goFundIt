@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <style>
+        .header {
+            text-align: center;
+            padding: 20px 0;
+            border-bottom: 2px solid #eee;
+        }
+
+        .section {
+            margin: 20px 0;
+            padding: 15px;
+            background: #f9f9f9;
+            border-radius: 5px;
+        }
+
+        .stat-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin: 10px 0;
+        }
+
+        .stat-box {
+            background: white;
+            padding: 15px;
+            border-radius: 4px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .highlight {
+            color: #2196F3;
+            font-weight: bold;
+        }
+
+        .stat-label {
+            font-size: 0.9em;
+            color: #666;
+        }
+
+        .stat-value {
+            font-size: 1.2em;
+            font-weight: bold;
+            margin-top: 5px;
+        }
+
+        .payment-methods {
+            margin-top: 15px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        th,
+        td {
+            padding: 8px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #f5f5f5;
+        }
+
+        h1 {
+            color: #ff6f61;
+            font-size: 24px;
+            margin: 0 0 20px 0;
+            font-family: Arial, sans-serif;
+        }
+
+        p {
+            color: #333333;
+            font-size: 16px;
+            line-height: 1.6;
+            margin: 0 0 20px 0;
+            font-family: Arial, sans-serif;
+        }
+
+
+        .footer {
+            margin-top: 30px;
+            font-size: 15px;
+            color: #777777;
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            padding: 15px;
+            border-radius: 5px;
+        }
+
+        .comparison {
+            font-size: 0.9em;
+            margin-top: 5px;
+            padding: 3px 0;
+        }
+
+        .positive {
+            color: #4CAF50;
+        }
+
+        .negative {
+            color: #F44336;
+        }
+
+        .neutral {
+            color: #9E9E9E;
+        }
+    </style>
+</head>
+
+<body style="margin: 0; padding: 0; background-color: #f4f4f9; font-family: 'Courier New', Courier, Arial, sans-serif;">
+    <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+            <td align="center" style="padding: 20px;">
+                <table width="600" cellpadding="0" cellspacing="0" border="0"
+                    style="background-color: #ffffff; border-radius: 8px;">
+                    <tr>
+                        <td align="center" style="padding: 30px;">
+                            <div class="header">
+                                <h1>Daily Analytics Report</h1>
+                                <p>{{.date}}</p>
+                            </div>
+
+                            <div class="section">
+                                <h2>Today's Overview</h2>
+                                <div class="stat-grid">
+                                    <div class="stat-box">
+                                        <div class="stat-label">New Users</div>
+                                        <div class="stat-value">{{.today.NewUsers}}</div>
+                                        <div class="stat-label">Total Users: {{.comparison.Users.Total}}</div>
+                                        <div class="comparison">
+                                            {{if gt .comparison.Users.Change 0}}
+                                            <span class="positive">↑ {{.comparison.Users.Change}} (+{{printf "%.1f"
+                                                .comparison.Users.Percentage}}%)</span>
+                                            {{else if lt .comparison.Users.Change 0}}
+                                            <span class="negative">↓ {{ .comparison.Users.Change}} ({{printf "%.1f"
+                                                .comparison.Users.Percentage}}%)</span>
+                                            {{else}}
+                                            <span class="neutral">No change</span>
+                                            {{end}}
+                                        </div>
+                                    </div>
+                                    <div class="stat-box">
+                                        <div class="stat-label">Active Users Today</div>
+                                        <div class="stat-value">{{.today.ActiveUsers}}</div>
+                                    </div>
+                                    <div class="stat-box">
+                                        <div class="stat-label">New Campaigns</div>
+                                        <div class="stat-value">{{.today.NewCampaigns}}</div>
+                                        <div class="stat-label">Total Campaigns: {{.comparison.Campaigns.Total}}</div>
+                                        <div class="comparison">
+                                            {{if gt .comparison.Campaigns.Change 0}}
+                                            <span class="positive">↑ {{.comparison.Campaigns.Change}} (+{{printf "%.1f"
+                                                .comparison.Campaigns.Percentage}}%)</span>
+                                            {{else if lt .comparison.Campaigns.Change 0}}
+                                            <span class="negative">↓ {{ .comparison.Campaigns.Change}} ({{printf
+                                                "%.1f"
+                                                .comparison.Campaigns.Percentage}}%)</span>
+                                            {{else}}
+                                            <span class="neutral">No change</span>
+                                            {{end}}
+                                        </div>
+                                    </div>
+                                    <div class="stat-box">
+                                        <div class="stat-label">Amount Raised Today</div>
+                                        <div class="stat-value">${{printf "%.2f" .today.TotalAmountRaised}}</div>
+                                        <div class="stat-label">Total Raised: ${{printf "%.2f"
+                                            .comparison.Finances.TotalRaised}}</div>
+                                        <div class="comparison">
+                                            {{if ge (printf "%.f" .comparison.Finances.Change) "0"}}
+                                            <span class="positive">↑ ${{printf "%.2f" .comparison.Finances.Change}}
+                                                (+{{printf "%.1f"
+                                                .comparison.Finances.Percentage}}%)</span>
+                                            {{else}}
+                                            <span class="negative">↓ ${{printf "%.2f" .comparison.Finances.Change}}
+                                                ({{printf "%.1f"
+                                                .comparison.Finances.Percentage}}%)</span>
+                                            {{end}}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="section">
+                                <h2>Activity Summary</h2>
+                                <div class="stat-grid">
+                                    <div class="stat-box">
+                                        <div class="stat-label">New Activities</div>
+                                        <div class="stat-value">{{.today.NewActivities}}</div>
+                                        <div class="stat-label">Total Activities: {{.comparison.Activities.Total}}</div>
+                                        <div class="comparison">
+                                            {{if gt .comparison.Activities.Change 0}}
+                                            <span class="positive">↑ {{.comparison.Activities.Change}} (+{{printf "%.1f"
+                                                .comparison.Activities.Percentage}}%)</span>
+                                            {{else if lt .comparison.Activities.Change 0}}
+                                            <span class="negative">↓ {{.comparison.Activities.Change}} ({{printf "%.1f"
+                                                .comparison.Activities.Percentage}}%)</span>
+                                            {{else}}
+                                            <span class="neutral">No change</span>
+                                            {{end}}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="section">
+                                <h2>Payment Methods</h2>
+                                <table>
+                                    <tr>
+                                        <th>Method</th>
+                                        <th>Count Today</th>
+                                    </tr>
+                                    <tr>
+                                        <td>Manual</td>
+                                        <td>{{.today.PaymentMethods.Manual}}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Crypto</td>
+                                        <td>{{.today.PaymentMethods.Crypto}}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Fiat</td>
+                                        <td>{{.today.PaymentMethods.Fiat}}</td>
+                                    </tr>
+                                </table>
+                            </div>
+
+                            <div class="section">
+                                <h2>Currency Usage</h2>
+                                <div class="stat-grid">
+                                    <div class="stat-box">
+                                        <h3>Fiat Currencies</h3>
+                                        <table>
+                                            <tr>
+                                                <th>Currency</th>
+                                                <th>Amount</th>
+                                                <th>Count</th>
+                                            </tr>
+                                            {{range $currency, $stats := .today.FiatStats}}
+                                            <tr>
+                                                <td>{{$currency}}</td>
+                                                <td>${{printf "%.2f" $stats.Amount}}</td>
+                                                <td>{{$stats.Count}}</td>
+                                            </tr>
+                                            {{end}}
+                                        </table>
+                                    </div>
+                                    <div class="stat-box">
+                                        <h3>Crypto Tokens</h3>
+                                        <table>
+                                            <tr>
+                                                <th>Token</th>
+                                                <th>Amount</th>
+                                                <th>Count</th>
+                                            </tr>
+                                            {{range $token, $stats := .today.CryptoStats}}
+                                            <tr>
+                                                <td>{{$token}}</td>
+                                                <td>{{printf "%.8f" $stats.Amount}}</td>
+                                                <td>{{$stats.Count}}</td>
+                                            </tr>
+                                            {{end}}
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="footer">
+                                Generated on {{.date}} UTC<br>
+                                GoFundIt Platform Analytics
+                            </div>
+                        </td>
+                    </tr>
+            </td>
+        </tr>
+    </table>
+</body>
+
+</html>

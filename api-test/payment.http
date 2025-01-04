@@ -1,0 +1,48 @@
+@authToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MCwiZW1haWwiOiJicmlnaHRAa3JvdHJ1c3QuY29tIiwiaGFuZGxlIjoiQlJLTFdSIiwiZXhwIjoxNzM1MTM3NDQ3fQ.r7rsPoN-4evxoAdM885_aYBrY9jrKqDRKTzztmoGImM
+
+### Common Headers
+@contentType = application/json
+@apiKey = {{X_API_KEY}}
+@campaignId = TRPNRUXPQ
+@contributorId = 2
+
+@paymentReference = Manual2
+
+### Initialize Payment
+
+POST {{baseUrl}}/payment/contributor/{{contributorId}}
+Content-Type: {{contentType}}
+X-API-KEY: {{apiKey}}
+Campaign-Key: {{campaignId}}
+Authorization: Bearer {{authToken}}
+
+### initialize manual payment
+POST {{baseUrl}}/payment/manual/{{contributorId}}
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary
+X-API-KEY: {{apiKey}}
+Campaign-Key: {{campaignId}}
+Authorization: Bearer {{authToken}}
+
+------WebKitFormBoundary
+Content-Disposition: form-data; name="reference"; filename="ref.png"
+Content-Type: image/png
+
+< /Users/brinnixs/Documents/Go/goFundIt/ref.png
+------WebKitFormBoundary--
+
+
+### Verify Payment
+POST {{baseUrl}}/payment/verify/{{paymentReference}}
+Content-Type: {{contentType}}
+X-API-KEY: {{apiKey}}
+Campaign-Key: {{campaignId}}
+Authorization: Bearer {{authToken}}
+
+
+
+### Verify manual Payment
+POST {{baseUrl}}/payment/manual/verify/{{paymentReference}}
+Content-Type: {{contentType}}
+X-API-KEY: {{apiKey}}
+Campaign-Key: {{campaignId}}
+Authorization: Bearer {{authToken}}

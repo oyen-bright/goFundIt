@@ -1,0 +1,29 @@
+### Environment Variables
+@userEmail = bright@krotrust.com
+
+### Common Headers
+@contentType = application/json
+@apiKey = {{X_API_KEY}}
+
+
+### Request Authentication
+POST {{baseUrl}}/auth/
+Content-Type: {{contentType}}
+X-API-KEY: {{apiKey}}
+
+{
+    "name": "Aha",
+    "email": "{{userEmail}}"
+}
+
+
+### Verify Authentication
+POST {{baseUrl}}/auth/verify
+Content-Type: {{contentType}}
+X-API-KEY: {{apiKey}}
+
+{
+    "email": "{{userEmail}}",
+    "code": "XXBBUG",
+    "requestId": "04029"
+}

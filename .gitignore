@@ -24,3 +24,10 @@ go.work.sum
 # env file
 .env
 .env.*
+!.env.example
+
+# Config files with sensitive data
+config/config.*.yaml
+!config/config.example.yaml
+config/*.json
+

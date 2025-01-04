@@ -1,0 +1,17 @@
+@apiKey = {{X_API_KEY}}
+@campaignId = TRPNRUXPQ
+
+
+
+GET {{baseUrl}}/suggestions/activity/{{campaignId}}
+X-API-KEY: {{apiKey}}
+
+
+###
+
+POST {{baseUrl}}/suggestions/activity/
+X-API-KEY: {{apiKey}}
+
+{
+    "content": "Trip to Lagos for a day"
+}
