@@ -65,7 +65,6 @@ package main
 
 import (
 	"os"
-	"path/filepath"
 	"time"
 
 	"github.com/getsentry/sentry-go"
@@ -95,6 +94,7 @@ import (
 )
 
 func initialize() (*config.AppConfig, *gorm.DB) {
+
 	cfg, err := config.LoadConfig()
 	if err != nil {
 		panic(err)
@@ -139,12 +139,7 @@ func main() {
 		panic(err)
 	}
 
-	currentDir, err := os.Getwd()
-	currentDir = filepath.Join(currentDir, "..", "..")
-	if err != nil {
-		panic(err)
-	}
-	fcmClient, err := fcm.New(filepath.Join(currentDir, cfg.FirebaseServiceAccountFilePath))
+	fcmClient, err := fcm.New(cfg.FirebaseServiceAccountFilePath)
 	if err != nil {
 		panic(err)
 	}
@@ -249,7 +244,11 @@ func main() {
 	})
 
 	// Start Server
-	if err := router.Run(cfg.ServerPort); err != nil {
-		panic("Failed to start server:")
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = cfg.ServerPort
+	}
+	if err := router.Run(":" + port); err != nil {
+		panic("Failed to start server: " + err.Error())
 	}
 }

@@ -30,4 +30,5 @@ go.work.sum
 config/config.*.yaml
 !config/config.example.yaml
 config/*.json
+cmd/api/*.json
 
