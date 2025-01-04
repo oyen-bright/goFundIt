@@ -1826,7 +1826,7 @@ paths:
       - BearerAuth: []
       summary: Remove Contributor
       tags:
-      - contributors
+      - contributor
     get:
       consumes:
       - application/json
@@ -1871,7 +1871,7 @@ paths:
       - BearerAuth: []
       summary: Get Contributor
       tags:
-      - contributors
+      - contributor
     patch:
       consumes:
       - application/json
@@ -2538,7 +2538,7 @@ tags:
   name: suggestion
 - description: Encrypted group communication with comments and replies
   name: comment
-- description: Secure analytics for group activity performance
-  name: analytic
+- description: Process analytics for platform performance
+  name: analytics
 - description: Real-time encrypted updates for group coordination
   name: websocket

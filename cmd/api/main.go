@@ -55,8 +55,8 @@ package main
 // @tag.name comment
 // @tag.description Encrypted group communication with comments and replies
 
-// @tag.name analytic
-// @tag.description Secure analytics for group activity performance
+// @tag.name analytics
+// @tag.description Process analytics for platform performance
 
 // @tag.name websocket
 // @tag.description Real-time encrypted updates for group coordination
@@ -64,7 +64,6 @@ package main
 // @Security ApiKeyAuth
 
 import (
-	"log"
 	"os"
 	"path/filepath"
 	"time"
@@ -100,12 +99,13 @@ func initialize() (*config.AppConfig, *gorm.DB) {
 	if err != nil {
 		panic(err)
 	}
-	log.Println(cfg.FirebaseServiceAccountFilePath)
-	db, err := database.Init(cfg.DBConfig)
+	db, err := database.Init(cfg.DBConfig, cfg.Environment.IsDevelopment())
 	if err != nil {
 		panic(err)
 	}
-	db.Debug()
+	if cfg.Environment.IsDevelopment() {
+		db.Debug()
+	}
 	return cfg, db
 }
 
@@ -123,7 +123,7 @@ func main() {
 	defer sentry.Flush(2 * time.Second)
 
 	//Initialize the logger
-	logger := logger.New(false)
+	logger := logger.New(cfg.Environment.IsProduction(), cfg.Environment.IsDevelopment())
 
 	// Initialize AI Client
 	aiClient, _ := gemini.NewClient(cfg.GeminiKey)
@@ -144,7 +144,6 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	log.Println(currentDir)
 	fcmClient, err := fcm.New(filepath.Join(currentDir, cfg.FirebaseServiceAccountFilePath))
 	if err != nil {
 		panic(err)
@@ -210,13 +209,22 @@ func main() {
 	analyticsHandler := handlers.NewAnalyticsHandler(analyticsService)
 	websocketHandler := handlers.NewWebSocketHandler(websocketHub, campaignService)
 
+	if cfg.Environment.IsProduction() {
+		gin.SetMode(gin.ReleaseMode)
+	}
 	// Initialize Gin Router
 	router := gin.Default()
 
 	// Configure Swagger
 	doc.SwaggerInfo.BasePath = "/"
+
+	// Redirect root to Swagger docs
+	router.GET("/", func(c *gin.Context) {
+		c.Redirect(301, "/swagger/index.html")
+	})
+
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler,
-		ginSwagger.URL("/swagger/doc.json"), // Update URL path
+		ginSwagger.URL("/swagger/doc.json"),
 		ginSwagger.DefaultModelsExpandDepth(1),
 		ginSwagger.DocExpansion("list"),
 		ginSwagger.PersistAuthorization(true),

@@ -1733,7 +1733,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "contributors"
+                    "contributor"
                 ],
                 "summary": "Get Contributor",
                 "parameters": [
@@ -1808,7 +1808,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "contributors"
+                    "contributor"
                 ],
                 "summary": "Remove Contributor",
                 "parameters": [
@@ -3970,8 +3970,8 @@ const docTemplate = `{
             "name": "comment"
         },
         {
-            "description": "Secure analytics for group activity performance",
-            "name": "analytic"
+            "description": "Process analytics for platform performance",
+            "name": "analytics"
         },
         {
             "description": "Real-time encrypted updates for group coordination",

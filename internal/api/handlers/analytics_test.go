@@ -31,7 +31,7 @@ func TestHandleProcessAnalyticsNow(t *testing.T) {
 				m.EXPECT().ProcessAnalyticsNow().Return(nil)
 			},
 			expectedStatus: http.StatusOK,
-			expectedBody:   `{"message":"Analytics proceed and send to email","status":"OK"}`,
+			expectedBody:   `{"message":"Analytics processed and sent to email","status":"OK"}`,
 		},
 		{
 			name: "Service Error",

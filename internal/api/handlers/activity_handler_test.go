@@ -30,7 +30,7 @@ func setupAuthMiddleware(c *gin.Context) {
 	}
 	c.Set("claims", claims)
 	c.Set("Campaign-Key", "test-campaign-key")
-	c.Next()
+
 }
 
 func TestHandleGetActivitiesByCampaignID(t *testing.T) {
