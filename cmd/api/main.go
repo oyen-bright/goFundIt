@@ -215,6 +215,7 @@ func main() {
 	doc.SwaggerInfo.BasePath = "/"
 	if host := os.Getenv("Endpoint"); host != "" {
 		doc.SwaggerInfo.Host = host
+		doc.SwaggerInfo.Schemes = []string{"https"}
 	}
 
 	// Redirect root to Swagger docs
