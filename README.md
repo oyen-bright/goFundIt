@@ -11,11 +11,8 @@ A platform designed to help families and friends collaboratively plan and fund g
 ### Secure & Flexible Fundraising:
 - Supports multiple payment methods, including manual contributions, fiat (via Paystack integration), and cryptocurrency.
 - End-to-end encryption ensures the security of sensitive campaign data.
-
-### Streamlined Workflow:
 - **Intuitive campaign creation**: Effortlessly create and manage fundraising campaigns with customizable goals and deadlines.
 - **Automated features**: Enjoy automated email notifications, contribution reminders, and progress tracking.
-- **User-friendly interface**: Provides a seamless and intuitive user experience for both campaign creators and contributors.
 
 ### Enhanced Collaboration:
 - **Activity suggestions**: Receive AI-powered suggestions for potential group activities.
