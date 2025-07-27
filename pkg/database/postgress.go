@@ -1,12 +1,9 @@
 package database
 
 import (
-	"fmt"
-
 	"github.com/oyen-bright/goFundIt/pkg/database/migrations"
-	"gorm.io/driver/postgres"
+	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
-	"gorm.io/gorm/logger"
 )
 
 type Config struct {
@@ -18,18 +15,21 @@ type Config struct {
 }
 
 func Init(cfg Config, isDevelopment bool) (*gorm.DB, error) {
-	// Setup PostgreSQL connection using the provided configuration
-	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%d sslmode=disable",
-		cfg.Host, cfg.User, cfg.Password, cfg.DBName, cfg.Port,
-	)
-	logMode := logger.Warn
-	if isDevelopment {
-		logMode = logger.Info
-	}
-	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{
-		Logger: logger.Default.LogMode(logMode),
-	})
 
+	// --- PostgreSQL connection (commented out) ---
+	// dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%d sslmode=disable",
+	// 	cfg.Host, cfg.User, cfg.Password, cfg.DBName, cfg.Port,
+	// )
+	// logMode := logger.Warn
+	// if isDevelopment {
+	// 	logMode = logger.Info
+	// }
+	// db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{
+	// 	Logger: logger.Default.LogMode(logMode),
+	// })
+
+	// --- SQLite connection ---
+	db, err := gorm.Open(sqlite.Open("test.db"), &gorm.Config{})
 	if err != nil {
 		return nil, err
 	}
