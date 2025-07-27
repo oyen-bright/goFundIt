@@ -24,6 +24,7 @@ For detailed API reference and usage instructions, please visit:
 
 [API Documentation](https://gofundit-is1q.onrender.com/)
 
-For API key requests, please contact me via email at [oyeniyibrigha@gmail.com](mailto:oyeniyibrigha@gmail.com).
+For API key requests, x_api_key: "SRESSDF-SDFEEWOWEL-EWIEW-WERIW" please contact me via email at [oyeniyibrigha@gmail.com](mailto:oyeniyibrigha@gmail.com).
+
 
 
