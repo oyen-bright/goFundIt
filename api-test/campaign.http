@@ -51,7 +51,7 @@ Authorization: Bearer {{authToken}}
     "Contributors": [
         {
             "amount": 2000,
-            "Email": "bright@krotrust.com"
+            "Email": "oyeniyibrighta@gmail.com"
         }
     ],
     "StartDate": "2025-01-01T00:00:00Z",
